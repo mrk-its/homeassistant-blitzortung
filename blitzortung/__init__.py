@@ -133,7 +133,7 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
                 * math.cos(self.latitude * math.pi / 180)
             )
             distance = round(math.sqrt(dx * dx + dy * dy) * 6371, 1)
-            azimuth = round(math.atan2(dy, dx) * 180 / math.pi)
+            azimuth = round(math.atan2(dx, dy) * 180 / math.pi)
 
             lightning[const.ATTR_LIGHTNING_DISTANCE] = distance
             lightning[const.ATTR_LIGHTNING_AZIMUTH] = azimuth
