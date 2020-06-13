@@ -1,0 +1,13 @@
+{
+    "domain": "blitzortung",
+    "name": "Blitzortung",
+    "config_flow": true,
+    "documentation": "https://www.home-assistant.io/integrations/",
+    "requirements": [
+    ],
+    "after_dependencies": [
+    ],
+    "codeowners": [
+      "@mrk-its"
+    ]
+  }
