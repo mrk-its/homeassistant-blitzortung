@@ -6,6 +6,7 @@ import logging
 import math
 import random
 import re
+import time
 from urllib.parse import urlencode
 
 import async_timeout
@@ -57,8 +58,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         )
 
     hass.async_create_task(start_platforms())
-
-    _LOGGER.info("Blitzortung started!")
     return True
 
 
@@ -87,14 +86,12 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
         self.latitude = latitude
         self.longitude = longitude
         self.radius = radius
-        self.ligting_history = []
         self.http_client = aiohttp_client.async_get_clientsession(hass)
         self.host_nr = 1
+        self.last_time = 0
 
         lat_delta = radius * 360 / 40000
         lon_delta = lat_delta / math.cos(latitude * math.pi / 180.0)
-
-        print(lat_delta, lon_delta)
 
         west = longitude - lon_delta
         east = longitude + lon_delta
@@ -119,38 +116,31 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
 
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
 
-    @property
-    def last_time(self):
-        return self.ligting_history and self.ligting_history[0]["time"] or None
+    def compute_polar_coords(self, lightning):
+        dy = (lightning["lat"] - self.latitude) * math.pi / 180
+        dx = (
+            (lightning["lon"] - self.longitude)
+            * math.pi
+            / 180
+            * math.cos(self.latitude * math.pi / 180)
+        )
+        distance = round(math.sqrt(dx * dx + dy * dy) * 6371, 1)
+        azimuth = round(math.atan2(dx, dy) * 180 / math.pi)
+
+        lightning[const.ATTR_LIGHTNING_DISTANCE] = distance
+        lightning[const.ATTR_LIGHTNING_AZIMUTH] = azimuth
 
     def latest_lightnings(self):
-        for lightning in reversed(self.data or ()):
-            dy = (lightning["lat"] - self.latitude) * math.pi / 180
-            dx = (
-                (lightning["lon"] - self.longitude)
-                * math.pi
-                / 180
-                * math.cos(self.latitude * math.pi / 180)
-            )
-            distance = round(math.sqrt(dx * dx + dy * dy) * 6371, 1)
-            azimuth = round(math.atan2(dx, dy) * 180 / math.pi)
-
-            if distance > self.radius:
-                continue
-
-            lightning[const.ATTR_LIGHTNING_DISTANCE] = distance
-            lightning[const.ATTR_LIGHTNING_AZIMUTH] = azimuth
-
+        for lightning in reversed(self.data.copy() or ()):
             yield lightning
 
     async def _async_update_data(self):
         """Update data"""
-        initial = not bool(self.ligting_history)
-        latest = []
+        initial = not self.last_time
         url = self.url_template.format(data_host_nr=self.host_nr + 1)
         try:
             with async_timeout.timeout(5):
-                self.logger.info("fetching data from: %s", url)
+                self.logger.debug("fetching data from: %s", url)
                 resp = await self.http_client.get(url)
         except Exception as e:
             self.logger.debug("err: %r", e)
@@ -161,16 +151,29 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
             self.host_nr = (self.host_nr + 1) % 3
             raise UpdateFailed(f"status: {resp.status}")
 
+        last_time = self.last_time
+        latest = []
+        now = time.time()
         while True:
             line = await resp.content.readline()
             if not line:
                 break
             data = json.loads(line)
-            if not self.last_time or data["time"] > self.last_time:
-                latest.append(data)
-            else:
+            t = data["time"]
+            if t <= self.last_time:
                 break
+            last_time = max(t, last_time)
+            self.compute_polar_coords(data)
+            if data[const.ATTR_LIGHTNING_DISTANCE] <= self.radius:
+                latest.append(data)
+                _LOGGER.debug("ligting: %s, delay: %s", data, now - t / 1e9)
 
-        self.ligting_history[0:0] = latest
+        if last_time > self.last_time:
+            self.last_time = last_time
 
         return [] if initial else latest
+
+    @property
+    def is_inactive(self):
+        dt = (time.time() - self.last_time / 1e9)
+        return dt > const.INACTIVITY_RESET_SECONDS

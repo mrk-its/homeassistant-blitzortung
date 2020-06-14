@@ -6,7 +6,6 @@ import homeassistant.helpers.config_validation as cv
 
 from .const import DOMAIN, CONF_RADIUS
 
-TITLE = "Blitzortung"
 DEFAULT_CONF_NAME = "Blitzortung"
 
 
@@ -18,7 +17,7 @@ class DomainConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(self, user_input=None):
         """Handle the initial step."""
         if user_input is not None:
-            return self.async_create_entry(title=TITLE, data=user_input)
+            return self.async_create_entry(title=user_input[CONF_NAME], data=user_input)
 
         return self.async_show_form(
             step_id="user",
@@ -31,7 +30,7 @@ class DomainConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_LONGITUDE, default=self.hass.config.longitude
                     ): cv.longitude,
                     vol.Optional(CONF_RADIUS, default=100): int,
-                    vol.Optional(CONF_NAME, default=DEFAULT_CONF_NAME): str,
+                    vol.Required(CONF_NAME, default=DEFAULT_CONF_NAME): str,
                 }
             ),
         )

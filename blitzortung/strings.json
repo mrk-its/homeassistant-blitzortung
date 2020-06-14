@@ -1,0 +1,20 @@
+{
+    "config": {
+      "step": {
+        "user": {
+          "title": "Blitzortung",
+          "description": "Set up Blitzortung lightning detection",
+          "data": {
+            "name": "Name of the integration instance",
+            "radius": "Lightning detection radius (km)",
+            "latitude": "Latitude",
+            "longitude": "Longitude"
+          }
+        }
+      },
+      "error": {
+      },
+      "abort": {
+      }
+    }
+  }
