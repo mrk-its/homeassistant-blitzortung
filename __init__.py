@@ -1,11 +1,8 @@
 """The blitzortung integration."""
 import asyncio
-import datetime
 import json
 import logging
 import math
-import random
-import re
 import time
 from urllib.parse import urlencode
 
@@ -14,15 +11,13 @@ import async_timeout
 import voluptuous as vol
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME
-from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.device_registry import async_get_registry as get_dev_reg
-from homeassistant.helpers.dispatcher import async_dispatcher_send
+from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers import aiohttp_client
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from . import const
-from .const import DATA_UNSUBSCRIBE, DOMAIN, PLATFORMS
+from .const import DOMAIN, PLATFORMS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -45,7 +40,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         const.DEFAULT_UPDATE_INTERVAL,
     )
 
-    blitzortung_data = hass.data[DOMAIN][entry.entry_id] = coordinator
+    hass.data[DOMAIN][entry.entry_id] = coordinator
 
     await coordinator.async_refresh()
 

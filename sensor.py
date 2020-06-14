@@ -1,15 +1,14 @@
 import logging
-import time
 
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
     ATTR_LATITUDE,
     ATTR_LONGITUDE,
-    ATTR_DEVICE_CLASS,
     CONF_NAME,
-    LENGTH_KILOMETERS,
     DEGREE,
+    LENGTH_KILOMETERS,
 )
+from homeassistant.core import callback
 from homeassistant.helpers.entity import Entity
 
 from .const import (
@@ -94,6 +93,7 @@ class BlitzortungSensor(Entity):
     async def async_update(self):
         await self.coordinator.async_request_refresh()
 
+    @callback
     def update_sensor(self):
         updated = self._update_sensor()
         if not updated and self._state is not None and self.coordinator.is_inactive:
