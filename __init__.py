@@ -103,7 +103,7 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
                     "south": south,
                     "east": east,
                     "west": west,
-                    "number": 100,
+                    "number": const.NUMBER_OF_EVENTS,
                     "sig": 0,
                 }
             )
@@ -134,7 +134,7 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
         initial = not self.last_time
         url = self.url_template.format(data_host_nr=self.host_nr + 1)
         try:
-            with async_timeout.timeout(5):
+            with async_timeout.timeout(const.REQUEST_TIMEOUT):
                 self.logger.debug("fetching data from: %s", url)
                 resp = await self.http_client.get(url)
         except Exception as e:
