@@ -42,7 +42,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         entry.data[CONF_LATITUDE],
         entry.data[CONF_LONGITUDE],
         entry.data[const.CONF_RADIUS],
-        datetime.timedelta(seconds=10),
+        const.DEFAULT_UPDATE_INTERVAL,
     )
 
     blitzortung_data = hass.data[DOMAIN][entry.entry_id] = coordinator

@@ -9,3 +9,4 @@ BASE_URL_TEMPLATE = "http://data{data_host_nr}.blitzortung.org/Data/Protected/la
 
 CONF_RADIUS = "radius"
 INACTIVITY_RESET_SECONDS = 3600
+DEFAULT_UPDATE_INTERVAL = datetime.timedelta(seconds=60)
