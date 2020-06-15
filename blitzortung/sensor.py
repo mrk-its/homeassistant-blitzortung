@@ -88,14 +88,14 @@ class BlitzortungSensor(Entity):
 
     async def async_added_to_hass(self):
         """Connect to dispatcher listening for entity data notifications."""
-        self.async_on_remove(self.coordinator.async_add_listener(self.update_sensor))
+        self.async_on_remove(self.coordinator.async_add_listener(self._update_sensor))
 
     async def async_update(self):
         await self.coordinator.async_request_refresh()
 
     @callback
-    def update_sensor(self):
-        updated = self._update_sensor()
+    def _update_sensor(self):
+        updated = self.update_sensor()
         if not updated and self._state is not None and self.coordinator.is_inactive:
             self._state = None
             self._attrs.pop(ATTR_LATITUDE, None)
