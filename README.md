@@ -3,10 +3,4 @@
 
 ## Installation
 
-Place this directory inside custom_components dir, like:
-```
-cd ~/.homeassistant/custom_components/
-git clone https://github.com/mrk-its/homeassistant-blitzortung
-```
-
-and search for Blitzortung on `Configuration/Integrations` page
+Place `blitzortung` directory inside custom_components dir, restart Home Assistant and search for Blitzortung on `Configuration/Integrations` page
