@@ -151,7 +151,7 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
                 try_nr += 1
                 if try_nr >= const.MAX_RETRIES:
                     raise
-                print("err, waiting for", 2 ** try_nr)
+                self.logger.debug("retrying in %s seconds", 2 ** try_nr)
                 await asyncio.sleep(2 ** try_nr)
 
     async def _do_update(self):
