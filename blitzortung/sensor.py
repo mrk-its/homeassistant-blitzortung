@@ -5,7 +5,6 @@ from homeassistant.const import (
     ATTR_LATITUDE,
     ATTR_LONGITUDE,
     CONF_NAME,
-    DEGREE,
     LENGTH_KILOMETERS,
 )
 from homeassistant.core import callback
@@ -24,6 +23,8 @@ ATTR_ICON = "icon"
 ATTR_LABEL = "label"
 ATTR_UNIT = "unit"
 ATTR_LIGHTNING_PROPERTY = "lightning_prop"
+
+DEGREE = "°"
 
 _LOGGER = logging.getLogger(__name__)
 
