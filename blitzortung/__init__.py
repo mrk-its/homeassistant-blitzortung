@@ -1,4 +1,5 @@
 """The blitzortung integration."""
+import aiohttp
 import asyncio
 import json
 import logging
@@ -109,7 +110,13 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
             )
         )
 
-        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
+        super().__init__(
+            hass,
+            _LOGGER,
+            name=DOMAIN,
+            update_interval=update_interval,
+            update_method=self._do_update,
+        )
 
     def compute_polar_coords(self, lightning):
         dy = (lightning["lat"] - self.latitude) * math.pi / 180
@@ -126,24 +133,39 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
         lightning[const.ATTR_LIGHTNING_AZIMUTH] = azimuth
 
     def latest_lightnings(self):
-        for lightning in reversed(self.data.copy() or ()):
+        for lightning in reversed(self.data or ()):
             yield lightning
 
-    async def _async_update_data(self):
-        """Update data"""
-        initial = not self.last_time
-        url = self.url_template.format(data_host_nr=self.host_nr + 1)
-        try:
-            with async_timeout.timeout(const.REQUEST_TIMEOUT):
+    async def fetch_data(self):
+        try_nr = 0
+        while True:
+            try:
+                url = self.url_template.format(data_host_nr=self.host_nr + 1)
                 self.logger.debug("fetching data from: %s", url)
                 resp = await self.http_client.get(url)
+                if resp.status != 200:
+                    raise aiohttp.ClientError(f"status: {resp.status}")
+                return resp
+            except Exception:
+                self.host_nr = (self.host_nr + 1) % 3
+                try_nr += 1
+                if try_nr >= const.MAX_RETRIES:
+                    raise
+                print("err, waiting for", 2 ** try_nr)
+                await asyncio.sleep(2 ** try_nr)
+
+    async def _do_update(self):
+        """Update data"""
+        initial = not self.last_time
+        try:
+            with async_timeout.timeout(const.REQUEST_TIMEOUT):
+                resp = await self.fetch_data()
         except Exception as e:
             self.logger.debug("err: %r", e)
             self.host_nr = (self.host_nr + 1) % 3
             raise
 
         if resp.status != 200:
-            self.host_nr = (self.host_nr + 1) % 3
             raise UpdateFailed(f"status: {resp.status}")
 
         last_time = self.last_time
@@ -170,5 +192,5 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
 
     @property
     def is_inactive(self):
-        dt = (time.time() - self.last_time / 1e9)
+        dt = time.time() - self.last_time / 1e9
         return dt > const.INACTIVITY_RESET_SECONDS
