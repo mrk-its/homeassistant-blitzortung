@@ -16,6 +16,7 @@ from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import aiohttp_client
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.components.mqtt import MQTT
 
 from . import const
 from .const import DOMAIN, PLATFORMS
@@ -42,7 +43,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     )
 
     hass.data[DOMAIN][entry.entry_id] = coordinator
-
+    await coordinator.connect()
     await coordinator.async_refresh()
 
     async def start_platforms():
@@ -85,6 +86,7 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
         self.http_client = aiohttp_client.async_get_clientsession(hass)
         self.host_nr = 1
         self.last_time = 0
+        self.sensors = []
 
         lat_delta = radius * 360 / 40000
         lon_delta = lat_delta / math.cos(latitude * math.pi / 180.0)
@@ -95,19 +97,22 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
         north = latitude + lat_delta
         south = latitude - lat_delta
 
-        self.url_template = (
-            const.BASE_URL_TEMPLATE
-            + "?"
-            + urlencode(
-                {
-                    "north": north,
-                    "south": south,
-                    "east": east,
-                    "west": west,
-                    "number": const.NUMBER_OF_EVENTS,
-                    "sig": 0,
-                }
-            )
+        self.mqtt_client = MQTT(
+            hass,
+            'blitzortung.ha.sed.pl',
+            1883,
+            client_id=None,
+            keepalive=60,
+            username=None,
+            password=None,
+            certificate=None,
+            client_key=None,
+            client_cert=None,
+            tls_insecure=None,
+            protocol=None,
+            will_message=None,
+            birth_message=None,
+            tls_version=None,
         )
 
         super().__init__(
@@ -132,65 +137,36 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
         lightning[const.ATTR_LIGHTNING_DISTANCE] = distance
         lightning[const.ATTR_LIGHTNING_AZIMUTH] = azimuth
 
-    def latest_lightnings(self):
-        for lightning in reversed(self.data or ()):
-            yield lightning
+    async def connect(self):
+        result: str = await self.mqtt_client.async_connect()
+        _LOGGER.info("Connected to Blitzortung proxy mqtt server")
+        await self.mqtt_client.async_subscribe("blitzortung/1.0/#", self.on_mqtt_message, qos=0)
 
-    async def fetch_data(self):
-        try_nr = 0
-        while True:
-            try:
-                url = self.url_template.format(data_host_nr=self.host_nr + 1)
-                self.logger.debug("fetching data from: %s", url)
-                resp = await self.http_client.get(url)
-                if resp.status != 200:
-                    raise aiohttp.ClientError(f"status: {resp.status}")
-                return resp
-            except Exception:
-                self.host_nr = (self.host_nr + 1) % 3
-                try_nr += 1
-                if try_nr >= const.MAX_RETRIES:
-                    raise
-                self.logger.debug("retrying in %s seconds", 2 ** try_nr)
-                await asyncio.sleep(2 ** try_nr)
+    def on_mqtt_message(self, message, *args):
+        lightning = json.loads(message.payload)
+        self.compute_polar_coords(lightning)
+        if lightning[const.ATTR_LIGHTNING_DISTANCE] < self.radius:
+            _LOGGER.debug("ligntning data: %s", lightning)
+            self.last_time = lightning["time"]
+            for sensor in self.sensors:
+                sensor.update_sensor(lightning)
 
-    async def _do_update(self):
-        """Update data"""
-        initial = not self.last_time
-        try:
-            with async_timeout.timeout(const.REQUEST_TIMEOUT):
-                resp = await self.fetch_data()
-        except Exception as e:
-            self.logger.debug("err: %r", e)
-            self.host_nr = (self.host_nr + 1) % 3
-            raise
-
-        if resp.status != 200:
-            raise UpdateFailed(f"status: {resp.status}")
-
-        last_time = self.last_time
-        latest = []
-        now = time.time()
-        while True:
-            line = await resp.content.readline()
-            if not line:
-                break
-            data = json.loads(line)
-            t = data["time"]
-            if t <= self.last_time:
-                break
-            last_time = max(t, last_time)
-            self.compute_polar_coords(data)
-            if data[const.ATTR_LIGHTNING_DISTANCE] <= self.radius:
-                latest.append(data)
-                _LOGGER.debug("ligting: %s, delay: %s", data, now - t / 1e9)
-
-        if last_time > self.last_time:
-            self.last_time = last_time
-
-        return [] if initial else latest
+    def register_sensor(self, sensor):
+        self.sensors.append(sensor)
 
     @property
     def is_inactive(self):
         dt = time.time() - self.last_time / 1e9
         return dt > const.INACTIVITY_RESET_SECONDS
+
+    @property
+    def is_connected(self):
+        return self.mqtt_client.connected
+
+    async def _do_update(self):
+        is_inactive = self.is_inactive
+        if not self.is_connected or is_inactive:
+            for sensor in self.sensors:
+                if is_inactive:
+                    sensor.update_sensor(None)
+                sensor.async_write_ha_state()

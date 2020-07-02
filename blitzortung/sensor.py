@@ -1,4 +1,5 @@
 import logging
+from typing import Optional, Dict
 
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
@@ -61,7 +62,10 @@ class BlitzortungSensor(Entity):
     should_poll = False
     icon = "mdi:flash"
     device_class = None
-    available = True
+
+    @property
+    def available(self):
+        return self.coordinator.is_connected
 
     @property
     def label(self):
@@ -89,19 +93,11 @@ class BlitzortungSensor(Entity):
 
     async def async_added_to_hass(self):
         """Connect to dispatcher listening for entity data notifications."""
-        self.async_on_remove(self.coordinator.async_add_listener(self._update_sensor))
+        # self.async_on_remove(self.coordinator.async_add_listener(self._update_sensor))
+        self.coordinator.register_sensor(self)
 
     async def async_update(self):
         await self.coordinator.async_request_refresh()
-
-    @callback
-    def _update_sensor(self):
-        updated = self.update_sensor()
-        if not updated and self._state is not None and self.coordinator.is_inactive:
-            self._state = None
-            self._attrs.pop(ATTR_LATITUDE, None)
-            self._attrs.pop(ATTR_LONGITUDE, None)
-            self.async_write_ha_state()
 
     @property
     def device_info(self):
@@ -117,40 +113,31 @@ class DistanceSensor(BlitzortungSensor):
     kind = ATTR_LIGHTNING_DISTANCE
     unit_of_measurement = LENGTH_KILOMETERS
 
-    def update_sensor(self):
-        updated = False
-        for lightning in self.coordinator.latest_lightnings():
-            self._state = lightning["distance"]
-            self._attrs[ATTR_LATITUDE] = lightning["lat"]
-            self._attrs[ATTR_LONGITUDE] = lightning["lon"]
-            updated = True
-            self.async_write_ha_state()
-        return updated
+    def update_sensor(self, lightning: Optional[Dict]):
+        self._state = lightning and lightning["distance"]
+        self._attrs[ATTR_LATITUDE] = lightning and lightning["lat"]
+        self._attrs[ATTR_LONGITUDE] = lightning and lightning["lon"]
+        self.async_write_ha_state()
 
 
 class AzimuthSensor(BlitzortungSensor):
     kind = ATTR_LIGHTNING_AZIMUTH
     unit_of_measurement = DEGREE
 
-    def update_sensor(self):
-        updated = False
-        for lightning in self.coordinator.latest_lightnings():
-            self._state = lightning["azimuth"]
-            self._attrs[ATTR_LATITUDE] = lightning["lat"]
-            self._attrs[ATTR_LONGITUDE] = lightning["lon"]
-            updated = True
-            self.async_write_ha_state()
-        return updated
+    def update_sensor(self, lightning: Optional[Dict]):
+        self._state = lightning and lightning["azimuth"]
+        self._attrs[ATTR_LATITUDE] = lightning and lightning["lat"]
+        self._attrs[ATTR_LONGITUDE] = lightning and lightning["lon"]
+        self.async_write_ha_state()
 
 
 class CounterSensor(BlitzortungSensor):
     kind = ATTR_LIGHTNING_COUNTER
     unit_of_measurement = "↯"
 
-    def update_sensor(self):
-        updated = False
-        for lightning in self.coordinator.latest_lightnings():
+    def update_sensor(self, lightning: Optional[Dict]):
+        if not lightning:
+            self._state = 0
+        else:
             self._state = (self._state or 0) + 1
-            updated = True
-            self.async_write_ha_state()
-        return updated
+        self.async_write_ha_state()
