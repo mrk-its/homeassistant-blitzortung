@@ -1,13 +1,9 @@
 """The blitzortung integration."""
-import aiohttp
 import asyncio
 import json
 import logging
 import math
 import time
-from urllib.parse import urlencode
-
-import async_timeout
 
 import voluptuous as vol
 
@@ -15,8 +11,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import aiohttp_client
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from homeassistant.components.mqtt import MQTT
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from .mqtt import MQTT
 
 from . import const
 from .const import DOMAIN, PLATFORMS
@@ -88,31 +84,19 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
         self.last_time = 0
         self.sensors = []
 
-        lat_delta = radius * 360 / 40000
-        lon_delta = lat_delta / math.cos(latitude * math.pi / 180.0)
+        # lat_delta = radius * 360 / 40000
+        # lon_delta = lat_delta / math.cos(latitude * math.pi / 180.0)
 
-        west = longitude - lon_delta
-        east = longitude + lon_delta
+        # west = longitude - lon_delta
+        # east = longitude + lon_delta
 
-        north = latitude + lat_delta
-        south = latitude - lat_delta
+        # north = latitude + lat_delta
+        # south = latitude - lat_delta
 
         self.mqtt_client = MQTT(
             hass,
             "blitzortung.ha.sed.pl",
             1883,
-            client_id=None,
-            keepalive=60,
-            username=None,
-            password=None,
-            certificate=None,
-            client_key=None,
-            client_cert=None,
-            tls_insecure=None,
-            protocol=None,
-            will_message=None,
-            birth_message=None,
-            tls_version=None,
         )
 
         super().__init__(
@@ -138,7 +122,7 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
         lightning[const.ATTR_LIGHTNING_AZIMUTH] = azimuth
 
     async def connect(self):
-        result: str = await self.mqtt_client.async_connect()
+        await self.mqtt_client.async_connect()
         _LOGGER.info("Connected to Blitzortung proxy mqtt server")
         await self.mqtt_client.async_subscribe(
             "blitzortung/1.0/#", self.on_mqtt_message, qos=0

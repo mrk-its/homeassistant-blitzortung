@@ -150,6 +150,7 @@ class CounterSensor(BlitzortungSensor):
 
 class ServerStatsSensor(BlitzortungSensor):
     kind = "server_stats"
+    unit_of_measurement = "."
 
     name = "Clients Connected"
 
