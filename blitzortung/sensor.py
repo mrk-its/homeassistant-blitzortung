@@ -8,7 +8,6 @@ from homeassistant.const import (
     CONF_NAME,
     LENGTH_KILOMETERS,
 )
-from homeassistant.core import callback
 from homeassistant.helpers.entity import Entity
 
 from .const import (
@@ -39,7 +38,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     sensors = [
         klass(coordinator, name, unique_prefix)
-        for klass in (DistanceSensor, AzimuthSensor, CounterSensor)
+        for klass in (DistanceSensor, AzimuthSensor, CounterSensor, ServerStatsSensor)
     ]
 
     async_add_entities(sensors, False)
@@ -52,7 +51,7 @@ class BlitzortungSensor(Entity):
         """Initialize."""
         self.coordinator = coordinator
         self._name = name
-        self.entity_id = f"sensor.{name}-lightning-{self.label}"
+        self.entity_id = f"sensor.{name}-{self.name}"
         self._unique_id = f"{unique_prefix}-{self.kind}"
         self._device_class = None
         self._state = None
@@ -74,7 +73,7 @@ class BlitzortungSensor(Entity):
     @property
     def name(self):
         """Return the name."""
-        return f"Lighting {self.label}"
+        return f"Lightning {self.label}"
 
     @property
     def state(self):
@@ -108,12 +107,18 @@ class BlitzortungSensor(Entity):
             "sw-version": "0.0.1",
         }
 
+    def update_lightning(self, lightning):
+        pass
+
+    def on_message(self, message):
+        pass
+
 
 class DistanceSensor(BlitzortungSensor):
     kind = ATTR_LIGHTNING_DISTANCE
     unit_of_measurement = LENGTH_KILOMETERS
 
-    def update_sensor(self, lightning: Optional[Dict]):
+    def update_lightning(self, lightning: Optional[Dict]):
         self._state = lightning and lightning["distance"]
         self._attrs[ATTR_LATITUDE] = lightning and lightning["lat"]
         self._attrs[ATTR_LONGITUDE] = lightning and lightning["lon"]
@@ -124,7 +129,7 @@ class AzimuthSensor(BlitzortungSensor):
     kind = ATTR_LIGHTNING_AZIMUTH
     unit_of_measurement = DEGREE
 
-    def update_sensor(self, lightning: Optional[Dict]):
+    def update_lightning(self, lightning: Optional[Dict]):
         self._state = lightning and lightning["azimuth"]
         self._attrs[ATTR_LATITUDE] = lightning and lightning["lat"]
         self._attrs[ATTR_LONGITUDE] = lightning and lightning["lon"]
@@ -135,9 +140,20 @@ class CounterSensor(BlitzortungSensor):
     kind = ATTR_LIGHTNING_COUNTER
     unit_of_measurement = "↯"
 
-    def update_sensor(self, lightning: Optional[Dict]):
+    def update_lightning(self, lightning: Optional[Dict]):
         if not lightning:
             self._state = 0
         else:
             self._state = (self._state or 0) + 1
         self.async_write_ha_state()
+
+
+class ServerStatsSensor(BlitzortungSensor):
+    kind = "server_stats"
+
+    name = "Clients Connected"
+
+    def on_message(self, message):
+        if message.topic == "$SYS/broker/clients/connected":
+            self._state = int(message.payload)
+            self.async_write_ha_state()

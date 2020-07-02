@@ -7,6 +7,8 @@ DATA_UNSUBSCRIBE = "unsubscribe"
 ATTR_LIGHTNING_DISTANCE = "distance"
 ATTR_LIGHTNING_AZIMUTH = "azimuth"
 ATTR_LIGHTNING_COUNTER = "counter"
+ATTR_SERVER_STATS = "server_stats"
+
 BASE_URL_TEMPLATE = (
     "http://data{data_host_nr}.blitzortung.org/Data/Protected/last_strikes.php"
 )

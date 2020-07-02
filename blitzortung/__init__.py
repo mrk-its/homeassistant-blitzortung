@@ -99,7 +99,7 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
 
         self.mqtt_client = MQTT(
             hass,
-            'blitzortung.ha.sed.pl',
+            "blitzortung.ha.sed.pl",
             1883,
             client_id=None,
             keepalive=60,
@@ -140,16 +140,24 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
     async def connect(self):
         result: str = await self.mqtt_client.async_connect()
         _LOGGER.info("Connected to Blitzortung proxy mqtt server")
-        await self.mqtt_client.async_subscribe("blitzortung/1.0/#", self.on_mqtt_message, qos=0)
+        await self.mqtt_client.async_subscribe(
+            "blitzortung/1.0/#", self.on_mqtt_message, qos=0
+        )
+        await self.mqtt_client.async_subscribe(
+            "$SYS/broker/clients/connected", self.on_mqtt_message, qos=0
+        )
 
     def on_mqtt_message(self, message, *args):
-        lightning = json.loads(message.payload)
-        self.compute_polar_coords(lightning)
-        if lightning[const.ATTR_LIGHTNING_DISTANCE] < self.radius:
-            _LOGGER.debug("ligntning data: %s", lightning)
-            self.last_time = lightning["time"]
-            for sensor in self.sensors:
-                sensor.update_sensor(lightning)
+        for sensor in self.sensors:
+            sensor.on_message(message)
+        if message.topic == "blitzortung/1.0":
+            lightning = json.loads(message.payload)
+            self.compute_polar_coords(lightning)
+            if lightning[const.ATTR_LIGHTNING_DISTANCE] < self.radius:
+                _LOGGER.debug("ligntning data: %s", lightning)
+                self.last_time = lightning["time"]
+                for sensor in self.sensors:
+                    sensor.update_lightning(lightning)
 
     def register_sensor(self, sensor):
         self.sensors.append(sensor)
