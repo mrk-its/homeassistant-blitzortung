@@ -42,11 +42,6 @@ async def run(args):
         latest_version = component_version.__version__
         client.publish("component/hello", json.dumps({
             "latest_version": latest_version,
-            "latest_version_message": (
-                f"New version {latest_version} is available. "
-                f"[Check it out](https://github.com/mrk-its/homeassistant-blitzortung)"
-            ),
-            "latest_version_title": "Blitzortung",
         }), retain=True)
 
     mqtt_client.on_disconnect = mqtt_on_disconnect

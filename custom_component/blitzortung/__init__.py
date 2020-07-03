@@ -152,8 +152,12 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
         data = json.loads(message.payload)
         latest_version_str = data.get("latest_version")
         if latest_version_str:
-            latest_version_message = data["latest_version_message"]
-            latest_version_title = data["latest_version_title"]
+            default_message = (
+                f"New version {latest_version_str} is available. "
+                f"[Check it out](https://github.com/mrk-its/homeassistant-blitzortung)"
+            )
+            latest_version_message = data.get("latest_version_message", default_message)
+            latest_version_title = data.get("latest_version_title", "Blitzortung")
             latest_version = parse_version(latest_version_str)
             current_version = parse_version(__version__)
             if latest_version > current_version:
