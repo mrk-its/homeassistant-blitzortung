@@ -136,7 +136,7 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
         for geohash_code in self.geohash_overlap:
             geohash_part = "/".join(geohash_code)
             await self.mqtt_client.async_subscribe(
-                "blitzortung/1.0/{}/#".format(geohash_part), self.on_mqtt_message, qos=0
+                "blitzortung/1.1/{}/#".format(geohash_part), self.on_mqtt_message, qos=0
             )
         await self.mqtt_client.async_subscribe(
             "$SYS/broker/clients/connected", self.on_mqtt_message, qos=0
