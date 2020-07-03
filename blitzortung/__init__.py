@@ -13,9 +13,12 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import aiohttp_client
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from .mqtt import MQTT
-
+from .geohash_utils import geohash_overlap
 from . import const
 from .const import DOMAIN, PLATFORMS
+
+__version__ = "1.0.0"
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -76,6 +79,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
 class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
     def __init__(self, hass, latitude, longitude, radius, update_interval):
         """Initialize."""
+        self.hass = hass
         self.latitude = latitude
         self.longitude = longitude
         self.radius = radius
@@ -83,6 +87,16 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
         self.host_nr = 1
         self.last_time = 0
         self.sensors = []
+        self.geohash_overlap = geohash_overlap(
+            self.latitude, self.longitude, self.radius
+        )
+        _LOGGER.info(
+            "lat: %s, lon: %s, radius: %skm, geohashes: %s",
+            self.latitude,
+            self.longitude,
+            self.radius,
+            self.geohash_overlap,
+        )
 
         # lat_delta = radius * 360 / 40000
         # lon_delta = lat_delta / math.cos(latitude * math.pi / 180.0)
@@ -93,11 +107,7 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
         # north = latitude + lat_delta
         # south = latitude - lat_delta
 
-        self.mqtt_client = MQTT(
-            hass,
-            "blitzortung.ha.sed.pl",
-            1883,
-        )
+        self.mqtt_client = MQTT(hass, "blitzortung.ha.sed.pl", 1883,)
 
         super().__init__(
             hass,
@@ -124,17 +134,44 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
     async def connect(self):
         await self.mqtt_client.async_connect()
         _LOGGER.info("Connected to Blitzortung proxy mqtt server")
-        await self.mqtt_client.async_subscribe(
-            "blitzortung/1.0/#", self.on_mqtt_message, qos=0
-        )
+        for geohash_code in self.geohash_overlap:
+            geohash_part = "/".join(geohash_code)
+            await self.mqtt_client.async_subscribe(
+                "blitzortung/1.0/{}/#".format(geohash_part), self.on_mqtt_message, qos=0
+            )
         await self.mqtt_client.async_subscribe(
             "$SYS/broker/clients/connected", self.on_mqtt_message, qos=0
         )
+        await self.mqtt_client.async_subscribe(
+            "component/hello", self.on_hello_message, qos=0
+        )
+
+    def on_hello_message(self, message, *args):
+        def parse_version(version_str):
+            return tuple(map(int, version_str.split(".")))
+
+        data = json.loads(message.payload)
+        latest_version_str = data.get("latest_version")
+        if latest_version_str:
+            latest_version = parse_version(latest_version_str)
+            current_version = parse_version(__version__)
+
+            if latest_version > current_version:
+                url = "https://github.com/mrk-its/homeassistant-blitzortung"
+                _LOGGER.info("new version is available: %s", latest_version_str)
+                self.hass.components.persistent_notification.async_create(
+                    title="Blitzortung",
+                    message=(
+                        f"New version is available: {latest_version_str}, "
+                        f"[Check it out]({url})"
+                    ),
+                    notification_id="blitzortung_new_version_available",
+                )
 
     def on_mqtt_message(self, message, *args):
         for sensor in self.sensors:
             sensor.on_message(message)
-        if message.topic == "blitzortung/1.0":
+        if message.topic.startswith("blitzortung/1.0"):
             lightning = json.loads(message.payload)
             self.compute_polar_coords(lightning)
             if lightning[const.ATTR_LIGHTNING_DISTANCE] < self.radius:
