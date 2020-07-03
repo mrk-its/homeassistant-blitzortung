@@ -1,14 +1,15 @@
 {
-    "domain": "blitzortung",
-    "name": "Blitzortung",
-    "config_flow": true,
-    "documentation": "https://www.home-assistant.io/integrations/",
-    "requirements": [
-    ],
-    "after_dependencies": [
-    ],
-    "dependencies": ["persistent_notification"],
-    "codeowners": [
-      "@mrk-its"
-    ]
-  }
+  "domain": "blitzortung",
+  "name": "Blitzortung",
+  "config_flow": true,
+  "documentation": "https://github.com/mrk-its/homeassistant-blitzortung",
+  "issue_tracker": "https://github.com/mrk-its/homeassistant-blitzortung/issues",
+  "requirements": [],
+  "after_dependencies": [],
+  "dependencies": [
+    "persistent_notification"
+  ],
+  "codeowners": [
+    "@mrk-its"
+  ]
+}
