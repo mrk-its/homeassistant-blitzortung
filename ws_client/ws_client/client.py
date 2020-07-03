@@ -69,7 +69,7 @@ async def run(args):
                         mqtt_client.publish(
                             "blitzortung/1.1/{}".format(geohash_part), json.dumps(data)
                         )
-                        print(repr(data))
+                        print(repr(data), flush=True)
         except websockets.ConnectionClosed:
             pass
         time.sleep(5)
