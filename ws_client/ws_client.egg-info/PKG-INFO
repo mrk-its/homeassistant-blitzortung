@@ -1,0 +1,23 @@
+Metadata-Version: 2.1
+Name: ws-client
+Version: 0.1.0
+Summary: WS client for HomeAssistant Blitzortung.org lightning detector
+Home-page: https://github.com/mrk-its/homeassistant-blitzortung/
+Author: Mariusz Kryński
+Author-email: mrk@sed.pl
+License: MIT
+Description: UNKNOWN
+Keywords: ha
+Platform: any
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Requires-Python: >=3.6
+Provides-Extra: dev
+Provides-Extra: tests

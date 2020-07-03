@@ -16,8 +16,7 @@ from .mqtt import MQTT
 from .geohash_utils import geohash_overlap
 from . import const
 from .const import DOMAIN, PLATFORMS
-
-__version__ = "1.0.0"
+from .version import __version__
 
 
 _LOGGER = logging.getLogger(__name__)
