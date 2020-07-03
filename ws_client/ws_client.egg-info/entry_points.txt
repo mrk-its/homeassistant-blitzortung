@@ -1,3 +1,0 @@
-[console_scripts]
-ws-client = ws_client:main
-
