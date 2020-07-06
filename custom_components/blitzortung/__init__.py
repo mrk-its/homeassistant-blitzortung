@@ -48,8 +48,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     )
 
     hass.data[DOMAIN][entry.entry_id] = coordinator
-    await coordinator.connect()
-    await coordinator.async_refresh()
 
     async def start_platforms():
         await asyncio.gather(
@@ -58,6 +56,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
                 for component in PLATFORMS
             ]
         )
+        await coordinator.connect()
+        await coordinator.async_refresh()
 
     hass.async_create_task(start_platforms())
     return True
@@ -225,5 +225,5 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
         if not self.is_connected or is_inactive:
             for sensor in self.sensors:
                 if is_inactive:
-                    sensor.update_sensor(None)
+                    sensor.update_lightning(None)
                 sensor.async_write_ha_state()
