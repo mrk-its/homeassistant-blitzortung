@@ -5,16 +5,26 @@
           "title": "Blitzortung",
           "description": "Set up Blitzortung lightning detection",
           "data": {
-            "name": "Name of the integration instance",
-            "radius": "Lightning detection radius (km)",
-            "latitude": "Latitude",
-            "longitude": "Longitude"
+            "name": "Name of the integration instance"
           }
         }
       },
       "error": {
       },
       "abort": {
+      }
+    },
+    "options": {
+      "step": {
+        "init": {
+          "title": "Blitzortung Options",
+          "description": "Set up Blitzortung lightning detection options",
+          "data": {
+            "radius": "Lightning detection radius (km)",
+            "latitude": "Latitude",
+            "longitude": "Longitude"
+          }
+        }
       }
     }
   }

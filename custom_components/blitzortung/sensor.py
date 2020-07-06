@@ -34,7 +34,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
 
-    unique_prefix = f"{coordinator.latitude}-{coordinator.longitude}-{name}-lightning"
+    unique_prefix = config_entry.unique_id
 
     sensors = [
         klass(coordinator, name, unique_prefix)
