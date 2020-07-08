@@ -36,8 +36,6 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     longitude = config_entry.options.get(CONF_LONGITUDE, hass.config.longitude)
     radius = config_entry.options.get(const.CONF_RADIUS, const.DEFAULT_RADIUS)
 
-    _LOGGER.info("lat: %s lon: %s radius: %s", latitude, longitude, radius)
-
     coordinator = BlitzortungDataUpdateCoordinator(
         hass,
         latitude,
@@ -56,7 +54,6 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
             ]
         )
         await coordinator.connect()
-        await coordinator.async_refresh()
 
     hass.async_create_task(start_platforms())
 
@@ -129,6 +126,8 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
         self.geohash_overlap = geohash_overlap(
             self.latitude, self.longitude, self.radius
         )
+        self._unlisten = None
+
         _LOGGER.info(
             "lat: %s, lon: %s, radius: %skm, geohashes: %s",
             self.latitude,
@@ -184,9 +183,12 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
         await self.mqtt_client.async_subscribe(
             "component/hello", self.on_hello_message, qos=0
         )
+        self._unlisten = self.async_add_listener(lambda *args: None)
 
     async def disconnect(self):
         await self.mqtt_client.async_disconnect()
+        if self._unlisten:
+            self._unlisten()
 
     def on_hello_message(self, message, *args):
         def parse_version(version_str):
