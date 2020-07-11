@@ -3,8 +3,6 @@ from typing import Optional, Dict
 
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
-    ATTR_LATITUDE,
-    ATTR_LONGITUDE,
     CONF_NAME,
     LENGTH_KILOMETERS,
 )
@@ -15,6 +13,8 @@ from .const import (
     ATTR_LIGHTNING_COUNTER,
     ATTR_LIGHTNING_DISTANCE,
     DOMAIN,
+    ATTR_LAT,
+    ATTR_LON,
 )
 
 ATTRIBUTION = "Data provided by blitzortung.org"
@@ -120,8 +120,8 @@ class DistanceSensor(BlitzortungSensor):
 
     def update_lightning(self, lightning: Optional[Dict]):
         self._state = lightning and lightning["distance"]
-        self._attrs[ATTR_LATITUDE] = lightning and lightning["lat"]
-        self._attrs[ATTR_LONGITUDE] = lightning and lightning["lon"]
+        self._attrs[ATTR_LAT] = lightning and lightning[ATTR_LAT]
+        self._attrs[ATTR_LON] = lightning and lightning[ATTR_LON]
         self.async_write_ha_state()
 
 
@@ -131,8 +131,8 @@ class AzimuthSensor(BlitzortungSensor):
 
     def update_lightning(self, lightning: Optional[Dict]):
         self._state = lightning and lightning["azimuth"]
-        self._attrs[ATTR_LATITUDE] = lightning and lightning["lat"]
-        self._attrs[ATTR_LONGITUDE] = lightning and lightning["lon"]
+        self._attrs[ATTR_LAT] = lightning and lightning[ATTR_LAT]
+        self._attrs[ATTR_LON] = lightning and lightning[ATTR_LON]
         self.async_write_ha_state()
 
 
