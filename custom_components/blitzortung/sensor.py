@@ -15,6 +15,7 @@ from .const import (
     DOMAIN,
     ATTR_LAT,
     ATTR_LON,
+    SERVER_STATS,
 )
 
 ATTRIBUTION = "Data provided by blitzortung.org"
@@ -36,9 +37,15 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     unique_prefix = config_entry.unique_id
 
+    sensor_classes = (DistanceSensor, AzimuthSensor, CounterSensor)
+
+    config = hass.data[DOMAIN].get("config") or {}
+    if config.get(SERVER_STATS):
+        sensor_classes += (ServerStatsSensor, )
+
     sensors = [
         klass(coordinator, name, unique_prefix)
-        for klass in (DistanceSensor, AzimuthSensor, CounterSensor)
+        for klass in sensor_classes
     ]
 
     async_add_entities(sensors, False)

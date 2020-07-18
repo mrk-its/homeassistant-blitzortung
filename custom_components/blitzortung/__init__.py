@@ -20,17 +20,23 @@ from .version import __version__
 
 _LOGGER = logging.getLogger(__name__)
 
-CONFIG_SCHEMA = vol.Schema({DOMAIN: vol.Schema({})}, extra=vol.ALLOW_EXTRA)
+CONFIG_SCHEMA = vol.Schema(
+    {DOMAIN: vol.Schema({vol.Optional(const.SERVER_STATS, default=False): bool})},
+    extra=vol.ALLOW_EXTRA,
+)
 
 
 async def async_setup(hass: HomeAssistant, config: dict):
     """Initialize basic config of blitzortung component."""
+    hass.data.setdefault(DOMAIN, {})
+    hass.data[DOMAIN]["config"] = config.get(DOMAIN) or {}
     return True
 
 
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Set up blitzortung from a config entry."""
     hass.data.setdefault(DOMAIN, {})
+    config = hass.data[DOMAIN].get("config") or {}
 
     latitude = config_entry.options.get(CONF_LATITUDE, hass.config.latitude)
     longitude = config_entry.options.get(CONF_LONGITUDE, hass.config.longitude)
@@ -42,6 +48,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         longitude,
         radius,
         const.DEFAULT_UPDATE_INTERVAL,
+        server_stats=config.get(const.SERVER_STATS),
     )
 
     hass.data[DOMAIN][config_entry.entry_id] = coordinator
@@ -102,9 +109,7 @@ async def async_migrate_entry(hass, entry):
         name = entry.data[CONF_NAME]
 
         entry.unique_id = f"{latitude}-{longitude}-{name}-lightning"
-        entry.data = {
-            CONF_NAME: name
-        }
+        entry.data = {CONF_NAME: name}
         entry.options = {
             CONF_LATITUDE: latitude,
             CONF_LONGITUDE: longitude,
@@ -115,12 +120,15 @@ async def async_migrate_entry(hass, entry):
 
 
 class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
-    def __init__(self, hass, latitude, longitude, radius, update_interval):
+    def __init__(
+        self, hass, latitude, longitude, radius, update_interval, server_stats=False
+    ):
         """Initialize."""
         self.hass = hass
         self.latitude = latitude
         self.longitude = longitude
         self.radius = radius
+        self.server_stats = server_stats
         self.last_time = 0
         self.sensors = []
         self.geohash_overlap = geohash_overlap(
@@ -177,9 +185,10 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
             await self.mqtt_client.async_subscribe(
                 "blitzortung/1.1/{}/#".format(geohash_part), self.on_mqtt_message, qos=0
             )
-        await self.mqtt_client.async_subscribe(
-            "$SYS/broker/clients/connected", self.on_mqtt_message, qos=0
-        )
+        if self.server_stats:
+            await self.mqtt_client.async_subscribe(
+                "$SYS/broker/clients/connected", self.on_mqtt_message, qos=0
+            )
         await self.mqtt_client.async_subscribe(
             "component/hello", self.on_hello_message, qos=0
         )
