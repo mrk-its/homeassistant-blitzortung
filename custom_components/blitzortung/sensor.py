@@ -38,7 +38,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     sensors = [
         klass(coordinator, name, unique_prefix)
-        for klass in (DistanceSensor, AzimuthSensor, CounterSensor, ServerStatsSensor)
+        for klass in (DistanceSensor, AzimuthSensor, CounterSensor)
     ]
 
     async_add_entities(sensors, False)
