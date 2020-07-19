@@ -195,7 +195,7 @@ class ServerStatSensor(BlitzortungSensor):
     @property
     def unit_of_measurement(self):
         if self.data_type in (int, float):
-            return " "
+            return "." if self.kind == "server_stats" else " "
         else:
             return None
 
