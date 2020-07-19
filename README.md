@@ -10,12 +10,11 @@ Blitzortung.org ia a worldwide, real time, community collaborative lightning loc
 - counter of lightning strikes nearby
 - data is realtime, with average delay of few seconds
 
-
 # Manual installation
 Place `custom_components/blitzortung` directory inside custom_components dir and restart Home Assistant
 
 # HACS installation
-This component may be also added with HACS - simply add this repository as "Custom Repository"
+This component is available on HACS default
 
 # Configuration
 Search for Blitzortung on `Configuration/Integrations` page. After adding integration you can optionally configure location and radius with Blitzortung/Options (by default your home locaiton is used with 100km radius)

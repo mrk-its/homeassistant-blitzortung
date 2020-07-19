@@ -131,6 +131,7 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
         self.server_stats = server_stats
         self.last_time = 0
         self.sensors = []
+        self.callbacks = []
         self.geohash_overlap = geohash_overlap(
             self.latitude, self.longitude, self.radius
         )
@@ -187,7 +188,7 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
             )
         if self.server_stats:
             await self.mqtt_client.async_subscribe(
-                "$SYS/broker/clients/connected", self.on_mqtt_message, qos=0
+                "$SYS/broker/#", self.on_mqtt_message, qos=0
             )
         await self.mqtt_client.async_subscribe(
             "component/hello", self.on_hello_message, qos=0
@@ -223,8 +224,8 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
                 )
 
     def on_mqtt_message(self, message, *args):
-        for sensor in self.sensors:
-            sensor.on_message(message)
+        for callback in self.callbacks:
+            callback(message)
         if message.topic.startswith("blitzortung/1.1"):
             lightning = json.loads(message.payload)
             self.compute_polar_coords(lightning)
@@ -236,6 +237,9 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
 
     def register_sensor(self, sensor):
         self.sensors.append(sensor)
+
+    def register_message_receiver(self, message_cb):
+        self.callbacks.append(message_cb)
 
     @property
     def is_inactive(self):
