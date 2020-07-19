@@ -54,6 +54,8 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
             topic = message.topic.replace("$SYS/broker/", "")
             if topic.startswith("load") and not topic.endswith("/1min"):
                 return
+            if topic.startswith("clients") and topic != "clients/connected":
+                return
             sensor = server_stat_sensors.get(topic)
             if not sensor:
                 sensor = ServerStatSensor(
