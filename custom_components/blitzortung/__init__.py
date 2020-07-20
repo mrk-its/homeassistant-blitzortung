@@ -10,13 +10,14 @@ import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from .mqtt import MQTT
-from .geohash_utils import geohash_overlap
-from . import const
-from .const import DOMAIN, PLATFORMS, CONF_RADIUS
-from .version import __version__
 
+from . import const
+from .const import CONF_RADIUS, DOMAIN, PLATFORMS
+from .geohash_utils import geohash_overlap
+from .mqtt import MQTT, MQTT_CONNECTED, MQTT_DISCONNECTED
+from .version import __version__
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -78,7 +79,9 @@ async def async_update_options(hass, config_entry):
 
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Unload a config entry."""
-    coordinator = hass.data[DOMAIN][config_entry.entry_id]
+    coordinator = hass.data[DOMAIN].pop(config_entry.entry_id)
+    await coordinator.disconnect()
+    _LOGGER.info("disconnected")
 
     # cleanup platforms
     unload_ok = all(
@@ -89,15 +92,7 @@ async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):
             ]
         )
     )
-    if not unload_ok:
-        return False
-
-    await coordinator.disconnect()
-    _LOGGER.info("disconnected")
-
-    hass.data[DOMAIN].pop(config_entry.entry_id)
-
-    return True
+    return unload_ok
 
 
 async def async_migrate_entry(hass, entry):
@@ -135,7 +130,8 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
         self.geohash_overlap = geohash_overlap(
             self.latitude, self.longitude, self.radius
         )
-        self._unlisten = None
+        self._disconnect_callbacks = []
+        self.unloading = False
 
         _LOGGER.info(
             "lat: %s, lon: %s, radius: %skm, geohashes: %s",
@@ -145,16 +141,18 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
             self.geohash_overlap,
         )
 
-        # lat_delta = radius * 360 / 40000
-        # lon_delta = lat_delta / math.cos(latitude * math.pi / 180.0)
-
-        # west = longitude - lon_delta
-        # east = longitude + lon_delta
-
-        # north = latitude + lat_delta
-        # south = latitude - lat_delta
-
         self.mqtt_client = MQTT(hass, "blitzortung.ha.sed.pl", 1883,)
+
+        self._disconnect_callbacks.append(
+            async_dispatcher_connect(
+                self.hass, MQTT_CONNECTED, self._on_connection_change
+            )
+        )
+        self._disconnect_callbacks.append(
+            async_dispatcher_connect(
+                self.hass, MQTT_DISCONNECTED, self._on_connection_change
+            )
+        )
 
         super().__init__(
             hass,
@@ -163,6 +161,12 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
             update_interval=update_interval,
             update_method=self._do_update,
         )
+
+    def _on_connection_change(self, *args, **kwargs):
+        if self.unloading:
+            return
+        for sensor in self.sensors:
+            sensor.async_write_ha_state()
 
     def compute_polar_coords(self, lightning):
         dy = (lightning["lat"] - self.latitude) * math.pi / 180
@@ -193,12 +197,13 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
         await self.mqtt_client.async_subscribe(
             "component/hello", self.on_hello_message, qos=0
         )
-        self._unlisten = self.async_add_listener(lambda *args: None)
+        self._disconnect_callbacks.append(self.async_add_listener(lambda: None))
 
     async def disconnect(self):
+        self.unloading = True
         await self.mqtt_client.async_disconnect()
-        if self._unlisten:
-            self._unlisten()
+        for cb in self._disconnect_callbacks:
+            cb()
 
     def on_hello_message(self, message, *args):
         def parse_version(version_str):
@@ -231,7 +236,7 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
             self.compute_polar_coords(lightning)
             if lightning[const.ATTR_LIGHTNING_DISTANCE] < self.radius:
                 _LOGGER.debug("ligntning data: %s", lightning)
-                self.last_time = lightning["time"]
+                self.last_time = time.time()
                 for sensor in self.sensors:
                     sensor.update_lightning(lightning)
 
@@ -243,7 +248,7 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
 
     @property
     def is_inactive(self):
-        dt = time.time() - self.last_time / 1e9
+        dt = time.time() - self.last_time
         return dt > const.INACTIVITY_RESET_SECONDS
 
     @property
@@ -251,9 +256,5 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
         return self.mqtt_client.connected
 
     async def _do_update(self):
-        is_inactive = self.is_inactive
-        if not self.is_connected or is_inactive:
-            for sensor in self.sensors:
-                if is_inactive:
-                    sensor.update_lightning(None)
-                sensor.async_write_ha_state()
+        for sensor in self.sensors:
+            sensor.tick()

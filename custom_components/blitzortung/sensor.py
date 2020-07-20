@@ -1,5 +1,4 @@
 import logging
-from typing import Optional, Dict
 
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
@@ -137,38 +136,52 @@ class BlitzortungSensor(Entity):
     def on_message(self, message):
         pass
 
+    def tick(self):
+        pass
 
-class DistanceSensor(BlitzortungSensor):
+
+class LightningSensor(BlitzortungSensor):
+    INITIAL_STATE = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._state = self.INITIAL_STATE
+
+    def tick(self):
+        if self._state != self.INITIAL_STATE and self.coordinator.is_inactive:
+            self._state = self.INITIAL_STATE
+            self.async_write_ha_state()
+
+
+class DistanceSensor(LightningSensor):
     kind = ATTR_LIGHTNING_DISTANCE
     unit_of_measurement = LENGTH_KILOMETERS
 
-    def update_lightning(self, lightning: Optional[Dict]):
-        self._state = lightning and lightning["distance"]
-        self._attrs[ATTR_LAT] = lightning and lightning[ATTR_LAT]
-        self._attrs[ATTR_LON] = lightning and lightning[ATTR_LON]
+    def update_lightning(self, lightning):
+        self._state = lightning["distance"]
+        self._attrs[ATTR_LAT] = lightning[ATTR_LAT]
+        self._attrs[ATTR_LON] = lightning[ATTR_LON]
         self.async_write_ha_state()
 
 
-class AzimuthSensor(BlitzortungSensor):
+class AzimuthSensor(LightningSensor):
     kind = ATTR_LIGHTNING_AZIMUTH
     unit_of_measurement = DEGREE
 
-    def update_lightning(self, lightning: Optional[Dict]):
-        self._state = lightning and lightning["azimuth"]
-        self._attrs[ATTR_LAT] = lightning and lightning[ATTR_LAT]
-        self._attrs[ATTR_LON] = lightning and lightning[ATTR_LON]
+    def update_lightning(self, lightning):
+        self._state = lightning["azimuth"]
+        self._attrs[ATTR_LAT] = lightning[ATTR_LAT]
+        self._attrs[ATTR_LON] = lightning[ATTR_LON]
         self.async_write_ha_state()
 
 
-class CounterSensor(BlitzortungSensor):
+class CounterSensor(LightningSensor):
     kind = ATTR_LIGHTNING_COUNTER
     unit_of_measurement = "↯"
+    INITIAL_STATE = 0
 
-    def update_lightning(self, lightning: Optional[Dict]):
-        if not lightning:
-            self._state = 0
-        else:
-            self._state = (self._state or 0) + 1
+    def update_lightning(self, lightning):
+        self._state = self._state + 1
         self.async_write_ha_state()
 
 
