@@ -9,10 +9,8 @@
         }
       }
     },
-    "error": {
-    },
-    "abort": {
-    }
+    "error": {},
+    "abort": {}
   },
   "options": {
     "step": {
@@ -21,6 +19,7 @@
         "description": "Set up Blitzortung lightning detection options",
         "data": {
           "radius": "Lightning detection radius (km)",
+          "idle_reset_timeout": "Idle reset timeout (minutes, 0 - disabled)",
           "latitude": "Latitude",
           "longitude": "Longitude"
         }

@@ -14,7 +14,15 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from . import const
-from .const import CONF_RADIUS, DOMAIN, PLATFORMS
+from .const import (
+    CONF_RADIUS,
+    DOMAIN,
+    PLATFORMS,
+    DEFAULT_RADIUS,
+    CONF_IDLE_RESET_TIMEOUT,
+    DEFAULT_IDLE_RESET_TIMEOUT,
+    DEFAULT_UPDATE_INTERVAL,
+)
 from .geohash_utils import geohash_overlap
 from .mqtt import MQTT, MQTT_CONNECTED, MQTT_DISCONNECTED
 from .version import __version__
@@ -41,14 +49,18 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 
     latitude = config_entry.options.get(CONF_LATITUDE, hass.config.latitude)
     longitude = config_entry.options.get(CONF_LONGITUDE, hass.config.longitude)
-    radius = config_entry.options.get(const.CONF_RADIUS, const.DEFAULT_RADIUS)
+    radius = config_entry.options.get(CONF_RADIUS, DEFAULT_RADIUS)
+    idle_reset_seconds = config_entry.options.get(
+        CONF_IDLE_RESET_TIMEOUT, DEFAULT_IDLE_RESET_TIMEOUT
+    ) * 60
 
     coordinator = BlitzortungDataUpdateCoordinator(
         hass,
         latitude,
         longitude,
         radius,
-        const.DEFAULT_UPDATE_INTERVAL,
+        idle_reset_seconds,
+        DEFAULT_UPDATE_INTERVAL,
         server_stats=config.get(const.SERVER_STATS),
     )
 
@@ -111,18 +123,30 @@ async def async_migrate_entry(hass, entry):
             CONF_RADIUS: radius,
         }
         entry.version = 2
-        return True
+    if entry.version == 2:
+        entry.options = dict(entry.options)
+        entry.options[CONF_IDLE_RESET_TIMEOUT] = DEFAULT_IDLE_RESET_TIMEOUT
+        entry.version = 3
+    return True
 
 
 class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
     def __init__(
-        self, hass, latitude, longitude, radius, update_interval, server_stats=False
+        self,
+        hass,
+        latitude,
+        longitude,
+        radius,
+        idle_reset_seconds,
+        update_interval,
+        server_stats=False,
     ):
         """Initialize."""
         self.hass = hass
         self.latitude = latitude
         self.longitude = longitude
         self.radius = radius
+        self.idle_reset_seconds = idle_reset_seconds
         self.server_stats = server_stats
         self.last_time = 0
         self.sensors = []
@@ -248,8 +272,10 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
 
     @property
     def is_inactive(self):
-        dt = time.time() - self.last_time
-        return dt > const.INACTIVITY_RESET_SECONDS
+        return bool(
+            self.idle_reset_seconds
+            and (time.time() - self.last_time) >= self.idle_reset_seconds
+        )
 
     @property
     def is_connected(self):

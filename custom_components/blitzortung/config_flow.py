@@ -4,7 +4,13 @@ from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME
 import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
 
-from .const import DOMAIN, CONF_RADIUS, DEFAULT_RADIUS
+from .const import (
+    DOMAIN,
+    CONF_RADIUS,
+    DEFAULT_RADIUS,
+    CONF_IDLE_RESET_TIMEOUT,
+    DEFAULT_IDLE_RESET_TIMEOUT,
+)
 
 DEFAULT_CONF_NAME = "Blitzortung"
 
@@ -12,7 +18,7 @@ DEFAULT_CONF_NAME = "Blitzortung"
 class DomainConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for blitzortung."""
 
-    VERSION = 2
+    VERSION = 3
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_PUSH
 
     async def async_step_user(self, user_input=None):
@@ -40,7 +46,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         self.config_entry = config_entry
 
     async def async_step_init(self, user_input=None):
-        print("HERE", self.config_entry.options)
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
 
@@ -64,6 +69,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_RADIUS,
                         default=self.config_entry.options.get(
                             CONF_RADIUS, DEFAULT_RADIUS
+                        ),
+                    ): int,
+                    vol.Optional(
+                        CONF_IDLE_RESET_TIMEOUT,
+                        default=self.config_entry.options.get(
+                            CONF_IDLE_RESET_TIMEOUT, DEFAULT_IDLE_RESET_TIMEOUT,
                         ),
                     ): int,
                 }
