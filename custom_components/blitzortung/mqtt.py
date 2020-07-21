@@ -301,7 +301,7 @@ class MQTT:
         """Disconnected callback."""
         self.connected = False
         dispatcher_send(self.hass, MQTT_DISCONNECTED)
-        _LOGGER.warning(
+        _LOGGER.info(
             "Disconnected from MQTT server %s:%s (%s)",
             self.host,
             self.port,
