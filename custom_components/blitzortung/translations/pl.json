@@ -1,0 +1,30 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Blitzortung",
+        "description": "Konfiguracja wykrywania piorunów Blitzortung",
+        "data": {
+          "name": "Nazwa instancji integracji"
+        }
+      }
+    },
+    "error": {
+    },
+    "abort": {
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opcje Blitzortung",
+        "description": "Konfiguracja wykrywania piorunów Blitzortung",
+        "data": {
+          "radius": "Promień wykrywania wyładowań atmosferycznych (km)",
+          "latitude": "Szerokość geograficzna",
+          "longitude": "Długość geograficzna"
+        }
+      }
+    }
+  }
+}
