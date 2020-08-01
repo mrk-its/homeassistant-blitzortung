@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Blitzortung",
-        "description": "Konfiguracja wykrywania piorunów Blitzortung",
+        "description": "Konfiguracja wykrywania błyskawic Blitzortung",
         "data": {
           "name": "Nazwa instancji integracji"
         }
@@ -18,9 +18,10 @@
     "step": {
       "init": {
         "title": "Opcje Blitzortung",
-        "description": "Konfiguracja wykrywania piorunów Blitzortung",
+        "description": "Konfiguracja wykrywania błyskawic Blitzortung",
         "data": {
-          "radius": "Promień wykrywania wyładowań atmosferycznych (km)",
+          "radius": "Promień wykrywania błyskawic (km)",
+          "idle_reset_timeout": "Limit czasu resetowania bezczynności (minuty, 0 - wyłączony)",
           "latitude": "Szerokość geograficzna",
           "longitude": "Długość geograficzna"
         }
