@@ -1,0 +1,31 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Blitzortung",
+        "description": "Konfiguracja wykrywania błyskawic Blitzortung",
+        "data": {
+          "name": "Nazwa instancji integracji"
+        }
+      }
+    },
+    "error": {
+    },
+    "abort": {
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opcje Blitzortung",
+        "description": "Konfiguracja wykrywania błyskawic Blitzortung",
+        "data": {
+          "radius": "Promień wykrywania błyskawic (km)",
+          "idle_reset_timeout": "Limit czasu resetowania bezczynności (minuty, 0 - wyłączony)",
+          "latitude": "Szerokość geograficzna",
+          "longitude": "Długość geograficzna"
+        }
+      }
+    }
+  }
+}
