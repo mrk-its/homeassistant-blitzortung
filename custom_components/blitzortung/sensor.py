@@ -127,7 +127,8 @@ class BlitzortungSensor(Entity):
             "name": f"{self._integration_name} Lightning Detector",
             "identifiers": {(DOMAIN, self._integration_name)},
             "model": "Lightning Detector",
-            "sw-version": "0.0.1",
+            "sw_version": "0.0.1",
+            "entry_type": "service",
         }
 
     def update_lightning(self, lightning):
