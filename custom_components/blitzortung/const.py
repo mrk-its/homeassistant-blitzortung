@@ -1,6 +1,6 @@
 import datetime
 
-PLATFORMS = ["sensor"]
+PLATFORMS = ["sensor", "geo_location"]
 
 DOMAIN = "blitzortung"
 DATA_UNSUBSCRIBE = "unsubscribe"
@@ -25,3 +25,6 @@ DEFAULT_RADIUS = 100
 
 ATTR_LAT = "lat"
 ATTR_LON = "lon"
+ATTRIBUTION = "Data provided by blitzortung.org"
+ATTR_EXTERNAL_ID = "external_id"
+ATTR_PUBLICATION_DATE = "publication_date"

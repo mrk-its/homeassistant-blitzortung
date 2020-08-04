@@ -151,6 +151,7 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
         self.last_time = 0
         self.sensors = []
         self.callbacks = []
+        self.lightning_callbacks = []
         self.geohash_overlap = geohash_overlap(
             self.latitude, self.longitude, self.radius
         )
@@ -261,6 +262,8 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
             if lightning[const.ATTR_LIGHTNING_DISTANCE] < self.radius:
                 _LOGGER.debug("ligntning data: %s", lightning)
                 self.last_time = time.time()
+                for callback in self.lightning_callbacks:
+                    callback(lightning)
                 for sensor in self.sensors:
                     sensor.update_lightning(lightning)
 
@@ -269,6 +272,9 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
 
     def register_message_receiver(self, message_cb):
         self.callbacks.append(message_cb)
+
+    def register_lightning_receiver(self, lightning_cb):
+        self.lightning_callbacks.append(lightning_cb)
 
     @property
     def is_inactive(self):

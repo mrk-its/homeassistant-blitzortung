@@ -15,9 +15,9 @@ from .const import (
     ATTR_LAT,
     ATTR_LON,
     SERVER_STATS,
+    ATTRIBUTION,
 )
 
-ATTRIBUTION = "Data provided by blitzortung.org"
 
 ATTR_ICON = "icon"
 ATTR_LABEL = "label"
