@@ -22,7 +22,7 @@ from .const import DOMAIN, ATTRIBUTION, ATTR_EXTERNAL_ID, ATTR_PUBLICATION_DATE
 _LOGGER = logging.getLogger(__name__)
 
 
-DEFAULT_EVENT_NAME_TEMPLATE = "Lightning Strike {0}"
+DEFAULT_EVENT_NAME_TEMPLATE = "Lightning Strike"
 DEFAULT_ICON = "mdi:flash"
 
 SIGNAL_DELETE_ENTITY = "blitzortung_delete_entity_{0}"
@@ -108,7 +108,7 @@ class BlitzortungEventManager:
             lightning["lat"],
             lightning["lon"],
             "km",
-            lightning["time"] / 1e9,
+            lightning["time"],
         )
         to_delete = self._strikes.insort(event)
         self._async_add_entities([event])
@@ -134,15 +134,17 @@ class BlitzortungEventManager:
 class BlitzortungEvent(GeolocationEvent):
     """Define a lightning strike event."""
 
-    def __init__(self, distance, latitude, longitude, unit, publication_date):
+    def __init__(self, distance, latitude, longitude, unit, time):
         """Initialize entity with data provided."""
         self._distance = distance
         self._latitude = latitude
         self._longitude = longitude
-        self._publication_date = publication_date
+        self._time = time
+        self._publication_date = time / 1e9
         self._remove_signal_delete = None
-        self._strike_id = f"{self._publication_date}-{self._latitude}-{self._longitude}"
+        self._strike_id = str(self._time)
         self._unit_of_measurement = unit
+        self.entity_id = "geo_location.lightning_strike_{0}".format(self._strike_id)
 
     @property
     def device_state_attributes(self):
