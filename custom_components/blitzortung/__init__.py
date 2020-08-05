@@ -11,17 +11,21 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from homeassistant.helpers.event import async_track_time_interval
 
 from . import const
 from .const import (
+    CONF_IDLE_RESET_TIMEOUT,
     CONF_RADIUS,
+    CONF_MAX_TRACKED_LIGHTNINGS,
+    CONF_TIME_WINDOW,
+    DEFAULT_IDLE_RESET_TIMEOUT,
+    DEFAULT_RADIUS,
+    DEFAULT_UPDATE_INTERVAL,
+    DEFAULT_MAX_TRACKED_LIGHTNINGS,
+    DEFAULT_TIME_WINDOW,
     DOMAIN,
     PLATFORMS,
-    DEFAULT_RADIUS,
-    CONF_IDLE_RESET_TIMEOUT,
-    DEFAULT_IDLE_RESET_TIMEOUT,
-    DEFAULT_UPDATE_INTERVAL,
 )
 from .geohash_utils import geohash_overlap
 from .mqtt import MQTT, MQTT_CONNECTED, MQTT_DISCONNECTED
@@ -50,16 +54,20 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     latitude = config_entry.options.get(CONF_LATITUDE, hass.config.latitude)
     longitude = config_entry.options.get(CONF_LONGITUDE, hass.config.longitude)
     radius = config_entry.options.get(CONF_RADIUS, DEFAULT_RADIUS)
-    idle_reset_seconds = config_entry.options.get(
-        CONF_IDLE_RESET_TIMEOUT, DEFAULT_IDLE_RESET_TIMEOUT
-    ) * 60
+    max_tracked_lightnings = config_entry.options.get(
+        CONF_MAX_TRACKED_LIGHTNINGS, DEFAULT_MAX_TRACKED_LIGHTNINGS
+    )
+    time_window_seconds = (
+        config_entry.options.get(CONF_TIME_WINDOW, DEFAULT_TIME_WINDOW) * 60
+    )
 
-    coordinator = BlitzortungDataUpdateCoordinator(
+    coordinator = BlitzortungCoordinator(
         hass,
         latitude,
         longitude,
         radius,
-        idle_reset_seconds,
+        max_tracked_lightnings,
+        time_window_seconds,
         DEFAULT_UPDATE_INTERVAL,
         server_stats=config.get(const.SERVER_STATS),
     )
@@ -127,17 +135,25 @@ async def async_migrate_entry(hass, entry):
         entry.options = dict(entry.options)
         entry.options[CONF_IDLE_RESET_TIMEOUT] = DEFAULT_IDLE_RESET_TIMEOUT
         entry.version = 3
+    if entry.version == 3:
+        entry.options = dict(entry.options)
+        entry.options[CONF_TIME_WINDOW] = entry.options.pop(
+            CONF_IDLE_RESET_TIMEOUT, DEFAULT_TIME_WINDOW
+        )
+        entry.version = 4
+
     return True
 
 
-class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
+class BlitzortungCoordinator:
     def __init__(
         self,
         hass,
         latitude,
         longitude,
         radius,
-        idle_reset_seconds,
+        max_tracked_lightnings,
+        time_window_seconds,
         update_interval,
         server_stats=False,
     ):
@@ -146,12 +162,14 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
         self.latitude = latitude
         self.longitude = longitude
         self.radius = radius
-        self.idle_reset_seconds = idle_reset_seconds
+        self.max_tracked_lightnings = max_tracked_lightnings
+        self.time_window_seconds = time_window_seconds
         self.server_stats = server_stats
         self.last_time = 0
         self.sensors = []
         self.callbacks = []
         self.lightning_callbacks = []
+        self.on_tick_callbacks = []
         self.geohash_overlap = geohash_overlap(
             self.latitude, self.longitude, self.radius
         )
@@ -177,14 +195,6 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
             async_dispatcher_connect(
                 self.hass, MQTT_DISCONNECTED, self._on_connection_change
             )
-        )
-
-        super().__init__(
-            hass,
-            _LOGGER,
-            name=DOMAIN,
-            update_interval=update_interval,
-            update_method=self._do_update,
         )
 
     def _on_connection_change(self, *args, **kwargs):
@@ -222,7 +232,12 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
         await self.mqtt_client.async_subscribe(
             "component/hello", self.on_hello_message, qos=0
         )
-        self._disconnect_callbacks.append(self.async_add_listener(lambda: None))
+
+        self._disconnect_callbacks.append(
+            async_track_time_interval(
+                self.hass, self._tick, const.DEFAULT_UPDATE_INTERVAL
+            )
+        )
 
     async def disconnect(self):
         self.unloading = True
@@ -269,6 +284,7 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
 
     def register_sensor(self, sensor):
         self.sensors.append(sensor)
+        self.register_on_tick(sensor.tick)
 
     def register_message_receiver(self, message_cb):
         self.callbacks.append(message_cb)
@@ -276,17 +292,20 @@ class BlitzortungDataUpdateCoordinator(DataUpdateCoordinator):
     def register_lightning_receiver(self, lightning_cb):
         self.lightning_callbacks.append(lightning_cb)
 
+    def register_on_tick(self, on_tick_cb):
+        self.on_tick_callbacks.append(on_tick_cb)
+
     @property
     def is_inactive(self):
         return bool(
-            self.idle_reset_seconds
-            and (time.time() - self.last_time) >= self.idle_reset_seconds
+            self.time_window_seconds
+            and (time.time() - self.last_time) >= self.time_window_seconds
         )
 
     @property
     def is_connected(self):
         return self.mqtt_client.connected
 
-    async def _do_update(self):
-        for sensor in self.sensors:
-            sensor.tick()
+    async def _tick(self, *args):
+        for cb in self.on_tick_callbacks:
+            cb()
