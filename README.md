@@ -7,7 +7,8 @@ Blitzortung.org ia a worldwide, real time, community collaborative lightning loc
 
 # Features
 - distance and azimuth sensors of ligtning strikes nearby
-- counter of lightning strikes nearby
+- counter of lightning strikes
+- emits geo_location events for ligtning strikes (visible on the map)
 - data is realtime, with average delay of few seconds
 
 # Manual installation
