@@ -55,12 +55,10 @@ class Strikes(list):
     def insort(self, item):
         k = self._key_fn(item)
         if k > self._max_key:
-            _LOGGER.info("optimized insert")
             self._max_key = k
             self._keys.append(k)
             self.append(item)
         else:
-            _LOGGER.info("standard insert")
             i = bisect.bisect_right(self._keys, k)
             self._keys.insert(i, k)
             self.insert(i, item)
@@ -104,7 +102,7 @@ class BlitzortungEventManager:
             self._unit = LENGTH_KILOMETERS
 
     def lightning_cb(self, lightning):
-        _LOGGER.info("geo_location lightning: %s", lightning)
+        _LOGGER.debug("geo_location lightning: %s", lightning)
         event = BlitzortungEvent(
             lightning["distance"],
             lightning["lat"],
