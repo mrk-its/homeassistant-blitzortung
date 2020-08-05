@@ -16,14 +16,14 @@ from homeassistant.helpers.event import async_track_time_interval
 from . import const
 from .const import (
     CONF_IDLE_RESET_TIMEOUT,
-    CONF_RADIUS,
     CONF_MAX_TRACKED_LIGHTNINGS,
+    CONF_RADIUS,
     CONF_TIME_WINDOW,
     DEFAULT_IDLE_RESET_TIMEOUT,
-    DEFAULT_RADIUS,
-    DEFAULT_UPDATE_INTERVAL,
     DEFAULT_MAX_TRACKED_LIGHTNINGS,
+    DEFAULT_RADIUS,
     DEFAULT_TIME_WINDOW,
+    DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
     PLATFORMS,
 )

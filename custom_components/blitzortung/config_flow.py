@@ -6,12 +6,12 @@ from homeassistant import config_entries
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME
 
 from .const import (
-    CONF_TIME_WINDOW,
     CONF_MAX_TRACKED_LIGHTNINGS,
     CONF_RADIUS,
-    DEFAULT_TIME_WINDOW,
+    CONF_TIME_WINDOW,
     DEFAULT_MAX_TRACKED_LIGHTNINGS,
     DEFAULT_RADIUS,
+    DEFAULT_TIME_WINDOW,
     DOMAIN,
 )
 

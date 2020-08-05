@@ -17,7 +17,7 @@ from homeassistant.helpers.dispatcher import (
 )
 from homeassistant.util.dt import utc_from_timestamp
 
-from .const import DOMAIN, ATTRIBUTION, ATTR_EXTERNAL_ID, ATTR_PUBLICATION_DATE
+from .const import ATTR_EXTERNAL_ID, ATTR_PUBLICATION_DATE, ATTRIBUTION, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 

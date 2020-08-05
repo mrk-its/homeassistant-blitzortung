@@ -1,23 +1,18 @@
 import logging
 
-from homeassistant.const import (
-    ATTR_ATTRIBUTION,
-    CONF_NAME,
-    LENGTH_KILOMETERS,
-)
+from homeassistant.const import ATTR_ATTRIBUTION, CONF_NAME, LENGTH_KILOMETERS
 from homeassistant.helpers.entity import Entity
 
 from .const import (
+    ATTR_LAT,
     ATTR_LIGHTNING_AZIMUTH,
     ATTR_LIGHTNING_COUNTER,
     ATTR_LIGHTNING_DISTANCE,
-    DOMAIN,
-    ATTR_LAT,
     ATTR_LON,
-    SERVER_STATS,
     ATTRIBUTION,
+    DOMAIN,
+    SERVER_STATS,
 )
-
 
 ATTR_ICON = "icon"
 ATTR_LABEL = "label"
