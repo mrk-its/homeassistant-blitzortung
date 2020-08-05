@@ -60,7 +60,12 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     time_window_seconds = (
         config_entry.options.get(CONF_TIME_WINDOW, DEFAULT_TIME_WINDOW) * 60
     )
-
+    if max_tracked_lightnings >= 500:
+        _LOGGER.warning(
+            "Large number of tracked lightnings: %s, it may lead to"
+            "bigger memory usage / unstable frontend",
+            max_tracked_lightnings,
+        )
     coordinator = BlitzortungCoordinator(
         hass,
         latitude,

@@ -22,7 +22,7 @@ from .const import DOMAIN, ATTRIBUTION, ATTR_EXTERNAL_ID, ATTR_PUBLICATION_DATE
 _LOGGER = logging.getLogger(__name__)
 
 
-DEFAULT_EVENT_NAME = "Lightning Strike"
+DEFAULT_EVENT_NAME_TEMPLATE = "Lightning Strike {0}"
 DEFAULT_ICON = "mdi:flash"
 
 SIGNAL_DELETE_ENTITY = "blitzortung_delete_entity_{0}"
@@ -179,7 +179,7 @@ class BlitzortungEvent(GeolocationEvent):
     @property
     def name(self):
         """Return the name of the event."""
-        return DEFAULT_EVENT_NAME
+        return DEFAULT_EVENT_NAME_TEMPLATE.format(self._publication_date)
 
     @property
     def source(self) -> str:
