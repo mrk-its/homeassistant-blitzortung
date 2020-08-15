@@ -19,3 +19,7 @@ This component is available on HACS default
 
 # Configuration
 Search for Blitzortung on `Configuration/Integrations` page. After adding integration you can optionally configure location and radius with Blitzortung/Options (by default your home locaiton is used with 100km radius)
+
+# Donate
+
+<a href="https://www.buymeacoffee.com/emrk" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" style="height: 51px !important;width: 217px !important;" ></a>
