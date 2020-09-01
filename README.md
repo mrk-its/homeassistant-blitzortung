@@ -22,3 +22,6 @@ This component is available on HACS default
 # Configuration
 Search for Blitzortung on `Configuration/Integrations` page. After adding integration you can optionally configure location and radius with Blitzortung/Options (by default your home locaiton is used with 100km radius)
 
+# Reviews and How-Tos
+You can read and see (youtube) how this component was used in the following community video.
+[How to Add a Lightning Sensor](https://www.vcloudinfo.com/2020/08/adding-a-lightning-sensor-to-home-assistant.html)
