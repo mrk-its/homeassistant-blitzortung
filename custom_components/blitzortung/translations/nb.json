@@ -1,0 +1,30 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Blitzortung",
+        "description": "Sett opp lynregistrering av Blitzortung",
+        "data": {
+          "name": "Navnet på integrasjonsforekomsten"
+        }
+      }
+    },
+    "error": {},
+    "abort": {}
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Blitzortung-alternativer",
+        "description": "Sett opp Blitzortung lyndeteksjonsalternativer",
+        "data": {
+          "radius": "Lyndeteksjonsradius (km)",
+          "time_window": "Tidsvindu (minutter, 0 - deaktivert)",
+          "max_tracked_lightnings": "Maks antall sporede lyn",
+          "latitude": "Breddegrad",
+          "longitude": "Lengdegrad"
+        }
+      }
+    }
+  }
+}
