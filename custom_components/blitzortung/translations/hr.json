@@ -1,0 +1,30 @@
+{
+    "config": {
+      "step": {
+        "user": {
+          "title": "Blitzortung",
+          "description": "Postavke Blitzortung senzora groma",
+          "data": {
+            "name": "Naziv instance integracije"
+          }
+        }
+      },
+      "error": {},
+      "abort": {}
+    },
+    "options": {
+      "step": {
+        "init": {
+          "title": "Blitzortung opcije",
+          "description": "Podesite Blitzortung opcije otkrivanja groma",
+          "data": {
+            "radius": "Radijus prepoznavanja groma (km)",
+            "time_window": "Vremenski period (minuta, 0 - onemogućeno)",
+            "max_tracked_lightnings": "Maksimalan broj praćenih gromova",
+            "latitude": "Zemljopisna širina",
+            "longitude": "Zemljopisna dužina"
+          }
+        }
+      }
+    }
+  }
