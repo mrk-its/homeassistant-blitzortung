@@ -1,0 +1,30 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Blitzortung",
+        "description": "Configurer Blitzortung détection de fourdre",
+        "data": {
+          "name": "Nom de l'instance de cette intégration"
+        }
+      }
+    },
+    "error": {},
+    "abort": {}
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options Blitzortung ",
+        "description": "Configurer les options de Blitzortung détection de foudre",
+        "data": {
+          "radius": "Rayon de detection de la foudre (km)",
+          "time_window": "Fenêtre de temps (minutes, 0 - désactivé)",
+          "max_tracked_lightnings": "Nombre maximum d'éclairs suivis",
+          "latitude": "Latitude",
+          "longitude": "Longitude"
+        }
+      }
+    }
+  }
+}
