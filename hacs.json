@@ -1,6 +1,5 @@
 {
     "name": "Blitzortung.org Lightning Detector",
-    "country": "PL",
-    "render_readme": true,
-    "domains": ["sensor"]
+    "domains": ["sensor"],
+    "homeassistant": "2021.9.0"
 }
