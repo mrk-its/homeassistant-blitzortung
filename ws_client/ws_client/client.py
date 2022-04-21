@@ -16,6 +16,25 @@ ssl_context.check_hostname = False
 ssl_context.verify_mode = ssl.CERT_NONE
 
 
+def decode(b):
+    e = {}
+    d = list(b)
+    c = d[0]
+    f = c
+    g = [c]
+    h = 256
+    o = h
+    for b in range(1, len(d)):
+        a = ord(d[b])
+        a = d[b] if h > a else e.get(a, f + c)
+        g.append(a)
+        c = a[0]
+        e[o] = f + c
+        o+=1
+        f = a
+
+    return "".join(g)
+
 async def run(args):
     class userdata:
         is_connected = False
@@ -55,23 +74,25 @@ async def run(args):
 
     while True:
         try:
-            uri = "wss://ws{}.blitzortung.org:3000/".format(random.randrange(5) + 1)
+            hosts = ["ws1", "ws5", "ws6", "ws7", "ws8"]
+            uri = "wss://{}.blitzortung.org:443/".format(random.choice(hosts))
             async with websockets.connect(uri, ssl=ssl_context) as websocket:
                 print(f"connected to {uri}")
-                await websocket.send('{"time": 0}')
+                await websocket.send('{"a": 542}')
                 while True:
                     msg = await websocket.recv()
-                    data = json.loads(msg)
+                    data = json.loads(decode(msg))
                     sig = data.pop("sig", ())
                     data["sig_num"] = len(sig)
                     if userdata.is_connected:
                         geohash_part = "/".join(
                             geohash.encode(data["lat"], data["lon"])
                         )
+                        topic = "blitzortung/1.1/{}".format(geohash_part)
                         mqtt_client.publish(
-                            "blitzortung/1.1/{}".format(geohash_part), json.dumps(data)
+                            topic, json.dumps(data)
                         )
-                        print(repr(data), flush=True)
+                        print(topic, repr(data), flush=True)
         except websockets.ConnectionClosed:
             pass
         time.sleep(5)
