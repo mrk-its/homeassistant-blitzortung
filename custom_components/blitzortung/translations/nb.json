@@ -2,7 +2,6 @@
   "config": {
     "step": {
       "user": {
-        "title": "Blitzortung",
         "description": "Sett opp lynregistrering av Blitzortung",
         "data": {
           "name": "Navnet på integrasjonsforekomsten"
