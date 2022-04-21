@@ -2,7 +2,6 @@
   "config": {
     "step": {
       "user": {
-        "title": "Blitzortung",
         "description": "Konfiguracja wykrywania błyskawic Blitzortung",
         "data": {
           "name": "Nazwa instancji integracji"
