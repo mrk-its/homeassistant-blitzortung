@@ -2,7 +2,6 @@
   "config": {
     "step": {
       "user": {
-        "title": "Blitzortung",
         "description": "Configurer Blitzortung détection de fourdre",
         "data": {
           "name": "Nom de l'instance de cette intégration"
