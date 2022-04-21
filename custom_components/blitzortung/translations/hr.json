@@ -2,7 +2,6 @@
     "config": {
       "step": {
         "user": {
-          "title": "Blitzortung",
           "description": "Postavke Blitzortung senzora groma",
           "data": {
             "name": "Naziv instance integracije"
