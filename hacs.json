@@ -1,5 +1,4 @@
 {
     "name": "Blitzortung.org Lightning Detector",
-    "domains": ["sensor"],
     "homeassistant": "2021.9.0"
 }
