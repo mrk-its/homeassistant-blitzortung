@@ -4,7 +4,7 @@
       "user": {
         "description": "Määritä Blitzortung ukkostutka",
         "data": {
-          "name": "Lisäosan instanssin nimi"
+          "name": "Integraation instanssin nimi"
         }
       }
     },
