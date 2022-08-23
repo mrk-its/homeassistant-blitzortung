@@ -1,0 +1,29 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "Blitzortung bliksemdetectie instellen",
+        "data": {
+          "name": "Naam van de integratie-instantie"
+        }
+      }
+    },
+    "error": {},
+    "abort": {}
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Blitzortung Opties",
+        "description": "Blitzortung bliksemdetectie opties instellen",
+        "data": {
+          "radius": "Bliksemdetectie-radius (km)",
+          "time_window": "Tijdvenster (minuten, 0 - uitgeschakeld)",
+          "max_tracked_lightnings": "Max aantal gevolgde bliksems",
+          "latitude": "Breedtegraad",
+          "longitude": "Lengtegraad"
+        }
+      }
+    }
+  }
+}
