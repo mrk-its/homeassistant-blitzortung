@@ -7,6 +7,7 @@ DATA_UNSUBSCRIBE = "unsubscribe"
 ATTR_LIGHTNING_DISTANCE = "distance"
 ATTR_LIGHTNING_AZIMUTH = "azimuth"
 ATTR_LIGHTNING_COUNTER = "counter"
+ATTR_LIGHTNING_TIME_WINDOW_COUNTER = "time_window_counter"
 
 SERVER_STATS = "server_stats"
 

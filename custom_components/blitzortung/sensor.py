@@ -1,4 +1,5 @@
 import logging
+import datetime
 
 from homeassistant.const import ATTR_ATTRIBUTION, CONF_NAME, LENGTH_KILOMETERS
 from homeassistant.helpers.entity import Entity
@@ -9,6 +10,7 @@ from .const import (
     ATTR_LIGHTNING_AZIMUTH,
     ATTR_LIGHTNING_COUNTER,
     ATTR_LIGHTNING_DISTANCE,
+    ATTR_LIGHTNING_TIME_WINDOW_COUNTER,
     ATTR_LON,
     ATTRIBUTION,
     DOMAIN,
@@ -179,6 +181,28 @@ class CounterSensor(LightningSensor):
 
     def update_lightning(self, lightning):
         self._state = self._state + 1
+        self.async_write_ha_state()
+
+
+class TimeWindowCounterSensor(LightningSensor):
+    kind = ATTR_LIGHTNING_TIME_WINDOW_COUNTER
+    unit_of_measurement = "↯"
+    INITIAL_STATE = 0
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._counter_per_date = {}
+
+    def update_lightning(self, lightning):
+        now = datetime.datetime.now(datetime.timezone.utc).replace(second=0, microsecond=0)
+        oldest_date = now - datetime.timedelta(minutes=self.coordinator.time_window_seconds / 60)
+        self._counter_per_date[now] = self._counter_per_date.get(now, 0) + 1
+
+        for date_key in list(self._counter_per_date.keys()):
+            if date_key < oldest_date:
+                del self._counter_per_date[date_key]
+
+        self._state = sum(self._counter_per_date.values())
         self.async_write_ha_state()
 
 
