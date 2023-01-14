@@ -78,7 +78,7 @@ async def run(args):
             uri = "wss://{}.blitzortung.org:443/".format(random.choice(hosts))
             async with websockets.connect(uri, ssl=ssl_context) as websocket:
                 print(f"connected to {uri}")
-                await websocket.send('{"a": 542}')
+                await websocket.send('{"a": 418}')
                 while True:
                     msg = await websocket.recv()
                     data = json.loads(decode(msg))
