@@ -1,5 +1,7 @@
 import datetime
 
+SW_VERSION = "1.2.1"
+
 PLATFORMS = ["sensor", "geo_location"]
 
 DOMAIN = "blitzortung"

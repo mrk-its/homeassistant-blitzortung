@@ -123,7 +123,7 @@ class BlitzortungSensor(Entity):
             "name": f"{self._integration_name} Lightning Detector",
             "identifiers": {(DOMAIN, self._integration_name)},
             "model": "Lightning Detector",
-            "sw_version": "0.0.1",
+            "sw_version": SW_VERSION,
             "entry_type": DeviceEntryType.SERVICE,
         }
 
