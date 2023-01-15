@@ -1,6 +1,6 @@
 import datetime
 
-SW_VERSION = "1.3.0"
+SW_VERSION = "1.3.1"
 
 PLATFORMS = ["sensor", "geo_location"]
 
