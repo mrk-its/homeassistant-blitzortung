@@ -108,7 +108,7 @@ class BlitzortungEventManager:
             lightning["distance"],
             lightning["lat"],
             lightning["lon"],
-            "km",
+            self._unit,
             lightning["time"],
             lightning["status"],
             lightning["region"],

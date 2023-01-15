@@ -17,7 +17,7 @@
         "title": "Options Blitzortung ",
         "description": "Configurer les options de Blitzortung détection de foudre",
         "data": {
-          "radius": "Rayon de detection de la foudre (km)",
+          "radius": "Rayon de detection de la foudre (km / mi)",
           "time_window": "Fenêtre de temps (minutes, 0 - désactivé)",
           "max_tracked_lightnings": "Nombre maximum d'éclairs suivis",
           "latitude": "Latitude",

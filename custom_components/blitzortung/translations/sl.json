@@ -17,7 +17,7 @@
         "title": "Možnosti Blitzortung",
         "description": "Nastavite možnosti zaznavanja strel Blitzortung",
         "data": {
-          "radius": "Doseg zaznavanja strel (km)",
+          "radius": "Doseg zaznavanja strel (km / mi)",
           "time_window": "Časovni okvir (v minutah, 0 - disabled)",
           "max_tracked_lightnings": "Maksimalno število zaznanih strel",
           "latitude": "Zemljepisna širina središča zaznavanja",

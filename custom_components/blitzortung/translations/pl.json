@@ -17,7 +17,7 @@
         "title": "Opcje Blitzortung",
         "description": "Konfiguracja wykrywania błyskawic Blitzortung",
         "data": {
-          "radius": "Promień wykrywania błyskawic (km)",
+          "radius": "Promień wykrywania błyskawic (km / mi)",
           "time_window": "Okno czasowe (minuty, 0 - wyłączony)",
           "max_tracked_lightnings": "Maksymalna ilość śledzonych błyskawic",
           "latitude": "Szerokość geograficzna",

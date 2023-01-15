@@ -17,7 +17,7 @@
         "title": "Blitzortung Opties",
         "description": "Blitzortung bliksemdetectie opties instellen",
         "data": {
-          "radius": "Bliksemdetectie-radius (km)",
+          "radius": "Bliksemdetectie-radius (km / mi)",
           "time_window": "Tijdvenster (minuten, 0 - uitgeschakeld)",
           "max_tracked_lightnings": "Max aantal gevolgde bliksems",
           "latitude": "Breedtegraad",

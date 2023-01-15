@@ -17,7 +17,7 @@
         "title": "Blitzortung Asetukset",
         "description": "Määritä Blitzortung ukkostutkan asetukset",
         "data": {
-          "radius": "Salamoiden seuranta-alue (km)",
+          "radius": "Salamoiden seuranta-alue (km / mi)",
           "time_window": "Aikaikkuna (minuuttia, 0 - ei käytössä)",
           "max_tracked_lightnings": "Seurattavien salamoiden enimmäismäärä",
           "latitude": "Leveysaste",

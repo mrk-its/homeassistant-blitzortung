@@ -17,7 +17,7 @@
         "title": "Blitzortung-alternativer",
         "description": "Sett opp Blitzortung lyndeteksjonsalternativer",
         "data": {
-          "radius": "Lyndeteksjonsradius (km)",
+          "radius": "Lyndeteksjonsradius (km / mi)",
           "time_window": "Tidsvindu (minutter, 0 - deaktivert)",
           "max_tracked_lightnings": "Maks antall sporede lyn",
           "latitude": "Breddegrad",
