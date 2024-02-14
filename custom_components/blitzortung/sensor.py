@@ -1,7 +1,8 @@
 import logging
 
-from homeassistant.const import ATTR_ATTRIBUTION, CONF_NAME, LENGTH_KILOMETERS
-from homeassistant.helpers.entity import Entity
+from homeassistant.const import ATTR_ATTRIBUTION, CONF_NAME
+from homeassistant.const import UnitOfLength
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.device_registry import DeviceEntryType
 
 from .const import (
@@ -13,6 +14,7 @@ from .const import (
     ATTRIBUTION,
     DOMAIN,
     SERVER_STATS,
+    SW_VERSION,
 )
 
 ATTR_ICON = "icon"
@@ -63,7 +65,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         coordinator.register_message_receiver(on_message)
 
 
-class BlitzortungSensor(Entity):
+class BlitzortungSensor(SensorEntity):
     """Define a Blitzortung sensor."""
 
     def __init__(self, coordinator, integration_name, unique_prefix):
@@ -74,7 +76,6 @@ class BlitzortungSensor(Entity):
         self._unique_id = f"{unique_prefix}-{self.kind}"
         self._device_class = None
         self._state = None
-        self._unit_of_measurement = None
         self._attrs = {ATTR_ATTRIBUTION: ATTRIBUTION}
 
     should_poll = False
@@ -123,7 +124,7 @@ class BlitzortungSensor(Entity):
             "name": f"{self._integration_name} Lightning Detector",
             "identifiers": {(DOMAIN, self._integration_name)},
             "model": "Lightning Detector",
-            "sw_version": "0.0.1",
+            "sw_version": SW_VERSION,
             "entry_type": DeviceEntryType.SERVICE,
         }
 
@@ -152,7 +153,8 @@ class LightningSensor(BlitzortungSensor):
 
 class DistanceSensor(LightningSensor):
     kind = ATTR_LIGHTNING_DISTANCE
-    unit_of_measurement = LENGTH_KILOMETERS
+    device_class = ATTR_LIGHTNING_DISTANCE
+    _attr_native_unit_of_measurement = UnitOfLength.KILOMETERS
 
     def update_lightning(self, lightning):
         self._state = lightning["distance"]
@@ -163,7 +165,7 @@ class DistanceSensor(LightningSensor):
 
 class AzimuthSensor(LightningSensor):
     kind = ATTR_LIGHTNING_AZIMUTH
-    unit_of_measurement = DEGREE
+    _attr_native_unit_of_measurement = DEGREE
 
     def update_lightning(self, lightning):
         self._state = lightning["azimuth"]
@@ -174,7 +176,7 @@ class AzimuthSensor(LightningSensor):
 
 class CounterSensor(LightningSensor):
     kind = ATTR_LIGHTNING_COUNTER
-    unit_of_measurement = "↯"
+    _attr_native_unit_of_measurement = "↯"
     INITIAL_STATE = 0
 
     def update_lightning(self, lightning):

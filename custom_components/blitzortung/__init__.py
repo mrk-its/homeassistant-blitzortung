@@ -13,6 +13,9 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.event import async_track_time_interval
 
+from homeassistant.util.unit_system import IMPERIAL_SYSTEM
+from homeassistant.util.unit_conversion import DistanceConverter
+from homeassistant.const import UnitOfLength
 from . import const
 from .const import (
     CONF_IDLE_RESET_TIMEOUT,
@@ -66,6 +69,12 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
             "bigger memory usage / unstable frontend",
             max_tracked_lightnings,
         )
+
+    if hass.config.units == IMPERIAL_SYSTEM:
+        radius_mi = radius
+        radius = DistanceConverter.convert(radius, UnitOfLength.MILES, UnitOfLength.KILOMETERS)
+        _LOGGER.info("imperial system, %s mi -> %s km", radius_mi, radius)
+
     coordinator = BlitzortungCoordinator(
         hass,
         latitude,
@@ -156,7 +165,7 @@ class BlitzortungCoordinator:
         hass,
         latitude,
         longitude,
-        radius,
+        radius,  # unit: km
         max_tracked_lightnings,
         time_window_seconds,
         update_interval,
