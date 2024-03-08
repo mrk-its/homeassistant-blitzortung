@@ -237,7 +237,7 @@ class BlitzortungCoordinator:
         azimuth = round(math.atan2(dx, dy) * 180 / math.pi) % 360
 
         lightning[SensorDeviceClass.DISTANCE] = distance
-        lightning[SensorDeviceClass.DISTANCE] = azimuth
+        lightning[const.ATTR_LIGHTNING_AZIMUTH] = azimuth
 
     async def connect(self):
         await self.mqtt_client.async_connect()
