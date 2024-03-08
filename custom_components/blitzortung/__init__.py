@@ -296,7 +296,7 @@ class BlitzortungCoordinator:
         if message.topic.startswith("blitzortung/1.1"):
             lightning = json.loads(message.payload)
             self.compute_polar_coords(lightning)
-            if lightning[const.ATTR_LIGHTNING_DISTANCE] < self.radius:
+            if lightning[SensorDeviceClass.DISTANCE] < self.radius:
                 _LOGGER.debug("ligntning data: %s", lightning)
                 self.last_time = time.time()
                 for callback in self.lightning_callbacks:
