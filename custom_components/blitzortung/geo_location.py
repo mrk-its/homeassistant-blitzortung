@@ -101,7 +101,7 @@ class BlitzortungEventManager:
         else:
             self._unit = UnitOfLength.KILOMETERS
 
-    def lightning_cb(self, lightning):
+    async def lightning_cb(self, lightning):
         _LOGGER.debug("geo_location lightning: %s", lightning)
         event = BlitzortungEvent(
             lightning["distance"],

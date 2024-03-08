@@ -286,7 +286,7 @@ class BlitzortungCoordinator:
                     notification_id="blitzortung_new_version_available",
                 )
 
-    def on_mqtt_message(self, message, *args):
+    async def on_mqtt_message(self, message, *args):
         for callback in self.callbacks:
             callback(message)
         if message.topic.startswith("blitzortung/1.1"):
@@ -296,7 +296,7 @@ class BlitzortungCoordinator:
                 _LOGGER.debug("lightning data: %s", lightning)
                 self.last_time = time.time()
                 for callback in self.lightning_callbacks:
-                    callback(lightning)
+                    await callback(lightning)
                 for sensor in self.sensors:
                     sensor.update_lightning(lightning)
 
