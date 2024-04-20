@@ -281,14 +281,16 @@ class MQTT:
                     )
                     continue
 
-            subscription.callback(
-                Message(
-                    msg.topic,
-                    payload,
-                    msg.qos,
-                    msg.retain,
-                    subscription.topic,
-                    timestamp,
+            self.hass.async_create_task(
+                subscription.callback(
+                    Message(
+                        msg.topic,
+                        payload,
+                        msg.qos,
+                        msg.retain,
+                        subscription.topic,
+                        timestamp,
+                    )
                 )
             )
 
