@@ -88,16 +88,9 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 
     hass.data[DOMAIN][config_entry.entry_id] = coordinator
 
-    async def start_platforms():
-        await asyncio.gather(
-            *[
-                hass.config_entries.async_forward_entry_setup(config_entry, component)
-                for component in PLATFORMS
-            ]
-        )
-        await coordinator.connect()
+    await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
 
-    hass.async_create_task(start_platforms())
+    await coordinator.connect()
 
     if not config_entry.update_listeners:
         config_entry.add_update_listener(async_update_options)
