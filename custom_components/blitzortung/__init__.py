@@ -105,15 +105,19 @@ async def async_update_options(hass, config_entry):
 
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Unload a config entry."""
-    coordinator: BlitzortungCoordinator = hass.data[DOMAIN][config_entry.entry_id]
+    coordinator = hass.data[DOMAIN].pop(config_entry.entry_id)
     await coordinator.disconnect()
-    _LOGGER.debug("Disconnected")
+    _LOGGER.info("disconnected")
 
-    # Cleanup platforms.
-    if unload_ok := await hass.config_entries.async_unload_platforms(config_entry, PLATFORMS):
-        # Pop coordinator only when unload was succesfull.
-        hass.data[DOMAIN].pop(config_entry.entry_id)
-
+    # cleanup platforms
+    unload_ok = all(
+        await asyncio.gather(
+            *[
+                hass.config_entries.async_forward_entry_unload(config_entry, component)
+                for component in PLATFORMS
+            ]
+        )
+    )
     return unload_ok
 
 
