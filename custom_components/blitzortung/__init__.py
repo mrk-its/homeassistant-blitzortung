@@ -75,7 +75,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: BlitzortungConfig
         radius = DistanceConverter.convert(radius, UnitOfLength.MILES, UnitOfLength.KILOMETERS)
         _LOGGER.info("imperial system, %s mi -> %s km", radius_mi, radius)
 
-    coordinator = BlitzortungCoordinator(
+    config_entry.runtime_data = BlitzortungCoordinator(
         hass,
         latitude,
         longitude,
@@ -86,10 +86,8 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: BlitzortungConfig
         server_stats=config.get(const.SERVER_STATS),
     )
 
-    config_entry.runtime_data = coordinator
-
     await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
-    await coordinator.connect()
+    await config_entry.runtime_data.connect()
 
     if not config_entry.update_listeners:
         config_entry.add_update_listener(async_update_options)
