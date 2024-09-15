@@ -63,15 +63,16 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
 class BlitzortungSensor(SensorEntity):
     """Define a Blitzortung sensor."""
+    _attr_has_entity_name = True
 
     def __init__(self, coordinator, integration_name, unique_prefix):
         """Initialize."""
         self.coordinator = coordinator
         self._integration_name = integration_name
-        self.entity_id = f"sensor.{integration_name}-{self.name}"
         self._unique_id = f"{unique_prefix}-{self.kind}"
         self._device_class = None
         self._attrs = {ATTR_ATTRIBUTION: ATTRIBUTION}
+        self._attr_translation_key=self.kind
 
     should_poll = False
     icon = "mdi:flash"
@@ -84,11 +85,6 @@ class BlitzortungSensor(SensorEntity):
     @property
     def label(self):
         return self.kind.capitalize()
-
-    @property
-    def name(self):
-        """Return the name."""
-        return f"Lightning {self.label}"
 
     @property
     def extra_state_attributes(self):

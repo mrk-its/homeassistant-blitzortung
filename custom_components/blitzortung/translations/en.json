@@ -25,5 +25,18 @@
         }
       }
     }
+  },
+  "entity": {
+  	"sensor": {
+      "distance": {
+        "name": "Lightning Distance"
+      },
+      "azimuth": {
+        "name": "Lightning Azimuth"
+      },
+      "counter": {
+        "name": "Lightning Counter"
+      }
+    }
   }
 }

@@ -25,5 +25,18 @@
         }
       }
     }
+  },
+  "entity": {
+  	"sensor": {
+      "distance": {
+        "name": "Bliksem Afstand"
+      },
+      "azimuth": {
+        "name": "Bliksem Azimut"
+      },
+      "counter": {
+        "name": "Bliksem Teller"
+      }
+    }
   }
 }
