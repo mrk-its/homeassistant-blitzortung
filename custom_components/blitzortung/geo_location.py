@@ -30,7 +30,7 @@ SIGNAL_DELETE_ENTITY = "blitzortung_delete_entity_{0}"
 
 
 async def async_setup_entry(hass, config_entry: BlitzortungConfigEntry, async_add_entities):
-    coordinator = config_entry.runtimedata
+    coordinator = config_entry.runtime_data
     if not coordinator.max_tracked_lightnings:
         return
 
