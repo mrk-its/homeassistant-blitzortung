@@ -1,6 +1,7 @@
 import datetime
+from .version import __version__
 
-SW_VERSION = "1.3.1"
+SW_VERSION = __version__
 
 PLATFORMS = ["sensor", "geo_location"]
 
