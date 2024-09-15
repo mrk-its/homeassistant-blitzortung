@@ -11,6 +11,7 @@ from .const import (
     ATTR_LIGHTNING_COUNTER,
     ATTR_LON,
     ATTRIBUTION,
+    BLITZORTUNG_CONFIG,
     DOMAIN,
     SERVER_STATS,
     SW_VERSION,
@@ -38,7 +39,7 @@ async def async_setup_entry(hass, config_entry: BlitzortungConfigEntry, async_ad
 
     async_add_entities(sensors, False)
 
-    config = hass.data[DOMAIN].get("config") or {}
+    config = hass.data[BLITZORTUNG_CONFIG]
     if config.get(SERVER_STATS):
         server_stat_sensors = {}
 

@@ -17,6 +17,7 @@ from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 from homeassistant.util.unit_conversion import DistanceConverter
 from . import const
 from .const import (
+    BLITZORTUNG_CONFIG,
     CONF_IDLE_RESET_TIMEOUT,
     CONF_MAX_TRACKED_LIGHTNINGS,
     CONF_RADIUS,
@@ -45,15 +46,13 @@ BlitzortungConfigEntry = ConfigEntry["BlitzortungCoordinator"]
 
 async def async_setup(hass: HomeAssistant, config: dict):
     """Initialize basic config of blitzortung component."""
-    hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN]["config"] = config.get(DOMAIN) or {}
+    hass.data[BLITZORTUNG_CONFIG] = config.get(DOMAIN) or {}
     return True
 
 
 async def async_setup_entry(hass: HomeAssistant, config_entry: BlitzortungConfigEntry):
     """Set up blitzortung from a config entry."""
-    hass.data.setdefault(DOMAIN, {})
-    config = hass.data[DOMAIN].get("config") or {}
+    config = hass.data[BLITZORTUNG_CONFIG]
 
     latitude = config_entry.options.get(CONF_LATITUDE, hass.config.latitude)
     longitude = config_entry.options.get(CONF_LONGITUDE, hass.config.longitude)
