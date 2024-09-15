@@ -4,6 +4,7 @@ from homeassistant.const import ATTR_ATTRIBUTION, CONF_NAME, DEGREE, UnitOfLengt
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
 from homeassistant.helpers.device_registry import DeviceEntryType
 
+from . import BlitzortungConfigEntry
 from .const import (
     ATTR_LAT,
     ATTR_LIGHTNING_AZIMUTH,
@@ -23,10 +24,10 @@ ATTR_LIGHTNING_PROPERTY = "lightning_prop"
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass, config_entry, async_add_entities):
+async def async_setup_entry(hass, config_entry: BlitzortungConfigEntry, async_add_entities):
     integration_name = config_entry.data[CONF_NAME]
 
-    coordinator = hass.data[DOMAIN][config_entry.entry_id]
+    coordinator = config_entry.runtime_data
 
     unique_prefix = config_entry.unique_id
 

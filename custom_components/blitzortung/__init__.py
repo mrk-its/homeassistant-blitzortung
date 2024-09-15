@@ -42,111 +42,6 @@ CONFIG_SCHEMA = vol.Schema(
 )
 
 
-async def async_setup(hass: HomeAssistant, config: dict):
-    """Initialize basic config of blitzortung component."""
-    hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN]["config"] = config.get(DOMAIN) or {}
-    return True
-
-
-async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
-    """Set up blitzortung from a config entry."""
-    hass.data.setdefault(DOMAIN, {})
-    config = hass.data[DOMAIN].get("config") or {}
-
-    latitude = config_entry.options.get(CONF_LATITUDE, hass.config.latitude)
-    longitude = config_entry.options.get(CONF_LONGITUDE, hass.config.longitude)
-    radius = config_entry.options.get(CONF_RADIUS, DEFAULT_RADIUS)
-    max_tracked_lightnings = config_entry.options.get(
-        CONF_MAX_TRACKED_LIGHTNINGS, DEFAULT_MAX_TRACKED_LIGHTNINGS
-    )
-    time_window_seconds = (
-        config_entry.options.get(CONF_TIME_WINDOW, DEFAULT_TIME_WINDOW) * 60
-    )
-    if max_tracked_lightnings >= 500:
-        _LOGGER.warning(
-            "Large number of tracked lightnings: %s, it may lead to"
-            "bigger memory usage / unstable frontend",
-            max_tracked_lightnings,
-        )
-
-    if hass.config.units == IMPERIAL_SYSTEM:
-        radius_mi = radius
-        radius = DistanceConverter.convert(radius, UnitOfLength.MILES, UnitOfLength.KILOMETERS)
-        _LOGGER.info("imperial system, %s mi -> %s km", radius_mi, radius)
-
-    coordinator = BlitzortungCoordinator(
-        hass,
-        latitude,
-        longitude,
-        radius,
-        max_tracked_lightnings,
-        time_window_seconds,
-        DEFAULT_UPDATE_INTERVAL,
-        server_stats=config.get(const.SERVER_STATS),
-    )
-
-    hass.data[DOMAIN][config_entry.entry_id] = coordinator
-
-    await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
-    await coordinator.connect()
-
-    if not config_entry.update_listeners:
-        config_entry.add_update_listener(async_update_options)
-
-    return True
-
-
-async def async_update_options(hass, config_entry):
-    """Update options."""
-    _LOGGER.info("async_update_options")
-    await hass.config_entries.async_reload(config_entry.entry_id)
-
-
-async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):
-    """Unload a config entry."""
-    coordinator: BlitzortungCoordinator = hass.data[DOMAIN][config_entry.entry_id]
-    await coordinator.disconnect()
-    _LOGGER.debug("Disconnected")
-
-    # Cleanup platforms.
-    if unload_ok := await hass.config_entries.async_unload_platforms(config_entry, PLATFORMS):
-        # Pop coordinator only when unload was succesfull.
-        hass.data[DOMAIN].pop(config_entry.entry_id)
-
-    return unload_ok
-
-
-async def async_migrate_entry(hass, entry):
-    _LOGGER.debug("Migrating Blitzortung entry from Version %s", entry.version)
-    if entry.version == 1:
-        latitude = entry.data[CONF_LATITUDE]
-        longitude = entry.data[CONF_LONGITUDE]
-        radius = entry.data[CONF_RADIUS]
-        name = entry.data[CONF_NAME]
-
-        entry.unique_id = f"{latitude}-{longitude}-{name}-lightning"
-        entry.data = {CONF_NAME: name}
-        entry.options = {
-            CONF_LATITUDE: latitude,
-            CONF_LONGITUDE: longitude,
-            CONF_RADIUS: radius,
-        }
-        entry.version = 2
-    if entry.version == 2:
-        entry.options = dict(entry.options)
-        entry.options[CONF_IDLE_RESET_TIMEOUT] = DEFAULT_IDLE_RESET_TIMEOUT
-        entry.version = 3
-    if entry.version == 3:
-        entry.options = dict(entry.options)
-        entry.options[CONF_TIME_WINDOW] = entry.options.pop(
-            CONF_IDLE_RESET_TIMEOUT, DEFAULT_TIME_WINDOW
-        )
-        entry.version = 4
-
-    return True
-
-
 class BlitzortungCoordinator:
     def __init__(
         self,
@@ -316,3 +211,111 @@ class BlitzortungCoordinator:
     async def _tick(self, *args):
         for cb in self.on_tick_callbacks:
             cb()
+
+
+BlitzortungConfigEntry = ConfigEntry[BlitzortungCoordinator]
+
+
+async def async_setup(hass: HomeAssistant, config: dict):
+    """Initialize basic config of blitzortung component."""
+    hass.data.setdefault(DOMAIN, {})
+    hass.data[DOMAIN]["config"] = config.get(DOMAIN) or {}
+    return True
+
+
+async def async_setup_entry(hass: HomeAssistant, config_entry: BlitzortungConfigEntry):
+    """Set up blitzortung from a config entry."""
+    hass.data.setdefault(DOMAIN, {})
+    config = hass.data[DOMAIN].get("config") or {}
+
+    latitude = config_entry.options.get(CONF_LATITUDE, hass.config.latitude)
+    longitude = config_entry.options.get(CONF_LONGITUDE, hass.config.longitude)
+    radius = config_entry.options.get(CONF_RADIUS, DEFAULT_RADIUS)
+    max_tracked_lightnings = config_entry.options.get(
+        CONF_MAX_TRACKED_LIGHTNINGS, DEFAULT_MAX_TRACKED_LIGHTNINGS
+    )
+    time_window_seconds = (
+        config_entry.options.get(CONF_TIME_WINDOW, DEFAULT_TIME_WINDOW) * 60
+    )
+    if max_tracked_lightnings >= 500:
+        _LOGGER.warning(
+            "Large number of tracked lightnings: %s, it may lead to"
+            "bigger memory usage / unstable frontend",
+            max_tracked_lightnings,
+        )
+
+    if hass.config.units == IMPERIAL_SYSTEM:
+        radius_mi = radius
+        radius = DistanceConverter.convert(radius, UnitOfLength.MILES, UnitOfLength.KILOMETERS)
+        _LOGGER.info("imperial system, %s mi -> %s km", radius_mi, radius)
+
+    coordinator = BlitzortungCoordinator(
+        hass,
+        latitude,
+        longitude,
+        radius,
+        max_tracked_lightnings,
+        time_window_seconds,
+        DEFAULT_UPDATE_INTERVAL,
+        server_stats=config.get(const.SERVER_STATS),
+    )
+
+    config_entry.runtime_data = coordinator
+
+    await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
+    await coordinator.connect()
+
+    if not config_entry.update_listeners:
+        config_entry.add_update_listener(async_update_options)
+
+    return True
+
+
+async def async_update_options(hass, config_entry: BlitzortungConfigEntry):
+    """Update options."""
+    _LOGGER.info("async_update_options")
+    await hass.config_entries.async_reload(config_entry.entry_id)
+
+
+async def async_unload_entry(hass: HomeAssistant, config_entry: BlitzortungConfigEntry):
+    """Unload a config entry."""
+    coordinator: BlitzortungCoordinator = config_entry.runtime_data
+    await coordinator.disconnect()
+    _LOGGER.debug("Disconnected")
+
+    # Cleanup platforms.
+    if unload_ok := await hass.config_entries.async_unload_platforms(config_entry, PLATFORMS):
+        # Pop coordinator only when unload was succesfull.
+        hass.data[DOMAIN].pop(config_entry.entry_id)
+
+    return unload_ok
+
+
+async def async_migrate_entry(hass, entry: BlitzortungConfigEntry):
+    _LOGGER.debug("Migrating Blitzortung entry from Version %s", entry.version)
+    if entry.version == 1:
+        latitude = entry.data[CONF_LATITUDE]
+        longitude = entry.data[CONF_LONGITUDE]
+        radius = entry.data[CONF_RADIUS]
+        name = entry.data[CONF_NAME]
+
+        entry.unique_id = f"{latitude}-{longitude}-{name}-lightning"
+        entry.data = {CONF_NAME: name}
+        entry.options = {
+            CONF_LATITUDE: latitude,
+            CONF_LONGITUDE: longitude,
+            CONF_RADIUS: radius,
+        }
+        entry.version = 2
+    if entry.version == 2:
+        entry.options = dict(entry.options)
+        entry.options[CONF_IDLE_RESET_TIMEOUT] = DEFAULT_IDLE_RESET_TIMEOUT
+        entry.version = 3
+    if entry.version == 3:
+        entry.options = dict(entry.options)
+        entry.options[CONF_TIME_WINDOW] = entry.options.pop(
+            CONF_IDLE_RESET_TIMEOUT, DEFAULT_TIME_WINDOW
+        )
+        entry.version = 4
+
+    return True
