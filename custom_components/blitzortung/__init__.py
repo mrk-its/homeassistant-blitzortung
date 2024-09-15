@@ -106,16 +106,10 @@ async def async_update_options(hass, config_entry: BlitzortungConfigEntry):
 
 async def async_unload_entry(hass: HomeAssistant, config_entry: BlitzortungConfigEntry):
     """Unload a config entry."""
-    coordinator = config_entry.runtime_data
-    await coordinator.disconnect()
+    await config_entry.runtime_data.disconnect()
     _LOGGER.debug("Disconnected")
 
-    # Cleanup platforms.
-    if unload_ok := await hass.config_entries.async_unload_platforms(config_entry, PLATFORMS):
-        # Pop coordinator only when unload was succesfull.
-        hass.data[DOMAIN].pop(config_entry.entry_id)
-
-    return unload_ok
+    return await hass.config_entries.async_unload_platforms(config_entry, PLATFORMS)
 
 
 async def async_migrate_entry(hass, entry: BlitzortungConfigEntry):
