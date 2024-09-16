@@ -3,7 +3,13 @@
 import logging
 from dataclasses import dataclass
 
-from homeassistant.const import CONF_NAME, DEGREE, UnitOfLength, EntityCategory, UnitOfTime
+from homeassistant.const import (
+    CONF_NAME,
+    DEGREE,
+    UnitOfLength,
+    EntityCategory,
+    UnitOfTime,
+)
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
@@ -206,7 +212,9 @@ SENSORS: tuple[BlitzortungSensorEntityDescription, ...] = (
 )
 
 
-async def async_setup_entry(hass, config_entry: BlitzortungConfigEntry, async_add_entities):
+async def async_setup_entry(
+    hass, config_entry: BlitzortungConfigEntry, async_add_entities
+):
     """Add Blitzortung sensor entity from a config_entry."""
     integration_name = config_entry.data[CONF_NAME]
 
