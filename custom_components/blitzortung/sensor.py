@@ -158,9 +158,6 @@ class ServerStatSensor(BlitzortungSensor):
         else:
             self.data_type = int
 
-        if self.kind == "clients_connected":
-            self.kind = "server_stats"
-
         super().__init__(coordinator, description, integration_name, unique_prefix)
 
     @property
@@ -168,7 +165,7 @@ class ServerStatSensor(BlitzortungSensor):
         if self.kind == "uptime":
             return UnitOfTime.SECONDS
         if self.data_type in (int, float):
-            return "clients" if self.kind == "server_stats" else " "
+            return "clients" if self.kind == "clients_connected" else " "
 
     @classmethod
     def for_topic(cls, topic, coordinator, integration_name, unique_prefix):
