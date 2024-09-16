@@ -1,7 +1,8 @@
 """Blitzortung sensor platform."""
+
 import logging
 
-from homeassistant.const import CONF_NAME, DEGREE, UnitOfLength
+from homeassistant.const import CONF_NAME, DEGREE, UnitOfLength, EntityCategory
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
@@ -127,7 +128,7 @@ class LightningSensor(BlitzortungSensor):
 
 class DistanceSensor(LightningSensor):
     """Define a Blitzortung distance sensor."""
-    
+
     kind = SensorDeviceClass.DISTANCE
     _attr_device_class = SensorDeviceClass.DISTANCE
     _attr_state_class = SensorStateClass.MEASUREMENT
@@ -155,7 +156,7 @@ class AzimuthSensor(LightningSensor):
 
 class CounterSensor(LightningSensor):
     """Define a Blitzortung counter sensor."""
-    
+
     kind = ATTR_LIGHTNING_COUNTER
     _attr_native_unit_of_measurement = "↯"
     INITIAL_STATE = 0
@@ -167,6 +168,8 @@ class CounterSensor(LightningSensor):
 
 class ServerStatSensor(BlitzortungSensor):
     """Define a Blitzortung server stats sensor."""
+
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def __init__(self, topic, coordinator, integration_name, unique_prefix):
         """Initialize."""
