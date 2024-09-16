@@ -3,7 +3,7 @@
 import logging
 from dataclasses import dataclass
 
-from homeassistant.const import CONF_NAME, DEGREE, UnitOfLength, EntityCategory
+from homeassistant.const import CONF_NAME, DEGREE, UnitOfLength, EntityCategory, UnitOfTime
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
@@ -140,7 +140,7 @@ class ServerStatSensor(BlitzortungSensor):
         self.kind = "_".join(topic_parts)
         if self.kind.startswith("load"):
             self.data_type = float
-        elif self.kind in ("uptime", "version"):
+        elif self.kind == "version":
             self.data_type = str
         else:
             self.data_type = int
@@ -152,6 +152,8 @@ class ServerStatSensor(BlitzortungSensor):
 
     @property
     def native_unit_of_measurement(self):
+        if self.kind == "uptime":
+            return UnitOfTime.SECONDS
         if self.data_type in (int, float):
             return "clients" if self.kind == "server_stats" else " "
 
@@ -162,6 +164,8 @@ class ServerStatSensor(BlitzortungSensor):
     def on_message(self, topic, message):
         if topic == self._topic:
             payload = message.payload.decode("utf-8")
+            if self.kind == "uptime":
+                payload = payload.split(" ")[0]
             try:
                 self._attr_native_value = self.data_type(payload)
             except ValueError:
