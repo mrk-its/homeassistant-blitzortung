@@ -249,13 +249,14 @@ async def async_setup_entry(
                 return
             sensor = server_stat_sensors.get(topic)
             if not sensor:
-                description = SensorEntityDescription(
+                description = BlitzortungSensorEntityDescription(
                     key=topic.replace("/", "_"),
                     has_entity_name=False,
                     entity_category=EntityCategory.DIAGNOSTIC,
                     icon="mdi:server",
+                    entity_class=ServerStatSensor,
                 )
-                sensor = ServerStatSensor(
+                sensor = description.entity_class(
                     topic, coordinator, description, integration_name, unique_prefix
                 )
                 server_stat_sensors[topic] = sensor
