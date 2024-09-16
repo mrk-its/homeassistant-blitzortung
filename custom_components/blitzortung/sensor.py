@@ -189,7 +189,7 @@ class ServerStatSensor(BlitzortungSensor):
         super().__init__(coordinator, integration_name, unique_prefix)
 
     @property
-    def unit_of_measurement(self):
+    def native_unit_of_measurement(self):
         if self.data_type in (int, float):
             return "." if self.kind == "server_stats" else " "
         else:
@@ -208,11 +208,3 @@ class ServerStatSensor(BlitzortungSensor):
                 self._attr_native_value = str(payload)
             if self.hass:
                 self.async_write_ha_state()
-
-    @property
-    def label(self):
-        return self._name
-
-    @property
-    def name(self):
-        return self._name
