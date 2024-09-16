@@ -1,8 +1,13 @@
+"""Blitzortung sensor platform."""
 import logging
 
-from homeassistant.const import ATTR_ATTRIBUTION, CONF_NAME, DEGREE, UnitOfLength
-from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
-from homeassistant.helpers.device_registry import DeviceEntryType
+from homeassistant.const import CONF_NAME, DEGREE, UnitOfLength
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorStateClass,
+)
+from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 
 from . import BlitzortungConfigEntry
 from .const import (
@@ -17,10 +22,6 @@ from .const import (
     SW_VERSION,
 )
 
-ATTR_ICON = "icon"
-ATTR_LABEL = "label"
-ATTR_UNIT = "unit"
-ATTR_LIGHTNING_PROPERTY = "lightning_prop"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -66,58 +67,34 @@ async def async_setup_entry(hass, config_entry: BlitzortungConfigEntry, async_ad
 class BlitzortungSensor(SensorEntity):
     """Define a Blitzortung sensor."""
 
+    _attr_icon = "mdi:flash"
+    _attr_should_poll = False
+    _attr_has_entity_name = True
+
     def __init__(self, coordinator, integration_name, unique_prefix):
         """Initialize."""
         self.coordinator = coordinator
-        self._integration_name = integration_name
-        self.entity_id = f"sensor.{integration_name}-{self.name}"
-        self._unique_id = f"{unique_prefix}-{self.kind}"
-        self._attrs = {ATTR_ATTRIBUTION: ATTRIBUTION}
-
-    should_poll = False
-    icon = "mdi:flash"
-    device_class = None
+        self._attr_unique_id = f"{unique_prefix}-{self.kind}"
+        self._attr_name = f"Lightning {self.kind.capitalize()}"
+        self._attr_attribution = ATTRIBUTION
+        self._attr_device_info = DeviceInfo(
+            name=f"{integration_name} Lightning Detector",
+            identifiers={(DOMAIN, integration_name)},
+            model="Lightning Detector",
+            sw_version=SW_VERSION,
+            entry_type=DeviceEntryType.SERVICE,
+        )
 
     @property
     def available(self):
         return self.coordinator.is_connected
 
-    @property
-    def label(self):
-        return self.kind.capitalize()
-
-    @property
-    def name(self):
-        """Return the name."""
-        return f"Lightning {self.label}"
-
-    @property
-    def extra_state_attributes(self):
-        """Return the state attributes."""
-        return self._attrs
-
-    @property
-    def unique_id(self):
-        """Return a unique_id for this entity."""
-        return self._unique_id
-
     async def async_added_to_hass(self):
         """Connect to dispatcher listening for entity data notifications."""
-        # self.async_on_remove(self.coordinator.async_add_listener(self._update_sensor))
         self.coordinator.register_sensor(self)
 
     async def async_update(self):
         await self.coordinator.async_request_refresh()
-
-    @property
-    def device_info(self):
-        return {
-            "name": f"{self._integration_name} Lightning Detector",
-            "identifiers": {(DOMAIN, self._integration_name)},
-            "model": "Lightning Detector",
-            "sw_version": SW_VERSION,
-            "entry_type": DeviceEntryType.SERVICE,
-        }
 
     def update_lightning(self, lightning):
         pass
@@ -137,15 +114,18 @@ class LightningSensor(BlitzortungSensor):
         self._attr_native_value = self.INITIAL_STATE
 
     def tick(self):
-        if self._attr_native_value != self.INITIAL_STATE and self.coordinator.is_inactive:
+        if (
+            self._attr_native_value != self.INITIAL_STATE
+            and self.coordinator.is_inactive
+        ):
             self._attr_native_value = self.INITIAL_STATE
             self.async_write_ha_state()
 
 
 class DistanceSensor(LightningSensor):
     kind = SensorDeviceClass.DISTANCE
-    device_class = SensorDeviceClass.DISTANCE
-    state_class = SensorStateClass.MEASUREMENT
+    _attr_device_class = SensorDeviceClass.DISTANCE
+    _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = UnitOfLength.KILOMETERS
 
     def update_lightning(self, lightning):
