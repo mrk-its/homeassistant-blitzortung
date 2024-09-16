@@ -3,18 +3,18 @@
 import logging
 from dataclasses import dataclass
 
-from homeassistant.const import (
-    CONF_NAME,
-    DEGREE,
-    UnitOfLength,
-    EntityCategory,
-    UnitOfTime,
-)
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
-    SensorStateClass,
     SensorEntityDescription,
+    SensorStateClass,
+)
+from homeassistant.const import (
+    CONF_NAME,
+    DEGREE,
+    EntityCategory,
+    UnitOfLength,
+    UnitOfTime,
 )
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.typing import UNDEFINED
@@ -22,10 +22,10 @@ from homeassistant.helpers.typing import UNDEFINED
 from . import BlitzortungConfigEntry
 from .const import (
     ATTR_LAT,
-    ATTR_LON,
+    ATTR_LIGHTNING_AZIMUTH,
     ATTR_LIGHTNING_COUNTER,
     ATTR_LIGHTNING_DISTANCE,
-    ATTR_LIGHTNING_AZIMUTH,
+    ATTR_LON,
     ATTRIBUTION,
     BLITZORTUNG_CONFIG,
     DOMAIN,
@@ -166,6 +166,7 @@ class ServerStatSensor(BlitzortungSensor):
             return UnitOfTime.SECONDS
         if self.data_type in (int, float):
             return "clients" if self.kind == "clients_connected" else " "
+        return None
 
     @classmethod
     def for_topic(cls, topic, coordinator, integration_name, unique_prefix):
