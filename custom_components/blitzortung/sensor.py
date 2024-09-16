@@ -1,20 +1,21 @@
 """Blitzortung sensor platform."""
 
 import logging
+from dataclasses import dataclass
 
 from homeassistant.const import CONF_NAME, DEGREE, UnitOfLength, EntityCategory
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
     SensorStateClass,
+    SensorEntityDescription,
 )
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
+from homeassistant.helpers.typing import UNDEFINED
 
 from . import BlitzortungConfigEntry
 from .const import (
     ATTR_LAT,
-    ATTR_LIGHTNING_AZIMUTH,
-    ATTR_LIGHTNING_COUNTER,
     ATTR_LON,
     ATTRIBUTION,
     BLITZORTUNG_CONFIG,
@@ -23,60 +24,27 @@ from .const import (
     SW_VERSION,
 )
 
-
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass, config_entry: BlitzortungConfigEntry, async_add_entities):
-    integration_name = config_entry.data[CONF_NAME]
+@dataclass(frozen=True, kw_only=True)
+class BlitzortungSensorEntityDescription(SensorEntityDescription):
+    """Blitzortun sensor entity description."""
 
-    coordinator = config_entry.runtime_data
-
-    unique_prefix = config_entry.unique_id
-
-    sensors = [
-        klass(coordinator, integration_name, unique_prefix)
-        for klass in (DistanceSensor, AzimuthSensor, CounterSensor)
-    ]
-
-    async_add_entities(sensors, False)
-
-    config = hass.data[BLITZORTUNG_CONFIG]
-    if config.get(SERVER_STATS):
-        server_stat_sensors = {}
-
-        def on_message(message):
-            if not message.topic.startswith("$SYS/broker/"):
-                return
-            topic = message.topic.replace("$SYS/broker/", "")
-            if topic.startswith("load") and not topic.endswith("/1min"):
-                return
-            if topic.startswith("clients") and topic != "clients/connected":
-                return
-            sensor = server_stat_sensors.get(topic)
-            if not sensor:
-                sensor = ServerStatSensor(
-                    topic, coordinator, integration_name, unique_prefix
-                )
-                server_stat_sensors[topic] = sensor
-                async_add_entities([sensor], False)
-            sensor.on_message(topic, message)
-
-        coordinator.register_message_receiver(on_message)
+    entity_class: type["BlitzortungSensor"]
 
 
 class BlitzortungSensor(SensorEntity):
     """Define a Blitzortung sensor."""
 
-    _attr_icon = "mdi:flash"
     _attr_should_poll = False
-    _attr_has_entity_name = True
 
-    def __init__(self, coordinator, integration_name, unique_prefix):
+    def __init__(self, coordinator, description, integration_name, unique_prefix):
         """Initialize."""
         self.coordinator = coordinator
-        self._attr_unique_id = f"{unique_prefix}-{self.kind}"
-        self._attr_name = f"Lightning {self.kind.capitalize()}"
+        self._attr_unique_id = f"{unique_prefix}-{description.key}"
+        if description.name is UNDEFINED:
+            self._attr_name = f"Server {description.key.replace("_", " ").lower()}"
         self._attr_attribution = ATTRIBUTION
         self._attr_device_info = DeviceInfo(
             name=integration_name,
@@ -85,6 +53,7 @@ class BlitzortungSensor(SensorEntity):
             sw_version=SW_VERSION,
             entry_type=DeviceEntryType.SERVICE,
         )
+        self.entity_description = description
 
     @property
     def available(self):
@@ -129,12 +98,8 @@ class LightningSensor(BlitzortungSensor):
 class DistanceSensor(LightningSensor):
     """Define a Blitzortung distance sensor."""
 
-    kind = SensorDeviceClass.DISTANCE
-    _attr_device_class = SensorDeviceClass.DISTANCE
-    _attr_state_class = SensorStateClass.MEASUREMENT
-    _attr_native_unit_of_measurement = UnitOfLength.KILOMETERS
-
     def update_lightning(self, lightning):
+        """Update the sensor data."""
         self._attr_native_value = lightning["distance"]
         self._attrs[ATTR_LAT] = lightning[ATTR_LAT]
         self._attrs[ATTR_LON] = lightning[ATTR_LON]
@@ -144,10 +109,8 @@ class DistanceSensor(LightningSensor):
 class AzimuthSensor(LightningSensor):
     """Define a Blitzortung azimuth sensor."""
 
-    kind = ATTR_LIGHTNING_AZIMUTH
-    _attr_native_unit_of_measurement = DEGREE
-
     def update_lightning(self, lightning):
+        """Update the sensor data."""
         self._attr_native_value = lightning["azimuth"]
         self._attrs[ATTR_LAT] = lightning[ATTR_LAT]
         self._attrs[ATTR_LON] = lightning[ATTR_LON]
@@ -157,8 +120,6 @@ class AzimuthSensor(LightningSensor):
 class CounterSensor(LightningSensor):
     """Define a Blitzortung counter sensor."""
 
-    kind = ATTR_LIGHTNING_COUNTER
-    _attr_native_unit_of_measurement = "↯"
     INITIAL_STATE = 0
 
     def update_lightning(self, lightning):
@@ -169,13 +130,13 @@ class CounterSensor(LightningSensor):
 class ServerStatSensor(BlitzortungSensor):
     """Define a Blitzortung server stats sensor."""
 
-    _attr_entity_category = EntityCategory.DIAGNOSTIC
-
-    def __init__(self, topic, coordinator, integration_name, unique_prefix):
+    def __init__(
+        self, topic, coordinator, description, integration_name, unique_prefix
+    ):
         """Initialize."""
         self._topic = topic
 
-        topic_parts = topic.replace("$SYS/broker/", "").split("/")
+        topic_parts = topic.split("/")
         self.kind = "_".join(topic_parts)
         if self.kind.startswith("load"):
             self.data_type = float
@@ -187,16 +148,12 @@ class ServerStatSensor(BlitzortungSensor):
         if self.kind == "clients_connected":
             self.kind = "server_stats"
 
-        self._name = " ".join(part.capitalize() for part in topic_parts)
-
-        super().__init__(coordinator, integration_name, unique_prefix)
+        super().__init__(coordinator, description, integration_name, unique_prefix)
 
     @property
     def native_unit_of_measurement(self):
         if self.data_type in (int, float):
-            return "." if self.kind == "server_stats" else " "
-        else:
-            return None
+            return "clients" if self.kind == "server_stats" else " "
 
     @classmethod
     def for_topic(cls, topic, coordinator, integration_name, unique_prefix):
@@ -211,3 +168,82 @@ class ServerStatSensor(BlitzortungSensor):
                 self._attr_native_value = str(payload)
             if self.hass:
                 self.async_write_ha_state()
+
+
+SENSORS: tuple[BlitzortungSensorEntityDescription, ...] = (
+    BlitzortungSensorEntityDescription(
+        key="azimuth",
+        name="Lightning azimuth",
+        has_entity_name=True,
+        native_unit_of_measurement=DEGREE,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:compass-outline",
+        entity_class=AzimuthSensor,
+    ),
+    BlitzortungSensorEntityDescription(
+        key="counter",
+        name="Lightning counter",
+        has_entity_name=True,
+        native_unit_of_measurement="↯",
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:flash",
+        entity_class=CounterSensor,
+    ),
+    BlitzortungSensorEntityDescription(
+        key="distance",
+        name="Lightning distance",
+        has_entity_name=True,
+        native_unit_of_measurement=UnitOfLength.KILOMETERS,
+        device_class=SensorDeviceClass.DISTANCE,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:arrow-left-right",
+        entity_class=DistanceSensor,
+    ),
+)
+
+
+async def async_setup_entry(hass, config_entry: BlitzortungConfigEntry, async_add_entities):
+    """Add Blitzortung sensor entity from a config_entry."""
+    integration_name = config_entry.data[CONF_NAME]
+
+    coordinator = config_entry.runtime_data
+
+    unique_prefix = config_entry.unique_id
+
+    sensors = [
+        description.entity_class(
+            coordinator, description, integration_name, unique_prefix
+        )
+        for description in SENSORS
+    ]
+
+    async_add_entities(sensors, False)
+
+    config = hass.data[BLITZORTUNG_CONFIG]
+    if config.get(SERVER_STATS):
+        server_stat_sensors = {}
+
+        def on_message(message):
+            if not message.topic.startswith("$SYS/broker/"):
+                return
+            topic = message.topic.replace("$SYS/broker/", "")
+            if topic.startswith("load") and not topic.endswith("/1min"):
+                return
+            if topic.startswith("clients") and topic != "clients/connected":
+                return
+            sensor = server_stat_sensors.get(topic)
+            if not sensor:
+                description = SensorEntityDescription(
+                    key=topic.replace("/", "_"),
+                    has_entity_name=False,
+                    entity_category=EntityCategory.DIAGNOSTIC,
+                    icon="mdi:server",
+                )
+                sensor = ServerStatSensor(
+                    topic, coordinator, description, integration_name, unique_prefix
+                )
+                server_stat_sensors[topic] = sensor
+                async_add_entities([sensor], False)
+            sensor.on_message(topic, message)
+
+        coordinator.register_message_receiver(on_message)
