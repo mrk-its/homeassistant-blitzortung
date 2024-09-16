@@ -1,7 +1,11 @@
 import logging
 
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorStateClass,
+)
 from homeassistant.const import ATTR_ATTRIBUTION, CONF_NAME, DEGREE, UnitOfLength
-from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
 from homeassistant.helpers.device_registry import DeviceEntryType
 
 from . import BlitzortungConfigEntry
@@ -25,7 +29,9 @@ ATTR_LIGHTNING_PROPERTY = "lightning_prop"
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass, config_entry: BlitzortungConfigEntry, async_add_entities):
+async def async_setup_entry(
+    hass, config_entry: BlitzortungConfigEntry, async_add_entities
+):
     integration_name = config_entry.data[CONF_NAME]
 
     coordinator = config_entry.runtime_data
@@ -65,6 +71,7 @@ async def async_setup_entry(hass, config_entry: BlitzortungConfigEntry, async_ad
 
 class BlitzortungSensor(SensorEntity):
     """Define a Blitzortung sensor."""
+
     _attr_has_entity_name = True
 
     def __init__(self, coordinator, integration_name, unique_prefix):
@@ -74,7 +81,7 @@ class BlitzortungSensor(SensorEntity):
         self._unique_id = f"{unique_prefix}-{self.kind}"
         self._device_class = None
         self._attrs = {ATTR_ATTRIBUTION: ATTRIBUTION}
-        self._attr_translation_key=self.kind
+        self._attr_translation_key = self.kind
 
     should_poll = False
     icon = "mdi:flash"
@@ -119,7 +126,7 @@ class BlitzortungSensor(SensorEntity):
     def update_lightning(self, lightning):
         pass
 
-    def on_message(self, message):
+    def on_message(self, topic, message):
         pass
 
     def tick(self):
@@ -134,7 +141,10 @@ class LightningSensor(BlitzortungSensor):
         self._attr_native_value = self.INITIAL_STATE
 
     def tick(self):
-        if self._attr_native_value != self.INITIAL_STATE and self.coordinator.is_inactive:
+        if (
+            self._attr_native_value != self.INITIAL_STATE
+            and self.coordinator.is_inactive
+        ):
             self._attr_native_value = self.INITIAL_STATE
             self.async_write_ha_state()
 
@@ -197,8 +207,8 @@ class ServerStatSensor(BlitzortungSensor):
     def unit_of_measurement(self):
         if self.data_type in (int, float):
             return "." if self.kind == "server_stats" else " "
-        else:
-            return None
+
+        return None
 
     @classmethod
     def for_topic(cls, topic, coordinator, integration_name, unique_prefix):
