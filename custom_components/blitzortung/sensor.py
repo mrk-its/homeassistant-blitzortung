@@ -6,9 +6,11 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import ATTR_ATTRIBUTION, CONF_NAME, DEGREE, UnitOfLength
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntryType
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from . import BlitzortungConfigEntry
+from . import BlitzortungConfigEntry, BlitzortungCoordinator
 from .const import (
     ATTR_LAT,
     ATTR_LIGHTNING_AZIMUTH,
@@ -30,11 +32,13 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
-    hass, config_entry: BlitzortungConfigEntry, async_add_entities
+    hass: HomeAssistant,
+    config_entry: BlitzortungConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ):
     integration_name = config_entry.data[CONF_NAME]
 
-    coordinator = config_entry.runtime_data
+    coordinator: BlitzortungCoordinator = config_entry.runtime_data
 
     unique_prefix = config_entry.unique_id
 
@@ -74,7 +78,9 @@ class BlitzortungSensor(SensorEntity):
 
     _attr_has_entity_name = True
 
-    def __init__(self, coordinator, integration_name, unique_prefix):
+    def __init__(
+        self, coordinator: BlitzortungCoordinator, integration_name, unique_prefix
+    ):
         """Initialize."""
         self.coordinator = coordinator
         self._integration_name = integration_name
@@ -184,7 +190,13 @@ class CounterSensor(LightningSensor):
 
 
 class ServerStatSensor(BlitzortungSensor):
-    def __init__(self, topic, coordinator, integration_name, unique_prefix):
+    def __init__(
+        self,
+        topic,
+        coordinator: BlitzortungCoordinator,
+        integration_name,
+        unique_prefix,
+    ):
         self._topic = topic
 
         topic_parts = topic.replace("$SYS/broker/", "").split("/")
@@ -211,7 +223,9 @@ class ServerStatSensor(BlitzortungSensor):
         return None
 
     @classmethod
-    def for_topic(cls, topic, coordinator, integration_name, unique_prefix):
+    def for_topic(
+        cls, topic, coordinator: BlitzortungCoordinator, integration_name, unique_prefix
+    ):
         return cls(topic, coordinator, integration_name, unique_prefix)
 
     def on_message(self, topic, message):
