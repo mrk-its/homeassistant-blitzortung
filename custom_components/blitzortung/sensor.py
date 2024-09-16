@@ -250,6 +250,7 @@ async def async_setup_entry(
                     key=topic.replace("/", "_"),
                     has_entity_name=False,
                     entity_category=EntityCategory.DIAGNOSTIC,
+                    state_class=SensorStateClass.MEASUREMENT,
                     icon="mdi:server",
                     entity_class=ServerStatSensor,
                 )
