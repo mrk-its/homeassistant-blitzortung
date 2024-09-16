@@ -107,9 +107,12 @@ class BlitzortungSensor(SensorEntity):
 
 
 class LightningSensor(BlitzortungSensor):
+    """Define a Blitzortung lightning sensor."""
+
     INITIAL_STATE = None
 
     def __init__(self, *args, **kwargs):
+        """Initialize."""
         super().__init__(*args, **kwargs)
         self._attr_native_value = self.INITIAL_STATE
 
@@ -123,6 +126,8 @@ class LightningSensor(BlitzortungSensor):
 
 
 class DistanceSensor(LightningSensor):
+    """Define a Blitzortung distance sensor."""
+    
     kind = SensorDeviceClass.DISTANCE
     _attr_device_class = SensorDeviceClass.DISTANCE
     _attr_state_class = SensorStateClass.MEASUREMENT
@@ -136,6 +141,8 @@ class DistanceSensor(LightningSensor):
 
 
 class AzimuthSensor(LightningSensor):
+    """Define a Blitzortung azimuth sensor."""
+
     kind = ATTR_LIGHTNING_AZIMUTH
     _attr_native_unit_of_measurement = DEGREE
 
@@ -147,6 +154,8 @@ class AzimuthSensor(LightningSensor):
 
 
 class CounterSensor(LightningSensor):
+    """Define a Blitzortung counter sensor."""
+    
     kind = ATTR_LIGHTNING_COUNTER
     _attr_native_unit_of_measurement = "↯"
     INITIAL_STATE = 0
@@ -157,7 +166,10 @@ class CounterSensor(LightningSensor):
 
 
 class ServerStatSensor(BlitzortungSensor):
+    """Define a Blitzortung server stats sensor."""
+
     def __init__(self, topic, coordinator, integration_name, unique_prefix):
+        """Initialize."""
         self._topic = topic
 
         topic_parts = topic.replace("$SYS/broker/", "").split("/")
