@@ -168,10 +168,6 @@ class ServerStatSensor(BlitzortungSensor):
             return "clients" if self.kind == "clients_connected" else " "
         return None
 
-    @classmethod
-    def for_topic(cls, topic, coordinator, integration_name, unique_prefix):
-        return cls(topic, coordinator, integration_name, unique_prefix)
-
     def on_message(self, topic, message):
         if topic == self._topic:
             payload = message.payload.decode("utf-8")
