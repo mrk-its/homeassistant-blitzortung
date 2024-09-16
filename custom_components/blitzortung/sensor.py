@@ -23,6 +23,9 @@ from . import BlitzortungConfigEntry
 from .const import (
     ATTR_LAT,
     ATTR_LON,
+    ATTR_LIGHTNING_COUNTER,
+    ATTR_LIGHTNING_DISTANCE,
+    ATTR_LIGHTNING_AZIMUTH,
     ATTRIBUTION,
     BLITZORTUNG_CONFIG,
     DOMAIN,
@@ -106,9 +109,11 @@ class DistanceSensor(LightningSensor):
 
     def update_lightning(self, lightning):
         """Update the sensor data."""
-        self._attr_native_value = lightning["distance"]
-        self._attrs[ATTR_LAT] = lightning[ATTR_LAT]
-        self._attrs[ATTR_LON] = lightning[ATTR_LON]
+        self._attr_native_value = lightning[ATTR_LIGHTNING_DISTANCE]
+        self._attr_extra_state_attributes = {
+            ATTR_LAT: lightning[ATTR_LAT],
+            ATTR_LON: lightning[ATTR_LON],
+        }
         self.async_write_ha_state()
 
 
@@ -117,9 +122,11 @@ class AzimuthSensor(LightningSensor):
 
     def update_lightning(self, lightning):
         """Update the sensor data."""
-        self._attr_native_value = lightning["azimuth"]
-        self._attrs[ATTR_LAT] = lightning[ATTR_LAT]
-        self._attrs[ATTR_LON] = lightning[ATTR_LON]
+        self._attr_native_value = lightning[ATTR_LIGHTNING_AZIMUTH]
+        self._attr_extra_state_attributes = {
+            ATTR_LAT: lightning[ATTR_LAT],
+            ATTR_LON: lightning[ATTR_LON],
+        }
         self.async_write_ha_state()
 
 
@@ -182,7 +189,7 @@ class ServerStatSensor(BlitzortungSensor):
 
 SENSORS: tuple[BlitzortungSensorEntityDescription, ...] = (
     BlitzortungSensorEntityDescription(
-        key="azimuth",
+        key=ATTR_LIGHTNING_AZIMUTH,
         name="Lightning azimuth",
         has_entity_name=True,
         native_unit_of_measurement=DEGREE,
@@ -191,7 +198,7 @@ SENSORS: tuple[BlitzortungSensorEntityDescription, ...] = (
         entity_class=AzimuthSensor,
     ),
     BlitzortungSensorEntityDescription(
-        key="counter",
+        key=ATTR_LIGHTNING_COUNTER,
         name="Lightning counter",
         has_entity_name=True,
         native_unit_of_measurement="↯",
@@ -200,7 +207,7 @@ SENSORS: tuple[BlitzortungSensorEntityDescription, ...] = (
         entity_class=CounterSensor,
     ),
     BlitzortungSensorEntityDescription(
-        key="distance",
+        key=ATTR_LIGHTNING_DISTANCE,
         name="Lightning distance",
         has_entity_name=True,
         native_unit_of_measurement=UnitOfLength.KILOMETERS,
