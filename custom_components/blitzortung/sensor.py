@@ -88,7 +88,7 @@ class BlitzortungSensor(SensorEntity):
 class LightningSensor(BlitzortungSensor):
     """Define a Blitzortung lightning sensor."""
 
-    INITIAL_STATE = None
+    INITIAL_STATE: int | None = None
 
     def __init__(self, *args, **kwargs):
         """Initialize."""
@@ -238,7 +238,7 @@ async def async_setup_entry(
 
     config = hass.data[BLITZORTUNG_CONFIG]
     if config.get(SERVER_STATS):
-        server_stat_sensors = {}
+        server_stat_sensors: dict[str, ServerStatSensor] = {}
 
         def on_message(message):
             if not message.topic.startswith("$SYS/broker/"):
