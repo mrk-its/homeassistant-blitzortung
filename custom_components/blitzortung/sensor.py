@@ -78,9 +78,9 @@ class BlitzortungSensor(SensorEntity):
         self._attr_name = f"Lightning {self.kind.capitalize()}"
         self._attr_attribution = ATTRIBUTION
         self._attr_device_info = DeviceInfo(
-            name=f"{integration_name} Lightning Detector",
+            name=integration_name,
             identifiers={(DOMAIN, integration_name)},
-            model="Lightning Detector",
+            model="Blitzortung Lightning Detector",
             sw_version=SW_VERSION,
             entry_type=DeviceEntryType.SERVICE,
         )
