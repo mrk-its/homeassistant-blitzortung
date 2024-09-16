@@ -72,7 +72,6 @@ class BlitzortungSensor(SensorEntity):
         self._integration_name = integration_name
         self.entity_id = f"sensor.{integration_name}-{self.name}"
         self._unique_id = f"{unique_prefix}-{self.kind}"
-        self._device_class = None
         self._attrs = {ATTR_ATTRIBUTION: ATTRIBUTION}
 
     should_poll = False
