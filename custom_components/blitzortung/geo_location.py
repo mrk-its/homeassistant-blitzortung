@@ -24,7 +24,6 @@ _LOGGER = logging.getLogger(__name__)
 
 
 DEFAULT_EVENT_NAME_TEMPLATE = "Lightning Strike"
-DEFAULT_ICON = "mdi:flash"
 
 SIGNAL_DELETE_ENTITY = "blitzortung_delete_entity_{0}"
 
@@ -149,6 +148,7 @@ class BlitzortungEvent(GeolocationEvent):
         self._remove_signal_delete = None
         self._strike_id = str(uuid.uuid4()).replace("-", "")
         self._attr_unit_of_measurement = unit
+        self._attr_icon = "mdi:flash"
         self.entity_id = "geo_location.lightning_strike_{0}".format(self._strike_id)
 
     @property
@@ -167,11 +167,6 @@ class BlitzortungEvent(GeolocationEvent):
     def distance(self):
         """Return distance value of this external event."""
         return self._distance
-
-    @property
-    def icon(self):
-        """Return the icon to use in the front-end."""
-        return DEFAULT_ICON
 
     @property
     def latitude(self):
