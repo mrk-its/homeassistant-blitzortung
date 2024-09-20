@@ -139,10 +139,10 @@ class BlitzortungEvent(GeolocationEvent):
 
     def __init__(self, distance, latitude, longitude, unit, time, status, region):
         """Initialize entity with data provided."""
-        self._publication_date = time / 1e9
         self._time = time
         self._status = status
         self._region = region
+        self._publication_date = time / 1e9
         self._remove_signal_delete = None
         self._strike_id = str(uuid.uuid4()).replace("-", "")
         self.entity_id = f"geo_location.lightning_strike_{self._strike_id}"
