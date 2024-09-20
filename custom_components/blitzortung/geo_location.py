@@ -142,6 +142,10 @@ class BlitzortungEvent(GeolocationEvent):
         self._attr_latitude = latitude
         self._attr_longitude = longitude
         self._attr_attribution = ATTRIBUTION
+        self._attr_extra_state_attributes = {
+            ATTR_EXTERNAL_ID: self._strike_id,
+            ATTR_PUBLICATION_DATE: utc_from_timestamp(self._publication_date),
+        }
         self._time = time
         self._status = status
         self._region = region
@@ -153,17 +157,6 @@ class BlitzortungEvent(GeolocationEvent):
         self._attr_source = DOMAIN
         self._attr_should_poll = False
         self.entity_id = "geo_location.lightning_strike_{0}".format(self._strike_id)
-
-    @property
-    def extra_state_attributes(self):
-        """Return the device state attributes."""
-        attributes = {}
-        for key, value in (
-            (ATTR_EXTERNAL_ID, self._strike_id),
-            (ATTR_PUBLICATION_DATE, utc_from_timestamp(self._publication_date)),
-        ):
-            attributes[key] = value
-        return attributes
 
     @property
     def name(self):
