@@ -22,9 +22,6 @@ from .const import ATTR_EXTERNAL_ID, ATTR_PUBLICATION_DATE, ATTRIBUTION, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-
-DEFAULT_EVENT_NAME_TEMPLATE = "Lightning Strike "
-
 SIGNAL_DELETE_ENTITY = "blitzortung_delete_entity_{0}"
 
 
@@ -138,14 +135,14 @@ class BlitzortungEvent(GeolocationEvent):
 
     def __init__(self, distance, latitude, longitude, unit, time, status, region):
         """Initialize entity with data provided."""
-        publication_date = time / 1e9
+        self._publication_date = time / 1e9
         self._time = time
         self._status = status
         self._region = region
         self._remove_signal_delete = None
         self._strike_id = str(uuid.uuid4()).replace("-", "")
         self.entity_id = f"geo_location.lightning_strike_{self._strike_id}"
-        self._attr_name = f"Lightning Strike {publication_date}"
+        self._attr_name = "Lightning Strike"
         self._attr_unique_id = self._strike_id
         self._attr_distance = distance
         self._attr_latitude = latitude
@@ -153,7 +150,7 @@ class BlitzortungEvent(GeolocationEvent):
         self._attr_attribution = ATTRIBUTION
         self._attr_extra_state_attributes = {
             ATTR_EXTERNAL_ID: self._strike_id,
-            ATTR_PUBLICATION_DATE: utc_from_timestamp(publication_date),
+            ATTR_PUBLICATION_DATE: utc_from_timestamp(self._publication_date),
         }
         self._attr_unit_of_measurement = unit
         self._attr_icon = "mdi:flash"
