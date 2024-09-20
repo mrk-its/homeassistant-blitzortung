@@ -138,7 +138,7 @@ class BlitzortungEvent(GeolocationEvent):
 
     def __init__(self, distance, latitude, longitude, unit, time, status, region):
         """Initialize entity with data provided."""
-        self._distance = distance
+        self._attr_distance = distance
         self._latitude = latitude
         self._longitude = longitude
         self._time = time
@@ -164,11 +164,6 @@ class BlitzortungEvent(GeolocationEvent):
         ):
             attributes[key] = value
         return attributes
-
-    @property
-    def distance(self):
-        """Return distance value of this external event."""
-        return self._distance
 
     @property
     def latitude(self):
