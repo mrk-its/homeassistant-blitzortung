@@ -1,0 +1,18 @@
+{
+    "entity": {
+        "sensor": {
+            "azimuth": {
+                "default": "mdi:compass-outline"
+            },
+            "counter": {
+                "default": "mdi:flash"
+            },
+            "distance": {
+                "default": "mdi:arrow-left-right"
+            },
+            "server_stats": {
+                "default": "mdi:server"
+            }
+        }
+    }
+}
