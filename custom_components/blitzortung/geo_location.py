@@ -1,14 +1,12 @@
 """Support for Blitzortung geo location events."""
+
 import bisect
 import logging
 import time
 import uuid
 
 from homeassistant.components.geo_location import GeolocationEvent
-from homeassistant.const import (
-    ATTR_ATTRIBUTION,
-    UnitOfLength
-)
+from homeassistant.const import UnitOfLength
 from homeassistant.core import callback
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
@@ -25,7 +23,9 @@ _LOGGER = logging.getLogger(__name__)
 SIGNAL_DELETE_ENTITY = "blitzortung_delete_entity_{0}"
 
 
-async def async_setup_entry(hass, config_entry: BlitzortungConfigEntry, async_add_entities):
+async def async_setup_entry(
+    hass, config_entry: BlitzortungConfigEntry, async_add_entities
+):
     coordinator = config_entry.runtime_data
     if not coordinator.max_tracked_lightnings:
         return
@@ -85,7 +85,11 @@ class BlitzortungEventManager:
     """Define a class to handle Blitzortung events."""
 
     def __init__(
-        self, hass, async_add_entities, max_tracked_lightnings, window_seconds,
+        self,
+        hass,
+        async_add_entities,
+        max_tracked_lightnings,
+        window_seconds,
     ):
         """Initialize."""
         self._async_add_entities = async_add_entities
