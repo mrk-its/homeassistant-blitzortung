@@ -156,7 +156,7 @@ class BlitzortungEvent(GeolocationEvent):
         self._attr_icon = "mdi:flash"
         self._attr_source = DOMAIN
         self._attr_should_poll = False
-        self.entity_id = "geo_location.lightning_strike_{0}".format(self._strike_id)
+        self.entity_id = f"geo_location.lightning_strike_{self._strike_id}"
 
     @property
     def name(self):
