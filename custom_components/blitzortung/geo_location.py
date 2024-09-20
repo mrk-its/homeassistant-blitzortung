@@ -149,6 +149,7 @@ class BlitzortungEvent(GeolocationEvent):
         self._strike_id = str(uuid.uuid4()).replace("-", "")
         self._attr_unit_of_measurement = unit
         self._attr_icon = "mdi:flash"
+        self._attr_source = DOMAIN
         self.entity_id = "geo_location.lightning_strike_{0}".format(self._strike_id)
 
     @property
@@ -182,11 +183,6 @@ class BlitzortungEvent(GeolocationEvent):
     def name(self):
         """Return the name of the event."""
         return DEFAULT_EVENT_NAME_TEMPLATE.format(self._publication_date)
-
-    @property
-    def source(self) -> str:
-        """Return source value of this external event."""
-        return DOMAIN
 
     @property
     def should_poll(self):
