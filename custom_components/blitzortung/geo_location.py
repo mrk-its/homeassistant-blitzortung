@@ -148,7 +148,7 @@ class BlitzortungEvent(GeolocationEvent):
         self._publication_date = time / 1e9
         self._remove_signal_delete = None
         self._strike_id = str(uuid.uuid4()).replace("-", "")
-        self._unit_of_measurement = unit
+        self._attr_unit_of_measurement = unit
         self.entity_id = "geo_location.lightning_strike_{0}".format(self._strike_id)
 
     @property
@@ -197,11 +197,6 @@ class BlitzortungEvent(GeolocationEvent):
     def should_poll(self):
         """Disable polling."""
         return False
-
-    @property
-    def unit_of_measurement(self):
-        """Return the unit of measurement."""
-        return self._unit_of_measurement
 
     @callback
     def _delete_callback(self):
