@@ -157,6 +157,8 @@ class ServerStatSensor(BlitzortungSensor):
             self.data_type = str
         else:
             self.data_type = int
+        if self.data_type in (int, float):
+            self._attr_state_class=SensorStateClass.MEASUREMENT
 
         super().__init__(coordinator, description, integration_name, unique_prefix)
 
@@ -250,7 +252,6 @@ async def async_setup_entry(
                     key=topic.replace("/", "_"),
                     has_entity_name=False,
                     entity_category=EntityCategory.DIAGNOSTIC,
-                    state_class=SensorStateClass.MEASUREMENT,
                     icon="mdi:server",
                     entity_class=ServerStatSensor,
                 )
