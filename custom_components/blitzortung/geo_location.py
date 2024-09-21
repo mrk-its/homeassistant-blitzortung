@@ -147,6 +147,7 @@ class BlitzortungEvent(GeolocationEvent):
         self._strike_id = str(uuid.uuid4()).replace("-", "")
         self.entity_id = f"geo_location.lightning_strike_{self._strike_id}"
         self._attr_name = "Lightning Strike"
+        self._attr_translation_key = "lightning_strike"
         self._attr_unique_id = self._strike_id
         self._attr_distance = distance
         self._attr_latitude = latitude
@@ -157,7 +158,6 @@ class BlitzortungEvent(GeolocationEvent):
             ATTR_PUBLICATION_DATE: utc_from_timestamp(self._publication_date),
         }
         self._attr_unit_of_measurement = unit
-        self._attr_icon = "mdi:flash"
         self._attr_source = DOMAIN
         self._attr_should_poll = False
 
