@@ -1,23 +1,23 @@
 {
-    "entity": {
-        "geo_location": {
-            "lightning_strike": {
-                "default": "mdi:flash"
-            }
-        },
-        "sensor": {
-            "azimuth": {
-                "default": "mdi:compass-outline"
-            },
-            "counter": {
-                "default": "mdi:flash"
-            },
-            "distance": {
-                "default": "mdi:arrow-left-right"
-            },
-            "server_stats": {
-                "default": "mdi:server"
-            }
-        }
+  "entity": {
+    "geo_location": {
+      "lightning_strike": {
+        "default": "mdi:flash"
+      }
+    },
+    "sensor": {
+      "azimuth": {
+        "default": "mdi:compass-outline"
+      },
+      "counter": {
+        "default": "mdi:flash"
+      },
+      "distance": {
+        "default": "mdi:arrow-left-right"
+      },
+      "server_stats": {
+        "default": "mdi:server"
+      }
     }
+  }
 }
