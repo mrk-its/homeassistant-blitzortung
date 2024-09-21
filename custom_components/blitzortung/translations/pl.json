@@ -29,7 +29,6 @@
   "entity": {
     "geo_location": {
       "lightning_strike": {
-        "name": "Uderzenie błyskawicy",
         "state_attributes": {
           "external_id": {
             "name": "Zewnętrzny identyfikator"
