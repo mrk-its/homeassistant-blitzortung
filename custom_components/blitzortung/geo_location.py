@@ -148,7 +148,6 @@ class BlitzortungEvent(GeolocationEvent):
         self.entity_id = f"geo_location.lightning_strike_{self._strike_id}"
         self._attr_name = "Lightning strike"
         self._attr_translation_key = "lightning_strike"
-        self._attr_unique_id = self._strike_id
         self._attr_distance = distance
         self._attr_latitude = latitude
         self._attr_longitude = longitude
