@@ -187,29 +187,29 @@ SENSORS: tuple[BlitzortungSensorEntityDescription, ...] = (
     BlitzortungSensorEntityDescription(
         key=ATTR_LIGHTNING_AZIMUTH,
         name="Lightning azimuth",
+        translation_key=ATTR_LIGHTNING_AZIMUTH,
         has_entity_name=True,
         native_unit_of_measurement=DEGREE,
         state_class=SensorStateClass.MEASUREMENT,
-        icon="mdi:compass-outline",
         entity_class=AzimuthSensor,
     ),
     BlitzortungSensorEntityDescription(
         key=ATTR_LIGHTNING_COUNTER,
         name="Lightning counter",
+        translation_key=ATTR_LIGHTNING_COUNTER,
         has_entity_name=True,
         native_unit_of_measurement="↯",
         state_class=SensorStateClass.MEASUREMENT,
-        icon="mdi:flash",
         entity_class=CounterSensor,
     ),
     BlitzortungSensorEntityDescription(
         key=ATTR_LIGHTNING_DISTANCE,
         name="Lightning distance",
+        translation_key=ATTR_LIGHTNING_DISTANCE,
         has_entity_name=True,
         native_unit_of_measurement=UnitOfLength.KILOMETERS,
         device_class=SensorDeviceClass.DISTANCE,
         state_class=SensorStateClass.MEASUREMENT,
-        icon="mdi:arrow-left-right",
         entity_class=DistanceSensor,
     ),
 )
@@ -250,9 +250,9 @@ async def async_setup_entry(
             if not sensor:
                 description = BlitzortungSensorEntityDescription(
                     key=topic.replace("/", "_"),
+                    translation_key="server_stats",
                     has_entity_name=False,
                     entity_category=EntityCategory.DIAGNOSTIC,
-                    icon="mdi:server",
                     entity_class=ServerStatSensor,
                 )
                 sensor = description.entity_class(
