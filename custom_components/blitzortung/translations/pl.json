@@ -27,6 +27,19 @@
     }
   },
   "entity": {
+    "geo_location": {
+      "lightning_strike": {
+        "name": "Uderzenie błyskawicy",
+        "state_attributes": {
+          "external_id": {
+            "name": "Zewnętrzny identyfikator"
+          },
+          "publication_date": {
+            "name": "Data publikacji"
+          }
+        }
+      }
+    },
     "sensor": {
       "azimuth": {
         "state_attributes": {

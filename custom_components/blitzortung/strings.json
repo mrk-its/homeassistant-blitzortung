@@ -27,6 +27,19 @@
     }
   },
   "entity": {
+    "geo_location": {
+      "lightning_strike": {
+        "name": "Lightning strike",
+        "state_attributes": {
+          "external_id": {
+            "name": "External ID"
+          },
+          "publication_date": {
+            "name": "Publication date"
+          }
+        }
+      }
+    },
     "sensor": {
       "azimuth": {
         "state_attributes": {
