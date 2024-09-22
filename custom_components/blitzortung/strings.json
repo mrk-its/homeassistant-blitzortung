@@ -25,5 +25,29 @@
         }
       }
     }
+  },
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "state_attributes": {
+          "lat": {
+            "name": "Latitude"
+          },
+          "lon": {
+            "name": "Longitude"
+          }
+        }
+      },
+      "distance": {
+        "state_attributes": {
+          "lat": {
+            "name": "Latitude"
+          },
+          "lon": {
+            "name": "Longitude"
+          }
+        }
+      }
+    }
   }
 }
