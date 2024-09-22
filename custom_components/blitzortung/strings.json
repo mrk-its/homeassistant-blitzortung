@@ -9,7 +9,9 @@
       }
     },
     "error": {},
-    "abort": {}
+    "abort": {
+      "already_configured": "Service is already configured"
+    }
   },
   "options": {
     "step": {

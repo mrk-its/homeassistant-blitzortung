@@ -9,7 +9,9 @@
       }
     },
     "error": {},
-    "abort": {}
+    "abort": {
+      "already_configured": "Usługa jest już skonfigurowana"
+    }
   },
   "options": {
     "step": {
