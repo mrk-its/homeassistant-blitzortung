@@ -6,6 +6,7 @@ import time
 import uuid
 
 from homeassistant.components.geo_location import GeolocationEvent
+from homeassistant.components.geo_location import DOMAIN as platform
 from homeassistant.const import UnitOfLength
 from homeassistant.core import callback
 from homeassistant.helpers.dispatcher import (
@@ -14,7 +15,7 @@ from homeassistant.helpers.dispatcher import (
 )
 from homeassistant.util.dt import utc_from_timestamp
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
-
+from homeassistant.helpers import entity_registry as er
 from . import BlitzortungConfigEntry
 from .const import ATTR_EXTERNAL_ID, ATTR_PUBLICATION_DATE, ATTRIBUTION, DOMAIN
 
@@ -29,6 +30,16 @@ async def async_setup_entry(
     coordinator = config_entry.runtime_data
     if not coordinator.max_tracked_lightnings:
         return
+
+    # We don't want geo_location entities from the previous Home Assistant run to remain
+    # in the registry and have an unavailable state, so we remove all geo_location 
+    # entities.
+    entity_reg = er.async_get(hass)
+    if entities := er.async_entries_for_config_entry(entity_reg, config_entry.entry_id):
+        for entity in entities:
+            if not entity.entity_id.startswith(platform):
+                continue
+            entity_reg.async_remove(entity.entity_id)
 
     manager = BlitzortungEventManager(
         hass,
@@ -148,6 +159,7 @@ class BlitzortungEvent(GeolocationEvent):
         self.entity_id = f"geo_location.lightning_strike_{self._strike_id}"
         self._attr_name = "Lightning strike"
         self._attr_translation_key = "lightning_strike"
+        self._attr_unique_id = self._strike_id
         self._attr_distance = distance
         self._attr_latitude = latitude
         self._attr_longitude = longitude
@@ -164,7 +176,7 @@ class BlitzortungEvent(GeolocationEvent):
     def _delete_callback(self):
         """Remove this entity."""
         self._remove_signal_delete()
-        self.hass.async_create_task(self.async_remove())
+        self.hass.async_create_task(self.async_remove(force_remove=True))
 
     async def async_added_to_hass(self):
         """Call when entity is added to hass."""
