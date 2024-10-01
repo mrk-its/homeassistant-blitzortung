@@ -1,9 +1,14 @@
 """Config flow for blitzortung integration."""
 
 import voluptuous as vol
-
+from typing import Any
 import homeassistant.helpers.config_validation as cv
-from homeassistant import config_entries
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigFlow,
+    ConfigFlowResult,
+    OptionsFlowWithConfigEntry,
+)
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME
 
 from .const import (
@@ -16,23 +21,30 @@ from .const import (
     DOMAIN,
 )
 
-DEFAULT_CONF_NAME = "Blitzortung"
 
-
-class DomainConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for blitzortung."""
 
     VERSION = 5
-    CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_PUSH
 
-    async def async_step_user(self, user_input=None):
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Handle the initial step."""
         if user_input is not None:
             await self.async_set_unique_id(
                 f"{user_input[CONF_LATITUDE]}-{user_input[CONF_LONGITUDE]}"
             )
             self._abort_if_unique_id_configured()
-            return self.async_create_entry(title=user_input[CONF_NAME], data=user_input)
+            return self.async_create_entry(
+                title=user_input[CONF_NAME],
+                data=user_input,
+                options={
+                    CONF_RADIUS: DEFAULT_RADIUS,
+                    CONF_MAX_TRACKED_LIGHTNINGS: DEFAULT_MAX_TRACKED_LIGHTNINGS,
+                    CONF_TIME_WINDOW: DEFAULT_TIME_WINDOW,
+                },
+            )
 
         return self.async_show_form(
             step_id="user",
@@ -54,43 +66,46 @@ class DomainConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     @staticmethod
-    def async_get_options_flow(config_entry):
-        return OptionsFlowHandler(config_entry)
+    def async_get_options_flow(config_entry: ConfigEntry):
+        return BlitzortungOptionsFlowHandler(config_entry)
 
 
-class OptionsFlowHandler(config_entries.OptionsFlow):
-    def __init__(self, config_entry: config_entries.ConfigEntry):
-        """Initialize options flow."""
-        self.config_entry = config_entry
+class BlitzortungOptionsFlowHandler(OptionsFlowWithConfigEntry):
+    """Handle an options flow for Blitzortung."""
 
-    async def async_step_init(self, user_input=None):
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Manage the options."""
         if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
+            return self.async_create_entry(data=user_input)
+
+        options_schema = vol.Schema(
+            {
+                vol.Required(
+                    CONF_RADIUS,
+                    default=self.config_entry.options.get(CONF_RADIUS, DEFAULT_RADIUS),
+                ): int,
+                vol.Optional(
+                    CONF_TIME_WINDOW,
+                    default=self.config_entry.options.get(
+                        CONF_TIME_WINDOW,
+                        DEFAULT_TIME_WINDOW,
+                    ),
+                ): int,
+                vol.Optional(
+                    CONF_MAX_TRACKED_LIGHTNINGS,
+                    default=self.config_entry.options.get(
+                        CONF_MAX_TRACKED_LIGHTNINGS,
+                        DEFAULT_MAX_TRACKED_LIGHTNINGS,
+                    ),
+                ): int,
+            }
+        )
 
         return self.async_show_form(
             step_id="init",
-            data_schema=vol.Schema(
-                {
-                    vol.Required(
-                        CONF_RADIUS,
-                        default=self.config_entry.options.get(
-                            CONF_RADIUS, DEFAULT_RADIUS
-                        ),
-                    ): int,
-                    vol.Optional(
-                        CONF_TIME_WINDOW,
-                        default=self.config_entry.options.get(
-                            CONF_TIME_WINDOW,
-                            DEFAULT_TIME_WINDOW,
-                        ),
-                    ): int,
-                    vol.Optional(
-                        CONF_MAX_TRACKED_LIGHTNINGS,
-                        default=self.config_entry.options.get(
-                            CONF_MAX_TRACKED_LIGHTNINGS,
-                            DEFAULT_MAX_TRACKED_LIGHTNINGS,
-                        ),
-                    ): int,
-                }
+            data_schema=self.add_suggested_values_to_schema(
+                options_schema, self.config_entry.options
             ),
         )

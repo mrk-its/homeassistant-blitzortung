@@ -60,13 +60,10 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: BlitzortungConfig
 
     latitude = config_entry.data[CONF_LATITUDE]
     longitude = config_entry.data[CONF_LONGITUDE]
-    radius = config_entry.options.get(CONF_RADIUS, DEFAULT_RADIUS)
-    max_tracked_lightnings = config_entry.options.get(
-        CONF_MAX_TRACKED_LIGHTNINGS, DEFAULT_MAX_TRACKED_LIGHTNINGS
-    )
-    time_window_seconds = (
-        config_entry.options.get(CONF_TIME_WINDOW, DEFAULT_TIME_WINDOW) * 60
-    )
+    radius = config_entry.options[CONF_RADIUS]
+    max_tracked_lightnings = config_entry.options[CONF_MAX_TRACKED_LIGHTNINGS]
+    time_window_seconds = config_entry.options[CONF_TIME_WINDOW] * 60
+
     if max_tracked_lightnings >= 500:
         _LOGGER.warning(
             "Large number of tracked lightnings: %s, it may lead to"
@@ -142,12 +139,27 @@ async def async_migrate_entry(hass, entry: BlitzortungConfigEntry):
         )
         entry.version = 4
     if entry.version == 4:
-        entry_data = entry.data.copy()
-        latitude = entry.options.get(CONF_LATITUDE) or hass.config.latitude
-        longitude = entry.options.get(CONF_LONGITUDE) or hass.config.longitude
-        entry_data[CONF_LATITUDE] = latitude
-        entry_data[CONF_LONGITUDE] = longitude
-        hass.config_entries.async_update_entry(entry, data=entry_data, version=5)
+        new_data = entry.data.copy()
+
+        latitude = entry.options.get(CONF_LATITUDE, hass.config.latitude)
+        longitude = entry.options.get(CONF_LONGITUDE, hass.config.longitude)
+        radius = entry.options.get(CONF_RADIUS, DEFAULT_RADIUS)
+        time_window = entry.options.get(CONF_TIME_WINDOW, DEFAULT_TIME_WINDOW)
+        max_tracked_lightnings = entry.options.get(
+            CONF_MAX_TRACKED_LIGHTNINGS, DEFAULT_MAX_TRACKED_LIGHTNINGS
+        )
+
+        new_data[CONF_LATITUDE] = latitude
+        new_data[CONF_LONGITUDE] = longitude
+        new_options = {
+            CONF_RADIUS: radius,
+            CONF_TIME_WINDOW: time_window,
+            CONF_MAX_TRACKED_LIGHTNINGS: max_tracked_lightnings,
+        }
+
+        hass.config_entries.async_update_entry(
+            entry, data=new_data, options=new_options, version=5
+        )
 
     return True
 
