@@ -58,8 +58,8 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: BlitzortungConfig
     """Set up blitzortung from a config entry."""
     config = hass.data[BLITZORTUNG_CONFIG]
 
-    latitude = config_entry.options.get(CONF_LATITUDE, hass.config.latitude)
-    longitude = config_entry.options.get(CONF_LONGITUDE, hass.config.longitude)
+    latitude = config_entry.data[CONF_LATITUDE]
+    longitude = config_entry.data[CONF_LONGITUDE]
     radius = config_entry.options.get(CONF_RADIUS, DEFAULT_RADIUS)
     max_tracked_lightnings = config_entry.options.get(
         CONF_MAX_TRACKED_LIGHTNINGS, DEFAULT_MAX_TRACKED_LIGHTNINGS
@@ -141,6 +141,13 @@ async def async_migrate_entry(hass, entry: BlitzortungConfigEntry):
             CONF_IDLE_RESET_TIMEOUT, DEFAULT_TIME_WINDOW
         )
         entry.version = 4
+    if entry.version == 4:
+        entry_data = entry.data.copy()
+        latitude = entry.options.get(CONF_LATITUDE) or hass.config.latitude
+        longitude = entry.options.get(CONF_LONGITUDE) or hass.config.longitude
+        entry_data[CONF_LATITUDE] = latitude
+        entry_data[CONF_LONGITUDE] = longitude
+        hass.config_entries.async_update_entry(entry, data=entry_data, version=5)
 
     return True
 

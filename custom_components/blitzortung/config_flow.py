@@ -1,4 +1,5 @@
 """Config flow for blitzortung integration."""
+
 import voluptuous as vol
 
 import homeassistant.helpers.config_validation as cv
@@ -21,20 +22,34 @@ DEFAULT_CONF_NAME = "Blitzortung"
 class DomainConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for blitzortung."""
 
-    VERSION = 4
+    VERSION = 5
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_PUSH
 
     async def async_step_user(self, user_input=None):
         """Handle the initial step."""
         if user_input is not None:
-            await self.async_set_unique_id(user_input[CONF_NAME])
+            await self.async_set_unique_id(
+                f"{user_input[CONF_LATITUDE]}-{user_input[CONF_LONGITUDE]}"
+            )
             self._abort_if_unique_id_configured()
             return self.async_create_entry(title=user_input[CONF_NAME], data=user_input)
 
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema(
-                {vol.Required(CONF_NAME, default=self.hass.config.location_name): str}
+                {
+                    vol.Required(
+                        CONF_NAME, default=self.hass.config.location_name
+                    ): str,
+                    vol.Required(
+                        CONF_LATITUDE,
+                        default=self.hass.config.latitude,
+                    ): cv.latitude,
+                    vol.Required(
+                        CONF_LONGITUDE,
+                        default=self.hass.config.longitude,
+                    ): cv.longitude,
+                }
             ),
         )
 
@@ -57,18 +72,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             data_schema=vol.Schema(
                 {
                     vol.Required(
-                        CONF_LATITUDE,
-                        default=self.config_entry.options.get(
-                            CONF_LATITUDE, self.hass.config.latitude
-                        ),
-                    ): cv.latitude,
-                    vol.Required(
-                        CONF_LONGITUDE,
-                        default=self.config_entry.options.get(
-                            CONF_LONGITUDE, self.hass.config.longitude
-                        ),
-                    ): cv.longitude,
-                    vol.Required(
                         CONF_RADIUS,
                         default=self.config_entry.options.get(
                             CONF_RADIUS, DEFAULT_RADIUS
@@ -77,13 +80,15 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Optional(
                         CONF_TIME_WINDOW,
                         default=self.config_entry.options.get(
-                            CONF_TIME_WINDOW, DEFAULT_TIME_WINDOW,
+                            CONF_TIME_WINDOW,
+                            DEFAULT_TIME_WINDOW,
                         ),
                     ): int,
                     vol.Optional(
                         CONF_MAX_TRACKED_LIGHTNINGS,
                         default=self.config_entry.options.get(
-                            CONF_MAX_TRACKED_LIGHTNINGS, DEFAULT_MAX_TRACKED_LIGHTNINGS,
+                            CONF_MAX_TRACKED_LIGHTNINGS,
+                            DEFAULT_MAX_TRACKED_LIGHTNINGS,
                         ),
                     ): int,
                 }
