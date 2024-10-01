@@ -34,7 +34,7 @@ class DomainConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema(
-                {vol.Required(CONF_NAME, default=DEFAULT_CONF_NAME): str}
+                {vol.Required(CONF_NAME, default=self.hass.config.location_name): str}
             ),
         )
 
