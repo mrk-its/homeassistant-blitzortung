@@ -8,6 +8,7 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorEntityDescription,
     SensorStateClass,
+    DOMAIN as SENSOR_PLATFORM,
 )
 from homeassistant.const import (
     CONF_NAME,
@@ -18,7 +19,7 @@ from homeassistant.const import (
 )
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.typing import UNDEFINED
-
+from homeassistant.helpers import entity_registry as er
 from . import BlitzortungConfigEntry
 from .const import (
     ATTR_LAT,
@@ -57,7 +58,7 @@ class BlitzortungSensor(SensorEntity):
         self._attr_attribution = ATTRIBUTION
         self._attr_device_info = DeviceInfo(
             name=integration_name,
-            identifiers={(DOMAIN, integration_name)},
+            identifiers={(DOMAIN, unique_prefix)},
             model="Blitzortung Lightning Detector",
             sw_version=SW_VERSION,
             entry_type=DeviceEntryType.SERVICE,
@@ -158,7 +159,7 @@ class ServerStatSensor(BlitzortungSensor):
         else:
             self.data_type = int
         if self.data_type in (int, float):
-            self._attr_state_class=SensorStateClass.MEASUREMENT
+            self._attr_state_class = SensorStateClass.MEASUREMENT
 
         super().__init__(coordinator, description, integration_name, unique_prefix)
 
@@ -223,7 +224,26 @@ async def async_setup_entry(
 
     coordinator = config_entry.runtime_data
 
-    unique_prefix = config_entry.unique_id
+    unique_prefix = config_entry.entry_id
+
+    entity_registry = er.async_get(hass)
+    for sensor_type in (
+        ATTR_LIGHTNING_AZIMUTH,
+        ATTR_LIGHTNING_COUNTER,
+        ATTR_LIGHTNING_DISTANCE,
+    ):
+        old_unique_id = f"{config_entry.title}-{sensor_type}"
+        if entity_id := entity_registry.async_get_entity_id(
+            SENSOR_PLATFORM, DOMAIN, old_unique_id
+        ):
+            new_unique_id = f"{unique_prefix}-{sensor_type}"
+            _LOGGER.debug(
+                "Migrating entity %s from old unique ID '%s' to new unique ID '%s'",
+                entity_id,
+                old_unique_id,
+                new_unique_id,
+            )
+            entity_registry.async_update_entity(entity_id, new_unique_id=new_unique_id)
 
     sensors = [
         description.entity_class(
