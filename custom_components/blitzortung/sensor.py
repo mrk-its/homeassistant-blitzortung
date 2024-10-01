@@ -19,6 +19,7 @@ from homeassistant.const import (
 )
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.typing import UNDEFINED
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from . import BlitzortungConfigEntry
 from .const import (
@@ -225,6 +226,14 @@ async def async_setup_entry(
     coordinator = config_entry.runtime_data
 
     unique_prefix = config_entry.entry_id
+
+    device_registry = dr.async_get(hass)
+    old_ids = (DOMAIN, config_entry.title)
+    if device_entry := device_registry.async_get_device(identifiers=old_ids):
+        new_ids = (DOMAIN, unique_prefix)
+        device_registry.async_update_device(
+            device_entry.id, new_identifiers={new_ids}
+        )
 
     entity_registry = er.async_get(hass)
     for sensor_type in (
