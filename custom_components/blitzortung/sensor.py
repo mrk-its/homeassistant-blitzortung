@@ -240,6 +240,28 @@ async def async_setup_entry(
         ATTR_LIGHTNING_AZIMUTH,
         ATTR_LIGHTNING_COUNTER,
         ATTR_LIGHTNING_DISTANCE,
+        "bytes_received",
+        "bytes_sent",
+        "clients_connected",
+        "heap_current",
+        "load_bytes_received_1min",
+        "load_bytes_sent_1min",
+        "load_connections_1min",
+        "load_messages_received_1min",
+        "load_messages_sent_1min",
+        "load_publish_received_1min",
+        "load_publish_sent_1min",
+        "load_sockets_1min",
+        "messages_received",
+        "messages_sent",
+        "publish_bytes_received",
+        "publish_bytes_sent",
+        "publish_messages_received",
+        "publish_messages_sent"
+        "retained messages_count",
+        "store_messages_bytes",
+        "store_messages_count",
+        "subscriptions_count",
     ):
         old_unique_id = f"{config_entry.title}-{sensor_type}"
         if entity_id := entity_registry.async_get_entity_id(
