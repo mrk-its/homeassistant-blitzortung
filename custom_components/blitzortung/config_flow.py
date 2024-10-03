@@ -71,7 +71,7 @@ class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
                 }
             ),
         )
-    
+
     async def async_step_reconfigure(
         self, _: dict[str, Any] | None = None
     ) -> ConfigFlowResult:

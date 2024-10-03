@@ -231,9 +231,7 @@ async def async_setup_entry(
     old_ids = (DOMAIN, config_entry.title)
     if device_entry := device_registry.async_get_device(identifiers=old_ids):
         new_ids = (DOMAIN, unique_prefix)
-        device_registry.async_update_device(
-            device_entry.id, new_identifiers={new_ids}
-        )
+        device_registry.async_update_device(device_entry.id, new_identifiers={new_ids})
 
     entity_registry = er.async_get(hass)
     for sensor_type in (
@@ -257,8 +255,7 @@ async def async_setup_entry(
         "publish_bytes_received",
         "publish_bytes_sent",
         "publish_messages_received",
-        "publish_messages_sent"
-        "retained messages_count",
+        "publish_messages_sent" "retained messages_count",
         "store_messages_bytes",
         "store_messages_count",
         "subscriptions_count",
