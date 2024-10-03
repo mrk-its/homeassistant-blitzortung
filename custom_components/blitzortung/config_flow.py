@@ -21,6 +21,13 @@ from .const import (
     DOMAIN,
 )
 
+RECONFIGURE_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_LATITUDE): cv.latitude,
+        vol.Required(CONF_LONGITUDE): cv.longitude,
+    }
+)
+
 
 class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for blitzortung."""
@@ -63,6 +70,37 @@ class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
                     ): cv.longitude,
                 }
             ),
+        )
+    
+    async def async_step_reconfigure(
+        self, _: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle a reconfiguration flow initialized by the user."""
+        self.entry = self.hass.config_entries.async_get_entry(self.context["entry_id"])
+
+        return await self.async_step_reconfigure_confirm()
+
+    async def async_step_reconfigure_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle a reconfiguration flow initialized by the user."""
+        errors = {}
+
+        if user_input is not None:
+            self.hass.config_entries.async_update_entry(
+                self.entry, data=self.entry.data | user_input
+            )
+            await self.hass.config_entries.async_reload(self.entry.entry_id)
+            return self.async_abort(reason="reconfigure_successful")
+
+        return self.async_show_form(
+            step_id="reconfigure_confirm",
+            data_schema=self.add_suggested_values_to_schema(
+                data_schema=RECONFIGURE_SCHEMA,
+                suggested_values=self.entry.data | (user_input or {}),
+            ),
+            description_placeholders={"name": self.entry.title},
+            errors=errors,
         )
 
     @staticmethod
