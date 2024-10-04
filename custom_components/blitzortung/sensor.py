@@ -227,13 +227,34 @@ async def async_setup_entry(
 
     unique_prefix = config_entry.entry_id
 
+    # Migrate old service identifiers to new identifiers
     device_registry = dr.async_get(hass)
     old_ids = (DOMAIN, config_entry.title)
     if device_entry := device_registry.async_get_device(identifiers={old_ids}):
         new_ids = (DOMAIN, unique_prefix)
+        _LOGGER.debug(
+            "Migrating service %s from old IDs '%s' to new IDs '%s'",
+            device_entry.name,
+            old_ids,
+            new_ids,
+        )
         device_registry.async_update_device(device_entry.id, new_identifiers={new_ids})
 
+    # Migrate old unique IDs to new unique IDs
     entity_registry = er.async_get(hass)
+    old_unique_id = f"{config_entry.title}-server_stats"
+    if entity_id := entity_registry.async_get_entity_id(
+        SENSOR_PLATFORM, DOMAIN, old_unique_id
+    ):
+        new_unique_id = f"{unique_prefix}-clients_connected"
+        _LOGGER.debug(
+            "Migrating entity %s from old unique ID '%s' to new unique ID '%s'",
+            entity_id,
+            old_unique_id,
+            new_unique_id,
+        )
+        entity_registry.async_update_entity(entity_id, new_unique_id=new_unique_id)
+
     for sensor_type in (
         ATTR_LIGHTNING_AZIMUTH,
         ATTR_LIGHTNING_COUNTER,
@@ -264,7 +285,6 @@ async def async_setup_entry(
         "subscriptions_count",
         "uptime",
         "version",
-
     ):
         old_unique_id = f"{config_entry.title}-{sensor_type}"
         if entity_id := entity_registry.async_get_entity_id(
