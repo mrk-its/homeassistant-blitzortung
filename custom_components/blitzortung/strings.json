@@ -4,13 +4,23 @@
       "user": {
         "description": "Set up Blitzortung lightning detection",
         "data": {
-          "name": "Name of the integration instance"
+          "name": "Name of the integration instance",
+          "latitude": "Latitude",
+          "longitude": "Longitude"
+        }
+      },
+      "reconfigure_confirm": {
+        "description": "Update configuration for {name}.",
+        "data": {
+          "latitude": "Latitude",
+          "longitude": "Longitude"
         }
       }
     },
     "error": {},
     "abort": {
-      "already_configured": "Service is already configured"
+      "already_configured": "Service is already configured",
+      "reconfigure_successful": "Re-configuration was successful"
     }
   },
   "options": {
@@ -21,9 +31,7 @@
         "data": {
           "radius": "Lightning detection radius (km / mi)",
           "time_window": "Time window (minutes, 0 - disabled)",
-          "max_tracked_lightnings": "Max number of tracked lightnings",
-          "latitude": "Latitude",
-          "longitude": "Longitude"
+          "max_tracked_lightnings": "Max number of tracked lightnings"
         }
       }
     }

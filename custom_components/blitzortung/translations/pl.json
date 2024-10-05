@@ -4,13 +4,23 @@
       "user": {
         "description": "Konfiguracja wykrywania błyskawic Blitzortung",
         "data": {
-          "name": "Nazwa instancji integracji"
+          "name": "Nazwa instancji integracji",
+          "latitude": "Szerokość geograficzna",
+          "longitude": "Długość geograficzna"
+        }
+      },
+      "reconfigure_confirm": {
+        "description": "Zaktualizuj konfigurację dla {name}.",
+        "data": {
+          "latitude": "Szerokość geograficzna",
+          "longitude": "Długość geograficzna"
         }
       }
     },
     "error": {},
     "abort": {
-      "already_configured": "Usługa jest już skonfigurowana"
+      "already_configured": "Usługa jest już skonfigurowana",
+      "reconfigure_successful": "Ponowna konfiguracja powiodła się"
     }
   },
   "options": {
@@ -21,9 +31,7 @@
         "data": {
           "radius": "Promień wykrywania błyskawic (km / mi)",
           "time_window": "Okno czasowe (minuty, 0 - wyłączony)",
-          "max_tracked_lightnings": "Maksymalna ilość śledzonych błyskawic",
-          "latitude": "Szerokość geograficzna",
-          "longitude": "Długość geograficzna"
+          "max_tracked_lightnings": "Maksymalna ilość śledzonych błyskawic"
         }
       }
     }
