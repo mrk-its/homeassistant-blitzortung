@@ -1,8 +1,10 @@
 """The blitzortung integration."""
 
+import datetime
 import json
 import logging
 import math
+import struct
 import time
 
 import voluptuous as vol
@@ -175,6 +177,7 @@ class BlitzortungCoordinator:
         time_window_seconds,
         update_interval,
         server_stats=False,
+        binary_payload=True,
     ):
         """Initialize."""
         self.hass = hass
@@ -194,6 +197,8 @@ class BlitzortungCoordinator:
         )
         self._disconnect_callbacks = []
         self.unloading = False
+        self.binary_payload = binary_payload
+        self.topic_prefix = binary_payload and "b" or "blitzortung/1.1"
 
         _LOGGER.info(
             "lat: %s, lon: %s, radius: %skm, geohashes: %s",
@@ -247,7 +252,7 @@ class BlitzortungCoordinator:
         for geohash_code in self.geohash_overlap:
             geohash_part = "/".join(geohash_code)
             await self.mqtt_client.async_subscribe(
-                "blitzortung/1.1/{}/#".format(geohash_part), self.on_mqtt_message, qos=0
+                f"{self.topic_prefix}/{geohash_part}/#",self.on_mqtt_message, qos=0
             )
         if self.server_stats:
             await self.mqtt_client.async_subscribe(
@@ -293,8 +298,14 @@ class BlitzortungCoordinator:
     async def on_mqtt_message(self, message, *args):
         for callback in self.callbacks:
             callback(message)
-        if message.topic.startswith("blitzortung/1.1"):
-            lightning = json.loads(message.payload)
+        if message.topic.startswith(self.topic_prefix):
+            if self.binary_payload:
+                lat, lon = struct.unpack("ff", message.payload)
+                ts_ns = datetime.datetime.now(datetime.timezone.utc).timestamp() * 10**9
+                lightning = {"lat": lat, "lon": lon, "time": ts_ns, "region": 0, "status": 0}
+            else:
+                lightning = json.loads(message.payload)
+
             self.compute_polar_coords(lightning)
             if lightning[SensorDeviceClass.DISTANCE] < self.radius:
                 _LOGGER.debug("lightning data: %s", lightning)
