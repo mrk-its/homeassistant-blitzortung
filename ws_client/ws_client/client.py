@@ -1,7 +1,11 @@
 #!/usr/bin/env python
+import struct
+from urllib.parse import urlparse
+
 import geohash
 import random
 import time
+import logging
 import json
 import asyncio
 import ssl
@@ -10,6 +14,8 @@ import paho.mqtt.client as mqtt
 import socket
 import argparse
 from . import component_version
+
+logger = logging.getLogger(__name__)
 
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 ssl_context.check_hostname = False
@@ -39,15 +45,18 @@ async def run(args):
     class userdata:
         is_connected = False
 
+    parsed = urlparse(args.mqtt_server_url)
+    assert parsed.scheme == "mqtt"
+
     mqtt_client = mqtt.Client(protocol=mqtt.MQTTv311, userdata=userdata)
-    if args.username and args.password:
-        mqtt_client.username_pw_set(args.username, args.password)
+    if parsed.username and parsed.password:
+        mqtt_client.username_pw_set(parsed.username, parsed.password)
 
     def mqtt_on_disconnect(client, userdata, result_code: int):
         userdata.is_connected = False
         while True:
             try:
-                print("reconnecting to mqtt server...")
+                logger.info("reconnecting to mqtt server...")
                 if client.reconnect() == 0:
                     userdata.is_connected = True
                     return
@@ -57,7 +66,7 @@ async def run(args):
 
     def mqtt_on_connect(client, userdata, flags, result_code: int):
         userdata.is_connected = True
-        print("connected to mqtt server")
+        logger.info("connected to mqtt server")
 
     def publish_latest_version(self, client):
         latest_version = component_version.__version__
@@ -68,16 +77,16 @@ async def run(args):
     mqtt_client.on_disconnect = mqtt_on_disconnect
     mqtt_client.on_connect = mqtt_on_connect
     await asyncio.get_event_loop().run_in_executor(
-        None, mqtt_client.connect, "localhost", 1883, 60
+        None, mqtt_client.connect, parsed.hostname, int(parsed.port or 1883), 60
     )
     mqtt_client.loop_start()
 
     while True:
         try:
-            hosts = ["ws1", "ws5", "ws6", "ws7", "ws8"]
+            hosts = ["ws1", "ws3", "ws7", "ws7", "ws8"]
             uri = "wss://{}.blitzortung.org:443/".format(random.choice(hosts))
             async with websockets.connect(uri, ssl=ssl_context) as websocket:
-                print(f"connected to {uri}")
+                logger.info("connected to %s", uri)
                 await websocket.send('{"a": 111}')
                 while True:
                     msg = await websocket.recv()
@@ -88,11 +97,19 @@ async def run(args):
                         geohash_part = "/".join(
                             geohash.encode(data["lat"], data["lon"])
                         )
-                        topic = "blitzortung/1.1/{}".format(geohash_part)
-                        to_send = {k: data.get(k) for k in ('lat', 'lon', 'status', 'region', 'time')}
-                        payload = json.dumps(to_send, separators=(',', ':'))
-                        mqtt_client.publish(topic, payload)
-                        print(topic, repr(payload), flush=True)
+                        logger.debug("received: %r", data)
+                        if args.json:
+                            topic = "blitzortung/1.1/{}".format(geohash_part)
+                            to_send = {k: data.get(k) for k in ('lat', 'lon', 'status', 'region', 'time')}
+                            payload = json.dumps(to_send, separators=(',', ':'))
+                            mqtt_client.publish(topic, payload)
+                            logger.info("topic: %s: %r", topic, payload)
+                        if args.binary:
+                            new_topic = "b/{}".format(geohash_part)
+                            new_payload = struct.pack("ff", data['lat'], data['lon'])
+                            mqtt_client.publish(new_topic, new_payload)
+                            logger.info("topic: %s: %r", new_topic, new_payload)
+
         except websockets.ConnectionClosed:
             pass
         time.sleep(5)
@@ -100,7 +117,13 @@ async def run(args):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-u", "--username")
-    parser.add_argument("-p", "--password")
+    parser.add_argument("mqtt_server_url")
+    parser.add_argument("-l", "--log-level", default="INFO")
+    parser.add_argument("-b", "--binary", action="store_true")
+    parser.add_argument("-j", "--json", action="store_true")
+
     args = parser.parse_args()
+
+    logging.basicConfig(level=args.log_level)
+
     asyncio.get_event_loop().run_until_complete(run(args))
