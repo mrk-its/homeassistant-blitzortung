@@ -1,0 +1,11 @@
+[Unit]
+Description=Blitzortung mqtt proxy
+
+[Service]
+ExecStart=/home/ubuntu/venv/bin/ws-client -u blitzortung -p MQTT_RW_PASSWORD
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=default.target
+
