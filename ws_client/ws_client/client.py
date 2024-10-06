@@ -89,10 +89,10 @@ async def run(args):
                             geohash.encode(data["lat"], data["lon"])
                         )
                         topic = "blitzortung/1.1/{}".format(geohash_part)
-                        mqtt_client.publish(
-                            topic, json.dumps(data)
-                        )
-                        print(topic, repr(data), flush=True)
+                        to_send = {k: data.get(k) for k in ('lat', 'lon', 'status', 'region', 'time')}
+                        payload = json.dumps(to_send, separators=(',', ':'))
+                        mqtt_client.publish(topic, payload)
+                        print(topic, repr(payload), flush=True)
         except websockets.ConnectionClosed:
             pass
         time.sleep(5)
