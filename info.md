@@ -14,4 +14,6 @@ Blitzortung.org is a worldwide, real time, community collaborative lightning loc
 
 Search for Blitzortung on Configuration/Integrations page. After adding integration, you can optionally configure the location and radius with Blitzortung/Options (by default your home locattion is used with 100km radius).
 
+You can change the coordinates for an existing Blitzortung configuration using the reconfigure flow, go to **Settings** >> **Devices & services** >> **Blitortung** >> **3 dot menu** >> **Reconfigure**.
+
 ### See [How to Add a Lightning Sensor](https://www.vcloudinfo.com/2020/08/adding-a-lightning-sensor-to-home-assistant.html) for usage instructions
