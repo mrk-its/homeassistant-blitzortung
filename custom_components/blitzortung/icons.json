@@ -1,10 +1,5 @@
 {
   "entity": {
-    "geo_location": {
-      "lightning_strike": {
-        "default": "mdi:flash"
-      }
-    },
     "sensor": {
       "azimuth": {
         "default": "mdi:compass-outline"
