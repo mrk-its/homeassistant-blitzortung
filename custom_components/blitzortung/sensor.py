@@ -192,7 +192,6 @@ SENSORS: tuple[BlitzortungSensorEntityDescription, ...] = (
         translation_key=ATTR_LIGHTNING_AZIMUTH,
         has_entity_name=True,
         native_unit_of_measurement=DEGREE,
-        state_class=SensorStateClass.MEASUREMENT,
         entity_class=AzimuthSensor,
     ),
     BlitzortungSensorEntityDescription(
@@ -211,7 +210,6 @@ SENSORS: tuple[BlitzortungSensorEntityDescription, ...] = (
         has_entity_name=True,
         native_unit_of_measurement=UnitOfLength.KILOMETERS,
         device_class=SensorDeviceClass.DISTANCE,
-        state_class=SensorStateClass.MEASUREMENT,
         entity_class=DistanceSensor,
     ),
 )
