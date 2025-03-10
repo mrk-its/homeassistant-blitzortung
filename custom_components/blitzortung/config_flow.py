@@ -7,7 +7,7 @@ from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
-    OptionsFlowWithConfigEntry,
+    OptionsFlow,
 )
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME
 
@@ -96,11 +96,11 @@ class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     @staticmethod
-    def async_get_options_flow(config_entry: ConfigEntry):
-        return BlitzortungOptionsFlowHandler(config_entry)
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
+        return BlitzortungOptionsFlowHandler()
 
 
-class BlitzortungOptionsFlowHandler(OptionsFlowWithConfigEntry):
+class BlitzortungOptionsFlowHandler(OptionsFlow):
     """Handle an options flow for Blitzortung."""
 
     async def async_step_init(
