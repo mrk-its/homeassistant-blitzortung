@@ -1,0 +1,63 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "Nastavte detekciu bleskov Blitzortung",
+        "data": {
+          "name": "Názov inštancie integrácie",
+          "latitude": "Zemepisná šírka",
+          "longitude": "Zemepisná dĺžka"
+        }
+      },
+      "reconfigure_confirm": {
+        "description": "Aktualizovať konfiguráciu {name}.",
+        "data": {
+          "latitude": "Zemepisná šírka",
+          "longitude": "Zemepisná dĺžka"
+        }
+      }
+    },
+    "error": {},
+    "abort": {
+      "already_configured": "Služba už je nakonfigurovaná",
+      "reconfigure_successful": "Zmena konfigurácie bola úspešná"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Možnosti Blitzortung",
+        "description": "Nastavte možnosti detekcie bleskov Blitzortung",
+        "data": {
+          "radius": "Polomer detekcie bleskov (km/míle)",
+          "time_window": "Časové okno (minúty, 0 = vypnuté)",
+          "max_tracked_lightnings": "Max. počet sledovaných bleskov"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "state_attributes": {
+          "lat": {
+            "name": "Zemepisná šírka"
+          },
+          "lon": {
+            "name": "Zemepisná dĺžka"
+          }
+        }
+      },
+      "distance": {
+        "state_attributes": {
+          "lat": {
+            "name": "Zemepisná šírka"
+          },
+          "lon": {
+            "name": "Zemepisná dĺžka"
+          }
+        }
+      }
+    }
+  }
+}
