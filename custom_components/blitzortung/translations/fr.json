@@ -8,7 +8,7 @@
           "latitude": "Latitude",
           "longitude": "Longitude"
         }
-      }
+      },
        "reconfigure_confirm": {
         "description": "Mise à jour de la configuration pour {name}.",
         "data": {
