@@ -9,7 +9,7 @@
           "longitude": "Longitude"
         }
       },
-       "reconfigure_confirm": {
+      "reconfigure_confirm": {
         "description": "Mise à jour de la configuration pour {name}.",
         "data": {
           "latitude": "Latitude",
@@ -35,7 +35,7 @@
         }
       }
     }
-  }
+  },
   "entity": {
     "sensor": {
       "azimuth": {
