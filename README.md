@@ -24,6 +24,8 @@ Search for Blitzortung on `Configuration/Integrations` page. After adding integr
 
 You can change the coordinates for an existing Blitzortung configuration using the reconfigure flow, go to **Settings** >> **Devices & services** >> **Blitortung** >> **3 dot menu** >> **Reconfigure**.
 
+To change the detection radius, time window, and max tracked lightnings, go to **Settings** >> **Devices & services** >> **Blitortung** >> **Configure**.
+
 # Reviews and How-Tos
 You can read and see (youtube) how this component was used in the following community video.
 [How to Add a Lightning Sensor](https://www.vcloudinfo.com/2020/08/adding-a-lightning-sensor-to-home-assistant.html)
