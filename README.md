@@ -24,6 +24,40 @@ Search for Blitzortung on `Configuration/Integrations` page. After adding integr
 
 You can change the coordinates for an existing Blitzortung configuration using the reconfigure flow, go to **Settings** >> **Devices & services** >> **Blitortung** >> **3 dot menu** >> **Reconfigure**.
 
+To change the detection radius, time window, and max tracked lightnings, go to **Settings** >> **Devices & services** >> **Blitortung** >> **Configure**.
+
 # Reviews and How-Tos
 You can read and see (youtube) how this component was used in the following community video.
 [How to Add a Lightning Sensor](https://www.vcloudinfo.com/2020/08/adding-a-lightning-sensor-to-home-assistant.html)
+
+# Example
+
+This storm event occurred on 28 June 2025 at Nisswa, MN, USA [-94.272, 46.516].
+
+![Loop of storm event](./images/storm_event_loop.gif)
+
+Blitzortung was configured:
+
+* Lightning detection radius: 20 mi
+* Time window: 120
+* Max number of tracked lightnings: 100
+
+## Results
+
+### Lightning strike count
+
+![Chart of lightning strike count](./images/counter-720.png)
+
+### Lightning strike azimuth
+
+![Chart of lightning strike azumuth](./images/azimuth-720.png)
+
+### Lightning strike distance
+
+![Chart of lightning strike distance](./images/distance-720.png)
+
+### Effect of time window
+
+Zooming out a bit on the lightning strike count, you can see the effect of the 120 minute time window.
+
+![Chart of lightning strike count showing effect of time window setting](./images/counter-wide-720.png)
