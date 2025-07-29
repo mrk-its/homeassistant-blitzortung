@@ -64,8 +64,8 @@ class BlitzortungSensor(SensorEntity):
         self._attr_attribution = ATTRIBUTION
         
         # Create device info based on tracking mode
-        if coordinator.tracking_mode == "device_tracker" and coordinator.device_tracker:
-            device_name = f"{integration_name}"
+        if coordinator.tracking_mode == "Device Tracker" and coordinator.device_tracker:
+            device_name = f"{integration_name} (following {coordinator.device_tracker})"
         else:
             device_name = integration_name
             
@@ -94,9 +94,9 @@ class BlitzortungSensor(SensorEntity):
             attrs.update(self._attr_extra_state_attributes)
         
         # Add tracking information
-        if self.coordinator.tracking_mode == "device_tracker":
-            attrs["tracking_mode"] = "device_tracker"
-            attrs["device_tracker"] = self.coordinator.device_tracker
+        if self.coordinator.tracking_mode == "Device Tracker":
+            attrs["tracking_mode"] = "Device Tracker"
+            attrs["Device Tracker"] = self.coordinator.device_tracker
             attrs["current_lat"] = self.coordinator.latitude
             attrs["current_lon"] = self.coordinator.longitude
         else:
