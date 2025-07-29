@@ -30,7 +30,7 @@ from .const import (
 RECONFIGURE_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_TRACKING_MODE, default=DEFAULT_TRACKING_MODE): vol.In(
-            ["static", "device_tracker"]
+            ["Static", "Device Tracker"]
         ),
         vol.Optional(CONF_LATITUDE): cv.latitude,
         vol.Optional(CONF_LONGITUDE): cv.longitude,
@@ -54,7 +54,7 @@ class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
         
         if user_input is not None:
             # Validate input based on tracking mode
-            if user_input[CONF_TRACKING_MODE] == "static":
+            if user_input[CONF_TRACKING_MODE] == "Static":
                 if not user_input.get(CONF_LATITUDE) or not user_input.get(CONF_LONGITUDE):
                     errors["base"] = "static_location_required"
                 else:
@@ -112,7 +112,7 @@ class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
                     ): str,
                     vol.Required(
                         CONF_TRACKING_MODE, default=DEFAULT_TRACKING_MODE
-                    ): vol.In(["static", "device_tracker"]),
+                    ): vol.In(["Static", "Device Tracker"]),
                     vol.Optional(
                         CONF_LATITUDE,
                         default=self.hass.config.latitude,
@@ -138,7 +138,7 @@ class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             # Validate input based on tracking mode
-            if user_input[CONF_TRACKING_MODE] == "static":
+            if user_input[CONF_TRACKING_MODE] == "Static":
                 if not user_input.get(CONF_LATITUDE) or not user_input.get(CONF_LONGITUDE):
                     errors["base"] = "static_location_required"
                 else:
