@@ -11,6 +11,7 @@ Blitzortung.org is a worldwide, real time, community collaborative lightning loc
 - distance and azimuth sensors of lightning strikes nearby
 - counter of lightning strikes
 - emits geo_location events for lightning strikes (visible on the map)
+- based on either a static latitude and longitude, or a device tracker
 - data is realtime, with average delay of few seconds
 
 # Manual installation
@@ -22,9 +23,9 @@ This component is available on HACS default
 # Configuration
 Search for Blitzortung on `Configuration/Integrations` page. After adding integration, you can optionally configure the location and radius with Blitzortung/Options (by default your home locattion is used with 100km radius).
 
-You can change the coordinates for an existing Blitzortung configuration using the reconfigure flow, go to **Settings** >> **Devices & services** >> **Blitortung** >> **3 dot menu** >> **Reconfigure**.
+You can change the source of the coordinates, or completely change the coordinates of an existing Blitzortung configuration using the reconfigure flow, go to **Settings** >> **Devices & services** >> **Blitortung** >> **3 dot menu** >> **Reconfigure**.
 
-To change the detection radius, time window, and max tracked lightnings, go to **Settings** >> **Devices & services** >> **Blitortung** >> **Configure**.
+To change the detection radius, time window, max tracked lightnings, or disable geocoding, go to **Settings** >> **Devices & services** >> **Blitortung** >> **Configure**.
 
 # Reviews and How-Tos
 You can read and see (youtube) how this component was used in the following community video.
