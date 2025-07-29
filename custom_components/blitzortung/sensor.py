@@ -35,6 +35,7 @@ from .const import (
     BLIZORTUNG_URL,
     CONF_TRACKING_MODE,
     CONF_DEVICE_TRACKER,
+    CONF_ENABLE_GEOCODING,
     DOMAIN,
     SERVER_STATS,
     SW_VERSION,
@@ -65,7 +66,7 @@ class BlitzortungSensor(SensorEntity):
         
         # Create device info based on tracking mode
         if coordinator.tracking_mode == "Device Tracker" and coordinator.device_tracker:
-            device_name = f"{integration_name} (following {coordinator.device_tracker})"
+            device_name = f"{integration_name}"
         else:
             device_name = integration_name
             
@@ -100,7 +101,7 @@ class BlitzortungSensor(SensorEntity):
             attrs["current_lat"] = self.coordinator.latitude
             attrs["current_lon"] = self.coordinator.longitude
         else:
-            attrs["tracking_mode"] = "static"
+            attrs["tracking_mode"] = "Static"
             
         return attrs
 
