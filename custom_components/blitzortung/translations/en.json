@@ -6,12 +6,12 @@
         "data": {
           "name": "Name of the integration instance",
           "tracking_mode": "Tracking mode",
-          "latitude": "Latitude (for static mode)",
-          "longitude": "Longitude (for static mode)",
-          "device_tracker": "Device tracker (for device tracker mode)"
+          "latitude": "Latitude (Static mode)",
+          "longitude": "Longitude (Static mode)",
+          "device_tracker": "Device tracker (Device Tracker mode)"
         },
         "data_description": {
-          "tracking_mode": "Choose 'static' for a fixed location or 'device_tracker' to follow a person/device",
+          "tracking_mode": "Choose 'Static' for a fixed location or 'Device Tracker' to follow a person/device",
           "latitude": "Only required when using static tracking mode",
           "longitude": "Only required when using static tracking mode",
           "device_tracker": "Only required when using device tracker mode"
@@ -42,19 +42,19 @@
           }
         }
       },
-      "reconfigure_confirm": {
+      "reconfigure": {
         "description": "Update configuration for {name}.",
         "data": {
           "tracking_mode": "Tracking mode",
-          "latitude": "Latitude (for static mode)",
-          "longitude": "Longitude (for static mode)",
-          "device_tracker": "Device tracker (for device tracker mode)"
+          "latitude": "Latitude (Static mode)",
+          "longitude": "Longitude (Static mode)",
+          "device_tracker": "Device tracker (Device Tracker mode)"
         }
       }
     },
     "error": {
-      "static_location_required": "Latitude and longitude are required for static tracking mode",
-      "device_tracker_required": "Device tracker selection is required for device tracker mode"
+      "static_location_required": "Latitude and longitude are required for Static tracking mode",
+      "device_tracker_required": "Device Tracker selection is required for Device T mode"
     },
     "abort": {
       "already_configured": "Service is already configured",
@@ -70,10 +70,7 @@
           "radius": "Lightning detection radius (km / mi)",
           "time_window": "Time window (minutes, 0 - disabled)",
           "max_tracked_lightnings": "Max number of tracked lightnings",
-          "enable_geocoding": "Enable location names for lightning strikes"
-        },
-        "data_description": {
-          "enable_geocoding": "Uses OpenStreetMap to provide human-readable location names for lightning strikes"
+          "geocoding": "Enable location names for lightning strikes"
         }
       }
     }
@@ -81,8 +78,8 @@
   "selector": {
     "tracking_mode": {
       "options": {
-        "static": "Static location",
-        "device_tracker": "Follow device tracker"
+        "Static": "Static location",
+        "Device Tracker": "Follow device tracker"
       }
     }
   },
