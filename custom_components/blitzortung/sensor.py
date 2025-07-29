@@ -27,10 +27,14 @@ from .const import (
     ATTR_LIGHTNING_AZIMUTH,
     ATTR_LIGHTNING_COUNTER,
     ATTR_LIGHTNING_DISTANCE,
+    ATTR_LIGHTNING_AREA,
+    ATTR_LIGHTNING_LOCATION,
     ATTR_LON,
     ATTRIBUTION,
     BLITZORTUNG_CONFIG,
     BLIZORTUNG_URL,
+    CONF_TRACKING_MODE,
+    CONF_DEVICE_TRACKER,
     DOMAIN,
     SERVER_STATS,
     SW_VERSION,
@@ -58,8 +62,15 @@ class BlitzortungSensor(SensorEntity):
         if description.name is UNDEFINED:
             self._attr_name = f"Server {description.key.replace("_", " ").lower()}"
         self._attr_attribution = ATTRIBUTION
+        
+        # Create device info based on tracking mode
+        if coordinator.tracking_mode == "device_tracker" and coordinator.device_tracker:
+            device_name = f"{integration_name}"
+        else:
+            device_name = integration_name
+            
         self._attr_device_info = DeviceInfo(
-            name=integration_name,
+            name=device_name,
             identifiers={(DOMAIN, unique_prefix)},
             model="Blitzortung Lightning Detector",
             sw_version=SW_VERSION,
@@ -74,6 +85,24 @@ class BlitzortungSensor(SensorEntity):
     @property
     def available(self):
         return self.coordinator.is_connected
+
+    @property
+    def extra_state_attributes(self):
+        """Return additional state attributes."""
+        attrs = {}
+        if hasattr(self, '_attr_extra_state_attributes') and self._attr_extra_state_attributes:
+            attrs.update(self._attr_extra_state_attributes)
+        
+        # Add tracking information
+        if self.coordinator.tracking_mode == "device_tracker":
+            attrs["tracking_mode"] = "device_tracker"
+            attrs["device_tracker"] = self.coordinator.device_tracker
+            attrs["current_lat"] = self.coordinator.latitude
+            attrs["current_lon"] = self.coordinator.longitude
+        else:
+            attrs["tracking_mode"] = "static"
+            
+        return attrs
 
     async def async_added_to_hass(self):
         """Connect to dispatcher listening for entity data notifications."""
@@ -121,6 +150,17 @@ class DistanceSensor(LightningSensor):
             ATTR_LAT: lightning[ATTR_LAT],
             ATTR_LON: lightning[ATTR_LON],
         }
+        
+        # Add location information if available
+        if "area" in lightning:
+            self._attr_extra_state_attributes[ATTR_LIGHTNING_AREA] = lightning["area"]
+        if "location" in lightning:
+            self._attr_extra_state_attributes[ATTR_LIGHTNING_LOCATION] = lightning["location"]
+        if "primary_area" in lightning:
+            self._attr_extra_state_attributes["primary_area"] = lightning["primary_area"]
+        if "country" in lightning:
+            self._attr_extra_state_attributes["country"] = lightning["country"]
+            
         self.async_write_ha_state()
 
 
@@ -134,6 +174,17 @@ class AzimuthSensor(LightningSensor):
             ATTR_LAT: lightning[ATTR_LAT],
             ATTR_LON: lightning[ATTR_LON],
         }
+        
+        # Add location information if available
+        if "area" in lightning:
+            self._attr_extra_state_attributes[ATTR_LIGHTNING_AREA] = lightning["area"]
+        if "location" in lightning:
+            self._attr_extra_state_attributes[ATTR_LIGHTNING_LOCATION] = lightning["location"]
+        if "primary_area" in lightning:
+            self._attr_extra_state_attributes["primary_area"] = lightning["primary_area"]
+        if "country" in lightning:
+            self._attr_extra_state_attributes["country"] = lightning["country"]
+            
         self.async_write_ha_state()
 
 
@@ -144,6 +195,33 @@ class CounterSensor(LightningSensor):
 
     def update_lightning(self, lightning):
         self._attr_native_value = self._attr_native_value + 1
+        self.async_write_ha_state()
+
+
+class AreaSensor(LightningSensor):
+    """Define a Blitzortung area sensor showing where lightning struck."""
+
+    INITIAL_STATE = "No recent lightning"
+
+    def update_lightning(self, lightning):
+        """Update the sensor data."""
+        # Use area description as the main state
+        self._attr_native_value = lightning.get("area", "Unknown Location")
+        self._attr_extra_state_attributes = {
+            ATTR_LAT: lightning[ATTR_LAT],
+            ATTR_LON: lightning[ATTR_LON],
+            ATTR_LIGHTNING_DISTANCE: lightning[ATTR_LIGHTNING_DISTANCE],
+            ATTR_LIGHTNING_AZIMUTH: lightning[ATTR_LIGHTNING_AZIMUTH],
+        }
+        
+        # Add detailed location information if available
+        if "location" in lightning:
+            self._attr_extra_state_attributes[ATTR_LIGHTNING_LOCATION] = lightning["location"]
+        if "primary_area" in lightning:
+            self._attr_extra_state_attributes["primary_area"] = lightning["primary_area"]
+        if "country" in lightning:
+            self._attr_extra_state_attributes["country"] = lightning["country"]
+            
         self.async_write_ha_state()
 
 
@@ -217,6 +295,14 @@ SENSORS: tuple[BlitzortungSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.DISTANCE,
         entity_class=DistanceSensor,
     ),
+    BlitzortungSensorEntityDescription(
+        key=ATTR_LIGHTNING_AREA,
+        name="Lightning area",
+        translation_key=ATTR_LIGHTNING_AREA,
+        has_entity_name=True,
+        icon="mdi:map-marker",
+        entity_class=AreaSensor,
+    ),
 )
 
 
@@ -262,6 +348,7 @@ async def async_setup_entry(
         ATTR_LIGHTNING_AZIMUTH,
         ATTR_LIGHTNING_COUNTER,
         ATTR_LIGHTNING_DISTANCE,
+        ATTR_LIGHTNING_AREA,
         "bytes_received",
         "bytes_sent",
         "clients_connected",
