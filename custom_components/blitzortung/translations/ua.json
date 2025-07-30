@@ -1,0 +1,63 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "Налаштування виявлення блискавок Blitzortung",
+        "data": {
+          "name": "Назва екземпляра інтеграції",
+          "latitude": "Широта",
+          "longitude": "Довгота"
+        }
+      },
+      "reconfigure_confirm": {
+        "description": "Оновити конфігурацію для {name}.",
+        "data": {
+          "latitude": "Широта",
+          "longitude": "Довгота"
+        }
+      }
+    },
+    "error": {},
+    "abort": {
+      "already_configured": "Сервіс вже налаштовано",
+      "reconfigure_successful": "Повторна конфігурація пройшла успішно"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Параметри Blitzortung",
+        "description": "Налаштуйте параметри виявлення блискавок Blitzortung",
+        "data": {
+          "radius": "Радіус виявлення блискавок (км / миль)",
+          "time_window": "Часове вікно (хвилини, 0 – вимкнено)",
+          "max_tracked_lightnings": "Максимальна кількість відстежуваних блискавок"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "state_attributes": {
+          "lat": {
+            "name": "Широта"
+          },
+          "lon": {
+            "name": "Довгота"
+          }
+        }
+      },
+      "distance": {
+        "state_attributes": {
+          "lat": {
+            "name": "Широта"
+          },
+          "lon": {
+            "name": "Довгота"
+          }
+        }
+      }
+    }
+  }
+}
