@@ -8,10 +8,10 @@ import voluptuous as vol
 
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME, UnitOfLength
-from homeassistant.core import callback, HomeAssistant
+from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME, UnitOfLength, STATE_UNAVAILABLE, STATE_UNKNOWN
+from homeassistant.core import callback, HomeAssistant, State
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
-from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.event import async_track_time_interval, async_track_state_change_event
 
 from homeassistant.util.json import json_loads_object
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
@@ -25,17 +25,22 @@ from .const import (
     CONF_MAX_TRACKED_LIGHTNINGS,
     CONF_RADIUS,
     CONF_TIME_WINDOW,
+    CONF_DEVICE_TRACKER,
+    CONF_TRACKING_MODE,
+    CONF_ENABLE_GEOCODING,
     DEFAULT_IDLE_RESET_TIMEOUT,
     DEFAULT_MAX_TRACKED_LIGHTNINGS,
     DEFAULT_RADIUS,
     DEFAULT_TIME_WINDOW,
     DEFAULT_UPDATE_INTERVAL,
+    DEFAULT_ENABLE_GEOCODING,
     DOMAIN,
     PLATFORMS,
     SERVER_STATS,
 )
 from .geohash_utils import geohash_overlap
 from .mqtt import MQTT, MQTT_CONNECTED, MQTT_DISCONNECTED
+from .geocoding_utils import GeocodingService
 from .version import __version__
 
 _LOGGER = logging.getLogger(__name__)
@@ -63,6 +68,9 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: BlitzortungConfig
     radius = config_entry.options[CONF_RADIUS]
     max_tracked_lightnings = config_entry.options[CONF_MAX_TRACKED_LIGHTNINGS]
     time_window_seconds = config_entry.options[CONF_TIME_WINDOW] * 60
+    tracking_mode = config_entry.data.get(CONF_TRACKING_MODE, "static")
+    device_tracker = config_entry.data.get(CONF_DEVICE_TRACKER)
+    enable_geocoding = config_entry.options.get(CONF_ENABLE_GEOCODING, DEFAULT_ENABLE_GEOCODING)
 
     if max_tracked_lightnings >= 500:
         _LOGGER.warning(
@@ -86,6 +94,9 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: BlitzortungConfig
         max_tracked_lightnings,
         time_window_seconds,
         DEFAULT_UPDATE_INTERVAL,
+        tracking_mode=tracking_mode,
+        device_tracker=device_tracker,
+        enable_geocoding=enable_geocoding,
         server_stats=config.get(SERVER_STATS),
     )
 
@@ -157,6 +168,10 @@ async def async_migrate_entry(hass, entry: BlitzortungConfigEntry):
             CONF_MAX_TRACKED_LIGHTNINGS: max_tracked_lightnings,
         }
 
+        # Add geocoding option if not present (for migration)
+        if CONF_ENABLE_GEOCODING not in entry.options:
+            new_options[CONF_ENABLE_GEOCODING] = DEFAULT_ENABLE_GEOCODING
+
         hass.config_entries.async_update_entry(
             entry, data=new_data, options=new_options, version=5
         )
@@ -174,16 +189,24 @@ class BlitzortungCoordinator:
         max_tracked_lightnings,
         time_window_seconds,
         update_interval,
+        tracking_mode="static",
+        device_tracker=None,
+        enable_geocoding=True,
         server_stats=False,
     ):
         """Initialize."""
         self.hass = hass
+        self.initial_latitude = latitude
+        self.initial_longitude = longitude
         self.latitude = latitude
         self.longitude = longitude
         self.radius = radius
         self.max_tracked_lightnings = max_tracked_lightnings
         self.time_window_seconds = time_window_seconds
         self.server_stats = server_stats
+        self.tracking_mode = tracking_mode
+        self.device_tracker = device_tracker
+        self.enable_geocoding = enable_geocoding
         self.last_time = 0
         self.sensors = []
         self.callbacks = []
@@ -194,12 +217,19 @@ class BlitzortungCoordinator:
         )
         self._disconnect_callbacks = []
         self.unloading = False
+        self._location_available = True
+
+        # Initialize geocoding service if enabled
+        self.geocoding_service = GeocodingService(hass) if enable_geocoding else None
 
         _LOGGER.info(
-            "lat: %s, lon: %s, radius: %skm, geohashes: %s",
+            "lat: %s, lon: %s, radius: %skm, tracking_mode: %s, device_tracker: %s, geocoding: %s, geohashes: %s",
             self.latitude,
             self.longitude,
             self.radius,
+            self.tracking_mode,
+            self.device_tracker,
+            self.enable_geocoding,
             self.geohash_overlap,
         )
 
@@ -227,6 +257,85 @@ class BlitzortungCoordinator:
         for sensor in self.sensors:
             sensor.async_write_ha_state()
 
+    def _get_device_tracker_location(self) -> tuple[float, float] | None:
+        """Get current location from device tracker."""
+        if not self.device_tracker:
+            return None
+            
+        state = self.hass.states.get(self.device_tracker)
+        if not state or state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN):
+            return None
+            
+        try:
+            latitude = float(state.attributes.get("latitude"))
+            longitude = float(state.attributes.get("longitude"))
+            return latitude, longitude
+        except (TypeError, ValueError):
+            return None
+
+    def _update_location(self, new_latitude: float, new_longitude: float):
+        """Update the tracking location and recompute geohashes."""
+        old_lat, old_lon = self.latitude, self.longitude
+        self.latitude = new_latitude
+        self.longitude = new_longitude
+        
+        # Recompute geohash overlap for new location
+        new_geohash_overlap = geohash_overlap(
+            self.latitude, self.longitude, self.radius
+        )
+        
+        # If geohashes changed, we need to resubscribe
+        if new_geohash_overlap != self.geohash_overlap:
+            _LOGGER.info(
+                "Location changed from (%s, %s) to (%s, %s), updating geohashes from %s to %s",
+                old_lat, old_lon, new_latitude, new_longitude,
+                self.geohash_overlap, new_geohash_overlap
+            )
+            self.geohash_overlap = new_geohash_overlap
+            
+            # Resubscribe to new geohashes if connected
+            if self.mqtt_client.connected:
+                self.hass.async_create_task(self._resubscribe_geohashes())
+
+    async def _resubscribe_geohashes(self):
+        """Resubscribe to MQTT topics for new geohashes."""
+        try:
+            # Unsubscribe from all blitzortung topics
+            # Note: This is a simplified approach - ideally we'd track subscriptions
+            _LOGGER.debug("Resubscribing to geohashes: %s", self.geohash_overlap)
+            
+            # Subscribe to new geohashes
+            for geohash_code in self.geohash_overlap:
+                geohash_part = "/".join(geohash_code)
+                await self.mqtt_client.async_subscribe(
+                    "blitzortung/1.1/{}/#".format(geohash_part), self.on_mqtt_message, qos=0
+                )
+        except Exception as e:
+            _LOGGER.error("Error resubscribing to geohashes: %s", e)
+
+    @callback
+    def _device_tracker_state_changed(self, event):
+        """Handle device tracker state changes."""
+        if self.unloading or self.tracking_mode != "device_tracker":
+            return
+            
+        new_state = event.data.get("new_state")
+        if not new_state:
+            return
+            
+        location = self._get_device_tracker_location()
+        if location:
+            new_lat, new_lon = location
+            # Only update if location changed significantly (avoid micro-movements)
+            if (abs(new_lat - self.latitude) > 0.001 or 
+                abs(new_lon - self.longitude) > 0.001):
+                self._update_location(new_lat, new_lon)
+                self._location_available = True
+        else:
+            if self._location_available:
+                _LOGGER.warning("Device tracker %s location unavailable", self.device_tracker)
+                self._location_available = False
+
     def compute_polar_coords(self, lightning):
         dy = (lightning["lat"] - self.latitude) * math.pi / 180
         dx = (
@@ -244,6 +353,26 @@ class BlitzortungCoordinator:
     async def connect(self):
         await self.mqtt_client.async_connect()
         _LOGGER.info("Connected to Blitzortung proxy mqtt server")
+        
+        # Set up device tracker monitoring if needed
+        if self.tracking_mode == "device_tracker" and self.device_tracker:
+            # Get initial location from device tracker
+            location = self._get_device_tracker_location()
+            if location:
+                new_lat, new_lon = location
+                self._update_location(new_lat, new_lon)
+                _LOGGER.info("Initial device tracker location: %s, %s", new_lat, new_lon)
+            else:
+                _LOGGER.warning("Could not get initial location from device tracker %s", self.device_tracker)
+                self._location_available = False
+            
+            # Set up state change listener
+            self._disconnect_callbacks.append(
+                async_track_state_change_event(
+                    self.hass, [self.device_tracker], self._device_tracker_state_changed
+                )
+            )
+        
         for geohash_code in self.geohash_overlap:
             geohash_part = "/".join(geohash_code)
             await self.mqtt_client.async_subscribe(
@@ -298,6 +427,30 @@ class BlitzortungCoordinator:
             self.compute_polar_coords(lightning)
             if lightning[SensorDeviceClass.DISTANCE] < self.radius:
                 _LOGGER.debug("lightning data: %s", lightning)
+                
+                # Add geocoding information if enabled
+                if self.geocoding_service:
+                    try:
+                        location_info = await self.geocoding_service.reverse_geocode(
+                            lightning["lat"], lightning["lon"]
+                        )
+                        if location_info:
+                            lightning["area"] = location_info.get("area_description", "Unknown")
+                            lightning["location"] = location_info.get("display_name", "Unknown")
+                            lightning["primary_area"] = location_info.get("primary_area", "Unknown")
+                            lightning["country"] = location_info.get("country", "Unknown")
+                            _LOGGER.debug("Geocoded lightning location: %s", lightning["area"])
+                        else:
+                            lightning["area"] = "Unknown"
+                            lightning["location"] = "Unknown"
+                    except Exception as e:
+                        _LOGGER.warning("Geocoding failed for lightning strike: %s", e)
+                        lightning["area"] = "Geocoding Failed"
+                        lightning["location"] = "Geocoding Failed"
+                else:
+                    lightning["area"] = "Geocoding Disabled"
+                    lightning["location"] = "Geocoding Disabled"
+                    
                 self.last_time = time.time()
                 for callback in self.lightning_callbacks:
                     await callback(lightning)
@@ -326,7 +479,9 @@ class BlitzortungCoordinator:
 
     @property
     def is_connected(self):
-        return self.mqtt_client.connected
+        return self.mqtt_client.connected and (
+            self.tracking_mode == "static" or self._location_available
+        )
 
     async def _tick(self, *args):
         for cb in self.on_tick_callbacks:
