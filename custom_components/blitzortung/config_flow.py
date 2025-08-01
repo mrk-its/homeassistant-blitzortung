@@ -15,9 +15,11 @@ from .const import (
     CONF_MAX_TRACKED_LIGHTNINGS,
     CONF_RADIUS,
     CONF_TIME_WINDOW,
+    CONF_ENABLE_GEOCODING,
     DEFAULT_MAX_TRACKED_LIGHTNINGS,
     DEFAULT_RADIUS,
     DEFAULT_TIME_WINDOW,
+    DEFAULT_ENABLE_GEOCODING,
     DOMAIN,
 )
 
@@ -116,6 +118,13 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
                     CONF_RADIUS,
                     default=self.config_entry.options.get(CONF_RADIUS, DEFAULT_RADIUS),
                 ): int,
+                vol.Optional(
+                    CONF_ENABLE_GEOCODING,
+                    default=self.config_entry.options.get(
+                        CONF_ENABLE_GEOCODING,
+                        DEFAULT_ENABLE_GEOCODING,
+                    ),
+                ): bool,
                 vol.Optional(
                     CONF_TIME_WINDOW,
                     default=self.config_entry.options.get(
