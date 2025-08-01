@@ -18,7 +18,7 @@ Blitzortung.org is a worldwide, real time, community collaborative lightning loc
 Place `custom_components/blitzortung` directory inside custom_components dir and restart Home Assistant
 
 # HACS installation
-This component is available on HACS default
+This component is not available on HACS unless it gets merged with the original repo (pull request submitted already)
 
 # Configuration
 Search for Blitzortung on `Configuration/Integrations` page. After adding integration, you can optionally configure the location and radius with Blitzortung/Options (by default your home locattion is used with 100km radius).
