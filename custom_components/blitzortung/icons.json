@@ -7,6 +7,9 @@
       "counter": {
         "default": "mdi:flash"
       },
+      "area": {
+        "default": "mdi:map-marker"
+      },
       "distance": {
         "default": "mdi:arrow-left-right"
       },
