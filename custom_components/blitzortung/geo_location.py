@@ -122,6 +122,10 @@ class BlitzortungEventManager:
             lightning["time"],
             lightning["status"],
             lightning["region"],
+            lightning.get("area", "Unknown"),
+            lightning.get("location", "Unknown"),
+            lightning.get("primary_area", "Unknown"),
+            lightning.get("country", "Unknown"),
         )
         to_delete = self._strikes.insort(event)
         self._async_add_entities([event])
@@ -153,14 +157,25 @@ class BlitzortungEvent(GeolocationEvent):
     _attr_should_poll = False
     _attr_source = DOMAIN
 
-    def __init__(self, distance, latitude, longitude, unit, time, status, region):
+    def __init__(self, distance, latitude, longitude, unit, time, status, region, area, location, primary_area, country):
         """Initialize entity with data provided."""
         self._time = time
         self._status = status
         self._region = region
+        self._area = area
+        self._location = location
+        self._primary_area = primary_area
+        self._country = country
         self._publication_date = time / 1e9
         self._remove_signal_delete = None
         self._strike_id = str(uuid.uuid4()).replace("-", "")
+        
+        # Create a more descriptive name based on location if available
+        if area and area != "Unknown":
+            self._attr_name = f"Lightning Strike - {area}"
+        else:
+            self._attr_name = "Lightning Strike"
+            
         self.entity_id = f"geo_location.lightning_strike_{self._strike_id}"
         self._attr_distance = distance
         self._attr_latitude = latitude
@@ -168,6 +183,12 @@ class BlitzortungEvent(GeolocationEvent):
         self._attr_extra_state_attributes = {
             ATTR_EXTERNAL_ID: self._strike_id,
             ATTR_PUBLICATION_DATE: utc_from_timestamp(self._publication_date),
+            "area": self._area,
+            "location": self._location,
+            "primary_area": self._primary_area,
+            "country": self._country,
+            "status": self._status,
+            "region": self._region,
         }
         self._attr_unit_of_measurement = unit
 
