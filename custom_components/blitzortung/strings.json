@@ -31,7 +31,8 @@
         "data": {
           "radius": "Lightning detection radius (km / mi)",
           "time_window": "Time window (minutes, 0 - disabled)",
-          "max_tracked_lightnings": "Max number of tracked lightnings"
+          "max_tracked_lightnings": "Max number of tracked lightnings",
+          "geocoding": "Enable location names for lightning strikes"
         }
       }
     }
