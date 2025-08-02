@@ -236,6 +236,8 @@ class BlitzortungCoordinator:
             * math.cos(self.latitude * math.pi / 180)
         )
         distance = round(math.sqrt(dx * dx + dy * dy) * 6371, 1)
+        # Ensure clean rounding by converting to float with proper precision
+        distance = float(f"{distance:.1f}")
         azimuth = round(math.atan2(dx, dy) * 180 / math.pi) % 360
 
         lightning[ATTR_LIGHTNING_DISTANCE] = distance
