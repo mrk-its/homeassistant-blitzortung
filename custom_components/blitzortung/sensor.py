@@ -63,6 +63,13 @@ class BlitzortungSensor(SensorEntity):
         if description.name is UNDEFINED:
             self._attr_name = f"Server {description.key.replace("_", " ").lower()}"
         self._attr_attribution = ATTRIBUTION
+        
+        # Create device info based on tracking mode
+        if coordinator.tracking_mode == "Device Tracker" and coordinator.device_tracker:
+            device_name = f"{integration_name}"
+        else:
+            device_name = device_name
+            
         self._attr_device_info = DeviceInfo(
             name=integration_name,
             identifiers={(DOMAIN, unique_prefix)},
@@ -79,6 +86,24 @@ class BlitzortungSensor(SensorEntity):
     @property
     def available(self):
         return self.coordinator.is_connected
+
+    @property
+    def extra_state_attributes(self):
+        """Return additional state attributes."""
+        attrs = {}
+        if hasattr(self, '_attr_extra_state_attributes') and self._attr_extra_state_attributes:
+            attrs.update(self._attr_extra_state_attributes)
+        
+        # Add tracking information
+        if self.coordinator.tracking_mode == "Device Tracker":
+            attrs["tracking_mode"] = "Device Tracker"
+            attrs["Device Tracker"] = self.coordinator.device_tracker
+            attrs["current_lat"] = self.coordinator.latitude
+            attrs["current_lon"] = self.coordinator.longitude
+        else:
+            attrs["tracking_mode"] = "Static"
+            
+        return attrs
 
     async def async_added_to_hass(self):
         """Connect to dispatcher listening for entity data notifications."""
