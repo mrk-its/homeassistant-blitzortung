@@ -5,19 +5,57 @@
         "description": "Set up Blitzortung lightning detection",
         "data": {
           "name": "Name of the integration instance",
-          "latitude": "Latitude",
-          "longitude": "Longitude"
+          "tracking_mode": "Tracking mode",
+          "latitude": "Latitude (Static mode)",
+          "longitude": "Longitude (Static mode)",
+          "device_tracker": "Device tracker (Device Tracker mode)"
+        },
+        "data_description": {
+          "tracking_mode": "Choose 'Static' for a fixed location or 'Device Tracker' to follow a person/device",
+          "latitude": "Only required when using static tracking mode",
+          "longitude": "Only required when using static tracking mode",
+          "device_tracker": "Only required when using device tracker mode"
         }
       },
-      "reconfigure_confirm": {
+      "area": {
+        "state_attributes": {
+          "lat": {
+            "name": "Latitude"
+          },
+          "lon": {
+            "name": "Longitude"
+          },
+          "distance": {
+            "name": "Distance"
+          },
+          "azimuth": {
+            "name": "Azimuth"
+          },
+          "location": {
+            "name": "Full location"
+          },
+          "primary_area": {
+            "name": "Primary area"
+          },
+          "country": {
+            "name": "Country"
+          }
+        }
+      },
+      "reconfigure": {
         "description": "Update configuration for {name}.",
         "data": {
-          "latitude": "Latitude",
-          "longitude": "Longitude"
+          "tracking_mode": "Tracking mode",
+          "latitude": "Latitude (Static mode)",
+          "longitude": "Longitude (Static mode)",
+          "device_tracker": "Device tracker (Device Tracker mode)"
         }
       }
     },
-    "error": {},
+    "error": {
+      "static_location_required": "Latitude and longitude are required for Static tracking mode",
+      "device_tracker_required": "Device Tracker selection is required for Device T mode"
+    },
     "abort": {
       "already_configured": "Service is already configured",
       "reconfigure_successful": "Re-configuration was successful"
@@ -31,8 +69,17 @@
         "data": {
           "radius": "Lightning detection radius (km / mi)",
           "time_window": "Time window (minutes, 0 - disabled)",
-          "max_tracked_lightnings": "Max number of tracked lightnings"
+          "max_tracked_lightnings": "Max number of tracked lightnings",
+          "geocoding": "Enable location names for lightning strikes"
         }
+      }
+    }
+  },
+  "selector": {
+    "tracking_mode": {
+      "options": {
+        "Static": "Static location",
+        "Device Tracker": "Follow device tracker"
       }
     }
   },
