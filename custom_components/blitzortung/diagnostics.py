@@ -8,7 +8,7 @@ from . import BlitzortungConfigEntry
 
 
 async def async_get_config_entry_diagnostics(
-    hass: HomeAssistant, config_entry: BlitzortungConfigEntry
+    _hass: HomeAssistant, config_entry: BlitzortungConfigEntry
 ) -> dict[str, Any]:
     """Return diagnostics for a config entry."""
     return {

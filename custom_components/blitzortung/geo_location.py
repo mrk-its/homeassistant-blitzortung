@@ -5,17 +5,18 @@ import logging
 import time
 import uuid
 
-from homeassistant.components.geo_location import GeolocationEvent
 from homeassistant.components.geo_location import DOMAIN as platform
+from homeassistant.components.geo_location import GeolocationEvent
 from homeassistant.const import UnitOfLength
 from homeassistant.core import callback
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
     async_dispatcher_send,
 )
 from homeassistant.util.dt import utc_from_timestamp
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
-from homeassistant.helpers import entity_registry as er
+
 from . import BlitzortungConfigEntry
 from .const import ATTR_EXTERNAL_ID, ATTR_PUBLICATION_DATE, ATTRIBUTION, DOMAIN
 
@@ -164,7 +165,7 @@ class BlitzortungEvent(GeolocationEvent):
         self.entity_id = f"geo_location.lightning_strike_{self._strike_id}"
         self._attr_distance = distance
         self._attr_latitude = latitude
-        self._attr_longitude = longitude 
+        self._attr_longitude = longitude
         self._attr_extra_state_attributes = {
             ATTR_EXTERNAL_ID: self._strike_id,
             ATTR_PUBLICATION_DATE: utc_from_timestamp(self._publication_date),
@@ -172,12 +173,12 @@ class BlitzortungEvent(GeolocationEvent):
         self._attr_unit_of_measurement = unit
 
     @callback
-    def _delete_callback(self):
+    def _delete_callback(self) -> None:
         """Remove this entity."""
         self._remove_signal_delete()
         self.hass.async_create_task(self.async_remove(force_remove=True))
 
-    async def async_added_to_hass(self):
+    async def async_added_to_hass(self) -> None:
         """Call when entity is added to hass."""
         self._remove_signal_delete = async_dispatcher_connect(
             self.hass,

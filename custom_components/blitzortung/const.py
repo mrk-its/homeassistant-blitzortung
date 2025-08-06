@@ -1,6 +1,8 @@
+"""Constants for the Blitzortung integration."""
+
 import datetime
-from typing import Any
 from dataclasses import dataclass
+from typing import Any
 
 from homeassistant.util.hass_dict import HassKey
 
@@ -9,6 +11,8 @@ from .version import __version__
 
 @dataclass
 class BlitzortungConfig:
+    """Configuration for Blitzortung integration."""
+
     config: dict[str, Any]
 
 

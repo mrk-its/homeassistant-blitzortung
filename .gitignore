@@ -130,6 +130,7 @@ dmypy.json
 
 # Home Assistant
 .HA_VERSION
-*.yaml
+/blueprints
+/*.yaml
 home-assistant*
 .storage
