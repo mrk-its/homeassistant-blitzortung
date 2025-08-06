@@ -291,16 +291,16 @@ class BlitzortungCoordinator:
                 )
 
     async def on_mqtt_message(self, message, *args):
-        for callback in self.callbacks:
-            callback(message)
+        for cb in self.callbacks:
+            cb(message)
         if message.topic.startswith("blitzortung/1.1"):
             lightning = json_loads_object(message.payload)
             self.compute_polar_coords(lightning)
             if lightning[SensorDeviceClass.DISTANCE] < self.radius:
                 _LOGGER.debug("lightning data: %s", lightning)
                 self.last_time = time.time()
-                for callback in self.lightning_callbacks:
-                    await callback(lightning)
+                for cb in self.lightning_callbacks:
+                    await cb(lightning)
                 for sensor in self.sensors:
                     sensor.update_lightning(lightning)
 

@@ -2,18 +2,17 @@
 import asyncio
 import datetime as dt
 import logging
+from collections.abc import Callable
 from itertools import groupby
 from operator import attrgetter
-from typing import Callable, List, Optional, Union
 
 import attr
 import paho.mqtt.client as mqtt
-from paho.mqtt.matcher import MQTTMatcher
-
-from homeassistant.core import callback, HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.dispatcher import dispatcher_send
 from homeassistant.util import dt as dt_util
+from paho.mqtt.matcher import MQTTMatcher
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -42,12 +41,12 @@ def _match_topic(subscription: str, topic: str) -> bool:
     matcher[subscription] = True
     try:
         next(matcher.iter_match(topic))
-        return True
     except StopIteration:
         return False
+    else:
+        return True
 
-
-PublishPayloadType = Union[str, bytes, int, float, None]
+PublishPayloadType = str | bytes| int | float | None
 
 
 @attr.s(slots=True, frozen=True)
@@ -75,7 +74,7 @@ class Subscription:
     encoding = attr.ib(type=str, default="utf-8")
 
 
-SubscribePayloadType = Union[str, bytes]  # Only bytes if encoding is None
+SubscribePayloadType = str | bytes  # Only bytes if encoding is None
 
 
 class MQTT:
@@ -84,23 +83,23 @@ class MQTT:
     def __init__(
         self,
         hass: HomeAssistant,
-        host,
-        port=DEFAULT_PORT,
-        keepalive=DEFAULT_KEEPALIVE,
+        host: str,
+        port: int =DEFAULT_PORT,
+        keepalive: int = DEFAULT_KEEPALIVE,
     ) -> None:
         """Initialize Home Assistant MQTT client."""
         self.hass = hass
         self.host = host
         self.port = port
         self.keepalive = keepalive
-        self.subscriptions: List[Subscription] = []
+        self.subscriptions: list[Subscription] = []
         self.connected = False
         self._mqttc: mqtt.Client = None
         self._paho_lock = asyncio.Lock()
 
         self.init_client()
 
-    def init_client(self):
+    def init_client(self) -> None:
         """Initialize paho client."""
         proto = mqtt.MQTTv311
         self._mqttc = mqtt.Client(protocol=proto)
@@ -136,10 +135,10 @@ class MQTT:
 
         self._mqttc.loop_start()
 
-    async def async_disconnect(self):
+    async def async_disconnect(self) -> None:
         """Stop the MQTT client."""
 
-        def stop():
+        def stop() -> None:
             """Stop the MQTT client."""
             self._mqttc.disconnect()
             self._mqttc.loop_stop()
@@ -147,7 +146,11 @@ class MQTT:
         await self.hass.async_add_executor_job(stop)
 
     async def async_subscribe(
-        self, topic: str, msg_callback, qos: int, encoding: Optional[str] = None,
+        self,
+        topic: str,
+        msg_callback: Callable[[Message], None],
+        qos: int,
+        encoding: str | None = None,
     ) -> Callable[[], None]:
         """Set up a subscription to a topic with the provided qos.
 
@@ -204,7 +207,7 @@ class MQTT:
             )
             _raise_on_error(result)
 
-    def _mqtt_on_connect(self, _mqttc, _userdata, _flags, result_code: int) -> None:
+    def _mqtt_on_connect(self, _mqttc, _userdata, _flags, result_code: int) -> None:  # noqa: ANN001
         """On connect callback.
 
         Resubscribe to all topics we were subscribed to and publish birth
@@ -230,12 +233,12 @@ class MQTT:
             max_qos = max(subscription.qos for subscription in subs)
             self.hass.add_job(self._async_perform_subscription, topic, max_qos)
 
-    def _mqtt_on_message(self, _mqttc, _userdata, msg) -> None:
+    def _mqtt_on_message(self, _mqttc, _userdata, msg: Message) -> None:  # noqa: ANN001
         """Message received callback."""
         self.hass.add_job(self._mqtt_handle_message, msg)
 
     @callback
-    def _mqtt_handle_message(self, msg) -> None:
+    def _mqtt_handle_message(self, msg: Message) -> None:
         _LOGGER.debug(
             "Received message on %s%s: %s",
             msg.topic,
@@ -275,7 +278,7 @@ class MQTT:
                 )
             )
 
-    def _mqtt_on_disconnect(self, _mqttc, _userdata, result_code: int) -> None:
+    def _mqtt_on_disconnect(self, _mqttc, _userdata, result_code: int) -> None:  # noqa: ANN001
         """Disconnected callback."""
         self.connected = False
         dispatcher_send(self.hass, MQTT_DISCONNECTED)
