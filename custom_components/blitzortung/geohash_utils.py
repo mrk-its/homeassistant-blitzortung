@@ -1,11 +1,11 @@
 """Geohash utils."""
 
 import math
-from typing import NamedTuple
+from collections import namedtuple
 
 from . import geohash
 
-Box = NamedTuple("Box", ["s", "w", "n", "e"])
+Box = namedtuple("Box", ["s", "w", "n", "e"])  # noqa: PYI024
 
 
 def geohash_bbox(gh: str) -> Box:

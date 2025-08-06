@@ -3,23 +3,23 @@
 import logging
 import math
 import time
+from collections.abc import Callable
+from typing import Any
 
 import voluptuous as vol
-
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME, UnitOfLength
-from homeassistant.core import callback, HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.event import async_track_time_interval
-
 from homeassistant.util.json import json_loads_object
-from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 from homeassistant.util.unit_conversion import DistanceConverter
+from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 
 from .const import (
-    ATTR_LIGHTNING_DISTANCE,
     ATTR_LIGHTNING_AZIMUTH,
+    ATTR_LIGHTNING_DISTANCE,
     BLITZORTUNG_CONFIG,
     CONF_IDLE_RESET_TIMEOUT,
     CONF_MAX_TRACKED_LIGHTNINGS,
@@ -247,7 +247,7 @@ class BlitzortungCoordinator:
         for geohash_code in self.geohash_overlap:
             geohash_part = "/".join(geohash_code)
             await self.mqtt_client.async_subscribe(
-                "blitzortung/1.1/{}/#".format(geohash_part), self.on_mqtt_message, qos=0
+                f"blitzortung/1.1/{geohash_part}/#", self.on_mqtt_message, qos=0
             )
         if self.server_stats:
             await self.mqtt_client.async_subscribe(
@@ -304,30 +304,37 @@ class BlitzortungCoordinator:
                 for sensor in self.sensors:
                     sensor.update_lightning(lightning)
 
-    def register_sensor(self, sensor):
+    def register_sensor(self, sensor) -> None:
+        """Register a sensor to be updated on each lightning strike."""
         self.sensors.append(sensor)
         self.register_on_tick(sensor.tick)
 
-    def register_message_receiver(self, message_cb):
+    def register_message_receiver(self, message_cb: Callable) -> None:
+        """Register a callback to be called on each MQTT message."""
         self.callbacks.append(message_cb)
 
-    def register_lightning_receiver(self, lightning_cb):
+    def register_lightning_receiver(self, lightning_cb: Callable) -> None:
+        """Register a callback to be called on each lightning strike."""
         self.lightning_callbacks.append(lightning_cb)
 
-    def register_on_tick(self, on_tick_cb):
+    def register_on_tick(self, on_tick_cb: Callable) -> None:
+        """Register a callback to be called on each tick."""
         self.on_tick_callbacks.append(on_tick_cb)
 
     @property
-    def is_inactive(self):
+    def is_inactive(self) -> bool:
+        """Check if the coordinator is inactive."""
         return bool(
             self.time_window_seconds
             and (time.time() - self.last_time) >= self.time_window_seconds
         )
 
     @property
-    def is_connected(self):
+    def is_connected(self) -> bool:
+        """Check if the MQTT client is connected."""
         return self.mqtt_client.connected
 
-    async def _tick(self, *args):
+    async def _tick(self, *args: Any) -> None:  # noqa: ARG002
+        """Call registered callbacks on each tick."""
         for cb in self.on_tick_callbacks:
             cb()
