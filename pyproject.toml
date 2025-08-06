@@ -20,5 +20,9 @@ lint.ignore = [
     "TRY400",   # Use `logging.exception` instead of `logging.error`
 ]
 
+exclude = [
+    "custom_components/blitzortung/geohash.py",
+]
+
 [tool.ruff.lint.mccabe]
 max-complexity = 25
