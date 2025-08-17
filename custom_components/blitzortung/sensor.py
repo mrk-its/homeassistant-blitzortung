@@ -34,13 +34,13 @@ from .const import (
     ATTR_LIGHTNING_COUNTER,
     ATTR_LIGHTNING_DISTANCE,
     ATTR_LON,
-    ATTRIBUTION,
     BLITZORTUNG_CONFIG,
     BLIZORTUNG_URL,
     DOMAIN,
     SERVER_STATS,
     SW_VERSION,
 )
+from .entity import BlitzortungEntity
 from .mqtt import Message
 
 _LOGGER = logging.getLogger(__name__)
@@ -53,10 +53,8 @@ class BlitzortungSensorEntityDescription(SensorEntityDescription):
     entity_class: type["BlitzortungSensor"]
 
 
-class BlitzortungSensor(SensorEntity):
+class BlitzortungSensor(BlitzortungEntity, SensorEntity):
     """Define a Blitzortung sensor."""
-
-    _attr_should_poll = False
 
     def __init__(
         self,
@@ -70,7 +68,6 @@ class BlitzortungSensor(SensorEntity):
         self._attr_unique_id = f"{unique_prefix}-{description.key}"
         if description.name is UNDEFINED:
             self._attr_name = f"Server {description.key.replace("_", " ").lower()}"
-        self._attr_attribution = ATTRIBUTION
         self._attr_device_info = DeviceInfo(
             name=integration_name,
             identifiers={(DOMAIN, unique_prefix)},
@@ -96,15 +93,6 @@ class BlitzortungSensor(SensorEntity):
     async def async_update(self) -> None:
         """Update the sensor data."""
         await self.coordinator.async_request_refresh()
-
-    def update_lightning(self, lightning: dict[str, Any]) -> None:
-        """Update the sensor data."""
-
-    def on_message(self, message: Message) -> None:
-        """Handle incoming MQTT messages."""
-
-    def tick(self) -> None:
-        """Handle tick."""
 
 
 class LightningSensor(BlitzortungSensor):

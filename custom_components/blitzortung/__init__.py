@@ -13,6 +13,7 @@ from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME, UnitOf
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.typing import ConfigType
 from homeassistant.util.json import json_loads_object
 from homeassistant.util.unit_conversion import DistanceConverter
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
@@ -34,8 +35,9 @@ from .const import (
     PLATFORMS,
     SERVER_STATS,
 )
+from .entity import BlitzortungEntity
 from .geohash_utils import geohash_overlap
-from .mqtt import MQTT, MQTT_CONNECTED, MQTT_DISCONNECTED
+from .mqtt import MQTT, MQTT_CONNECTED, MQTT_DISCONNECTED, Message
 from .version import __version__
 
 _LOGGER = logging.getLogger(__name__)
@@ -48,13 +50,16 @@ CONFIG_SCHEMA = vol.Schema(
 BlitzortungConfigEntry = ConfigEntry["BlitzortungCoordinator"]
 
 
-async def async_setup(hass: HomeAssistant, config: dict):
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Initialize basic config of blitzortung component."""
     hass.data[BLITZORTUNG_CONFIG] = config.get(DOMAIN) or {}
     return True
 
 
-async def async_setup_entry(hass: HomeAssistant, config_entry: BlitzortungConfigEntry):
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: BlitzortungConfigEntry
+) -> bool:
     """Set up blitzortung from a config entry."""
     config = hass.data[BLITZORTUNG_CONFIG]
 
@@ -64,7 +69,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: BlitzortungConfig
     max_tracked_lightnings = config_entry.options[CONF_MAX_TRACKED_LIGHTNINGS]
     time_window_seconds = config_entry.options[CONF_TIME_WINDOW] * 60
 
-    if max_tracked_lightnings >= 500:
+    if max_tracked_lightnings >= 500:  # noqa: PLR2004
         _LOGGER.warning(
             "Large number of tracked lightnings: %s, it may lead to"
             "bigger memory usage / unstable frontend",
@@ -98,13 +103,19 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: BlitzortungConfig
     return True
 
 
-async def async_update_options(hass, config_entry: BlitzortungConfigEntry):
+async def async_update_options(
+    hass: HomeAssistant,
+    config_entry: BlitzortungConfigEntry
+) -> bool:
     """Update options."""
     _LOGGER.info("async_update_options")
     await hass.config_entries.async_reload(config_entry.entry_id)
 
 
-async def async_unload_entry(hass: HomeAssistant, config_entry: BlitzortungConfigEntry):
+async def async_unload_entry(
+    hass: HomeAssistant,
+    config_entry: BlitzortungConfigEntry
+) -> bool:
     """Unload a config entry."""
     await config_entry.runtime_data.disconnect()
     _LOGGER.debug("Disconnected")
@@ -112,7 +123,11 @@ async def async_unload_entry(hass: HomeAssistant, config_entry: BlitzortungConfi
     return await hass.config_entries.async_unload_platforms(config_entry, PLATFORMS)
 
 
-async def async_migrate_entry(hass, entry: BlitzortungConfigEntry):
+async def async_migrate_entry(
+    hass: HomeAssistant,
+    entry: BlitzortungConfigEntry
+) -> bool:
+    """Migrate old config entries to the new format."""
     _LOGGER.debug("Migrating Blitzortung entry from Version %s", entry.version)
     if entry.version == 1:
         latitude = entry.data[CONF_LATITUDE]
@@ -128,17 +143,17 @@ async def async_migrate_entry(hass, entry: BlitzortungConfigEntry):
             CONF_RADIUS: radius,
         }
         entry.version = 2
-    if entry.version == 2:
+    if entry.version == 2:  # noqa: PLR2004
         entry.options = dict(entry.options)
         entry.options[CONF_IDLE_RESET_TIMEOUT] = DEFAULT_IDLE_RESET_TIMEOUT
         entry.version = 3
-    if entry.version == 3:
+    if entry.version == 3:  # noqa: PLR2004
         entry.options = dict(entry.options)
         entry.options[CONF_TIME_WINDOW] = entry.options.pop(
             CONF_IDLE_RESET_TIMEOUT, DEFAULT_TIME_WINDOW
         )
         entry.version = 4
-    if entry.version == 4:
+    if entry.version == 4:  # noqa: PLR2004
         new_data = entry.data.copy()
 
         latitude = entry.options.get(CONF_LATITUDE, hass.config.latitude)
@@ -165,17 +180,19 @@ async def async_migrate_entry(hass, entry: BlitzortungConfigEntry):
 
 
 class BlitzortungCoordinator:
+    """Coordinator for Blitzortung data."""
+
     def __init__(
         self,
-        hass,
-        latitude,
-        longitude,
-        radius,  # unit: km
-        max_tracked_lightnings,
-        time_window_seconds,
-        update_interval,
-        server_stats=False,
-    ):
+        hass: HomeAssistant,
+        latitude: float,
+        longitude: float,
+        radius: int,  # unit: km
+        max_tracked_lightnings: int,
+        time_window_seconds: int,
+        _update_interval: int,
+        server_stats: bool = False,
+    ) -> None:
         """Initialize."""
         self.hass = hass
         self.latitude = latitude
@@ -221,13 +238,15 @@ class BlitzortungCoordinator:
         )
 
     @callback
-    def _on_connection_change(self, *args, **kwargs):
+    def _on_connection_change(self, *args: Any, **kwargs: Any) -> None:  # noqa: ARG002
+        """Handle connection change."""
         if self.unloading:
             return
         for sensor in self.sensors:
             sensor.async_write_ha_state()
 
-    def compute_polar_coords(self, lightning):
+    def compute_polar_coords(self, lightning: dict[str, Any]) -> None:
+        """Compute polar coordinates for the lightning strike."""
         dy = (lightning["lat"] - self.latitude) * math.pi / 180
         dx = (
             (lightning["lon"] - self.longitude)
@@ -241,7 +260,8 @@ class BlitzortungCoordinator:
         lightning[ATTR_LIGHTNING_DISTANCE] = distance
         lightning[ATTR_LIGHTNING_AZIMUTH] = azimuth
 
-    async def connect(self):
+    async def connect(self) -> None:
+        """Connect to MQTT broker."""
         await self.mqtt_client.async_connect()
         _LOGGER.info("Connected to Blitzortung proxy mqtt server")
         for geohash_code in self.geohash_overlap:
@@ -261,14 +281,17 @@ class BlitzortungCoordinator:
             async_track_time_interval(self.hass, self._tick, DEFAULT_UPDATE_INTERVAL)
         )
 
-    async def disconnect(self):
+    async def disconnect(self) -> None:
+        """Disconnect from MQTT broker."""
         self.unloading = True
         await self.mqtt_client.async_disconnect()
         for cb in self._disconnect_callbacks:
             cb()
 
-    def on_hello_message(self, message, *args):
-        def parse_version(version_str):
+    def on_hello_message(self, message: Message, *args: Any) -> None:  # noqa: ARG002
+        """Handle incoming hello message."""
+        def parse_version(version_str: str) -> tuple[int, int, int]:
+            """Parse version string into a tuple of integers."""
             return tuple(map(int, version_str.split(".")))
 
         data = json_loads_object(message.payload)
@@ -290,7 +313,8 @@ class BlitzortungCoordinator:
                     notification_id="blitzortung_new_version_available",
                 )
 
-    async def on_mqtt_message(self, message, *args):
+    async def on_mqtt_message(self, message: Message, *args: Any) -> None:  # noqa: ARG002
+        """Handle incoming MQTT messages."""
         for cb in self.callbacks:
             cb(message)
         if message.topic.startswith("blitzortung/1.1"):
@@ -304,7 +328,7 @@ class BlitzortungCoordinator:
                 for sensor in self.sensors:
                     sensor.update_lightning(lightning)
 
-    def register_sensor(self, sensor) -> None:
+    def register_sensor(self, sensor: BlitzortungEntity) -> None:
         """Register a sensor to be updated on each lightning strike."""
         self.sensors.append(sensor)
         self.register_on_tick(sensor.tick)
