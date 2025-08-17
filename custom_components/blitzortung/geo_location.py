@@ -4,16 +4,18 @@ import bisect
 import logging
 import time
 import uuid
+from typing import Any
 
-from homeassistant.components.geo_location import DOMAIN as platform
+from homeassistant.components.geo_location import DOMAIN as GEO_LOCATION_PLATFORM
 from homeassistant.components.geo_location import GeolocationEvent
 from homeassistant.const import UnitOfLength
-from homeassistant.core import callback
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
     async_dispatcher_send,
 )
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util.dt import utc_from_timestamp
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 
@@ -26,8 +28,11 @@ SIGNAL_DELETE_ENTITY = "blitzortung_delete_entity_{0}"
 
 
 async def async_setup_entry(
-    hass, config_entry: BlitzortungConfigEntry, async_add_entities
-):
+    hass: HomeAssistant,
+    config_entry: BlitzortungConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
+    """Set up the Blitzortung geo location platform from a config entry."""
     coordinator = config_entry.runtime_data
     if not coordinator.max_tracked_lightnings:
         return
@@ -37,7 +42,7 @@ async def async_setup_entry(
     entity_reg = er.async_get(hass)
     if entities := er.async_entries_for_config_entry(entity_reg, config_entry.entry_id):
         for entity in entities:
-            if not entity.entity_id.startswith(platform):
+            if not entity.entity_id.startswith(GEO_LOCATION_PLATFORM):
                 continue
             entity_reg.async_remove(entity.entity_id)
 
@@ -52,99 +57,6 @@ async def async_setup_entry(
     coordinator.register_on_tick(manager.tick)
 
 
-class Strikes(list):
-    def __init__(self, capacity):
-        self._keys = []
-        self._key_fn = lambda strike: strike._publication_date
-        self._max_key = 0
-        self._capacity = capacity
-        super().__init__()
-
-    def insort(self, item):
-        k = self._key_fn(item)
-        if k > self._max_key:
-            self._max_key = k
-            self._keys.append(k)
-            self.append(item)
-        else:
-            i = bisect.bisect_right(self._keys, k)
-            self._keys.insert(i, k)
-            self.insert(i, item)
-        n = len(self) - self._capacity
-        if n > 0:
-            del self._keys[0:n]
-            to_delete = self[0:n]
-            self[0:n] = []
-            return to_delete
-        return ()
-
-    def cleanup(self, k):
-        if not self._keys or self._keys[0] > k:
-            return ()
-
-        i = bisect.bisect_right(self._keys, k)
-        if not i:
-            return ()
-
-        del self._keys[0:i]
-        to_delete = self[0:i]
-        self[0:i] = []
-        return to_delete
-
-
-class BlitzortungEventManager:
-    """Define a class to handle Blitzortung events."""
-
-    def __init__(
-        self,
-        hass,
-        async_add_entities,
-        max_tracked_lightnings,
-        window_seconds,
-    ):
-        """Initialize."""
-        self._async_add_entities = async_add_entities
-        self._hass = hass
-        self._strikes = Strikes(max_tracked_lightnings)
-        self._window_seconds = window_seconds
-
-        if hass.config.units == IMPERIAL_SYSTEM:
-            self._unit = UnitOfLength.MILES
-        else:
-            self._unit = UnitOfLength.KILOMETERS
-
-    async def lightning_cb(self, lightning):
-        _LOGGER.debug("geo_location lightning: %s", lightning)
-        event = BlitzortungEvent(
-            lightning["distance"],
-            lightning["lat"],
-            lightning["lon"],
-            self._unit,
-            lightning["time"],
-            lightning["status"],
-            lightning["region"],
-        )
-        to_delete = self._strikes.insort(event)
-        self._async_add_entities([event])
-        if to_delete:
-            self._remove_events(to_delete)
-        _LOGGER.debug("tracked lightnings: %s", len(self._strikes))
-
-    @callback
-    def _remove_events(self, events):
-        """Remove old geo location events."""
-        _LOGGER.debug("Going to remove %s", events)
-        for event in events:
-            async_dispatcher_send(
-                self._hass, SIGNAL_DELETE_ENTITY.format(event._strike_id)
-            )
-
-    def tick(self):
-        to_delete = self._strikes.cleanup(time.time() - self._window_seconds)
-        if to_delete:
-            self._remove_events(to_delete)
-
-
 class BlitzortungEvent(GeolocationEvent):
     """Define a lightning strike event."""
 
@@ -154,7 +66,16 @@ class BlitzortungEvent(GeolocationEvent):
     _attr_should_poll = False
     _attr_source = DOMAIN
 
-    def __init__(self, distance, latitude, longitude, unit, time, status, region):
+    def __init__(
+        self,
+        distance: int,
+        latitude: float,
+        longitude: float,
+        unit: str,
+        time: int,
+        status: int,
+        region: int
+    ) -> None:
         """Initialize entity with data provided."""
         self._time = time
         self._status = status
@@ -185,3 +106,103 @@ class BlitzortungEvent(GeolocationEvent):
             SIGNAL_DELETE_ENTITY.format(self._strike_id),
             self._delete_callback,
         )
+
+
+class Strikes(list):
+    """Define a list of lightning strikes, keeping it sorted by publication date."""
+
+    def __init__(self, capacity: int) -> None:
+        """Initialize."""
+        self._keys = []
+        self._key_fn = lambda strike: strike._publication_date  # noqa: SLF001
+        self._max_key = 0
+        self._capacity = capacity
+        super().__init__()
+
+    def insort(self, item: BlitzortungEvent) -> tuple[BlitzortungEvent]:
+        """Insert item into the list, keeping it sorted by key."""
+        k = self._key_fn(item)
+        if k > self._max_key:
+            self._max_key = k
+            self._keys.append(k)
+            self.append(item)
+        else:
+            i = bisect.bisect_right(self._keys, k)
+            self._keys.insert(i, k)
+            self.insert(i, item)
+        n = len(self) - self._capacity
+        if n > 0:
+            del self._keys[0:n]
+            to_delete = self[0:n]
+            self[0:n] = []
+            return to_delete
+        return ()
+
+    def cleanup(self, k: float) -> tuple[BlitzortungEvent]:
+        """Remove all strikes older than k."""
+        if not self._keys or self._keys[0] > k:
+            return ()
+
+        i = bisect.bisect_right(self._keys, k)
+        if not i:
+            return ()
+
+        del self._keys[0:i]
+        to_delete = self[0:i]
+        self[0:i] = []
+        return to_delete
+
+
+class BlitzortungEventManager:
+    """Define a class to handle Blitzortung events."""
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        async_add_entities: AddConfigEntryEntitiesCallback,
+        max_tracked_lightnings: int,
+        window_seconds: int,
+    ) -> None:
+        """Initialize."""
+        self._async_add_entities = async_add_entities
+        self._hass = hass
+        self._strikes = Strikes(max_tracked_lightnings)
+        self._window_seconds = window_seconds
+
+        if hass.config.units == IMPERIAL_SYSTEM:
+            self._unit = UnitOfLength.MILES
+        else:
+            self._unit = UnitOfLength.KILOMETERS
+
+    async def lightning_cb(self, lightning: dict[str, Any]) -> None:
+        """Handle incoming lightning strike data."""
+        _LOGGER.debug("geo_location lightning: %s", lightning)
+        event = BlitzortungEvent(
+            lightning["distance"],
+            lightning["lat"],
+            lightning["lon"],
+            self._unit,
+            lightning["time"],
+            lightning["status"],
+            lightning["region"],
+        )
+        to_delete = self._strikes.insort(event)
+        self._async_add_entities([event])
+        if to_delete:
+            self._remove_events(to_delete)
+        _LOGGER.debug("tracked lightnings: %s", len(self._strikes))
+
+    @callback
+    def _remove_events(self, events: tuple[BlitzortungEvent]) -> None:
+        """Remove old geo location events."""
+        _LOGGER.debug("Going to remove %s", events)
+        for event in events:
+            async_dispatcher_send(
+                self._hass, SIGNAL_DELETE_ENTITY.format(event._strike_id)  # noqa: SLF001
+            )
+
+    def tick(self) -> None:
+        """Handle tick."""
+        to_delete = self._strikes.cleanup(time.time() - self._window_seconds)
+        if to_delete:
+            self._remove_events(to_delete)
