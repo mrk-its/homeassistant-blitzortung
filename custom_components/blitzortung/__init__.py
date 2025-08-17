@@ -57,8 +57,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 
 async def async_setup_entry(
-    hass: HomeAssistant,
-    config_entry: BlitzortungConfigEntry
+    hass: HomeAssistant, config_entry: BlitzortungConfigEntry
 ) -> bool:
     """Set up blitzortung from a config entry."""
     config = hass.data[BLITZORTUNG_CONFIG]
@@ -104,8 +103,7 @@ async def async_setup_entry(
 
 
 async def async_update_options(
-    hass: HomeAssistant,
-    config_entry: BlitzortungConfigEntry
+    hass: HomeAssistant, config_entry: BlitzortungConfigEntry
 ) -> bool:
     """Update options."""
     _LOGGER.info("async_update_options")
@@ -113,8 +111,7 @@ async def async_update_options(
 
 
 async def async_unload_entry(
-    hass: HomeAssistant,
-    config_entry: BlitzortungConfigEntry
+    hass: HomeAssistant, config_entry: BlitzortungConfigEntry
 ) -> bool:
     """Unload a config entry."""
     await config_entry.runtime_data.disconnect()
@@ -124,8 +121,7 @@ async def async_unload_entry(
 
 
 async def async_migrate_entry(
-    hass: HomeAssistant,
-    entry: BlitzortungConfigEntry
+    hass: HomeAssistant, entry: BlitzortungConfigEntry
 ) -> bool:
     """Migrate old config entries to the new format."""
     _LOGGER.debug("Migrating Blitzortung entry from Version %s", entry.version)
@@ -290,6 +286,7 @@ class BlitzortungCoordinator:
 
     def on_hello_message(self, message: Message, *args: Any) -> None:  # noqa: ARG002
         """Handle incoming hello message."""
+
         def parse_version(version_str: str) -> tuple[int, int, int]:
             """Parse version string into a tuple of integers."""
             return tuple(map(int, version_str.split(".")))

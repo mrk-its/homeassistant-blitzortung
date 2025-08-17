@@ -1,4 +1,5 @@
 """Support for MQTT message handling."""
+
 import asyncio
 import datetime as dt
 import logging
@@ -46,7 +47,8 @@ def _match_topic(subscription: str, topic: str) -> bool:
     else:
         return True
 
-PublishPayloadType = str | bytes| int | float | None
+
+PublishPayloadType = str | bytes | int | float | None
 
 
 @attr.s(slots=True, frozen=True)
@@ -84,7 +86,7 @@ class MQTT:
         self,
         hass: HomeAssistant,
         host: str,
-        port: int =DEFAULT_PORT,
+        port: int = DEFAULT_PORT,
         keepalive: int = DEFAULT_KEEPALIVE,
     ) -> None:
         """Initialize Home Assistant MQTT client."""
@@ -123,7 +125,10 @@ class MQTT:
         result: int = None
         try:
             result = await self.hass.async_add_executor_job(
-                self._mqttc.connect, self.host, self.port, self.keepalive,
+                self._mqttc.connect,
+                self.host,
+                self.port,
+                self.keepalive,
             )
         except OSError as err:
             _LOGGER.error("Failed to connect to MQTT server due to exception: %s", err)
@@ -223,7 +228,10 @@ class MQTT:
         self.connected = True
         dispatcher_send(self.hass, MQTT_CONNECTED)
         _LOGGER.info(
-            "Connected to MQTT server %s:%s (%s)", self.host, self.port, result_code,
+            "Connected to MQTT server %s:%s (%s)",
+            self.host,
+            self.port,
+            result_code,
         )
 
         # Group subscriptions to only re-subscribe once for each topic.

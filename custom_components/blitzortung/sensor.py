@@ -61,13 +61,13 @@ class BlitzortungSensor(BlitzortungEntity, SensorEntity):
         coordinator: BlitzortungCoordinator,
         description: BlitzortungSensorEntityDescription,
         integration_name: str,
-        unique_prefix: str
+        unique_prefix: str,
     ) -> None:
         """Initialize."""
         self.coordinator = coordinator
         self._attr_unique_id = f"{unique_prefix}-{description.key}"
         if description.name is UNDEFINED:
-            self._attr_name = f"Server {description.key.replace("_", " ").lower()}"
+            self._attr_name = f"Server {description.key.replace('_', ' ').lower()}"
         self._attr_device_info = DeviceInfo(
             name=integration_name,
             identifiers={(DOMAIN, unique_prefix)},
@@ -75,8 +75,7 @@ class BlitzortungSensor(BlitzortungEntity, SensorEntity):
             sw_version=SW_VERSION,
             entry_type=DeviceEntryType.SERVICE,
             configuration_url=BLIZORTUNG_URL.format(
-                lat=coordinator.latitude,
-                lon=coordinator.longitude
+                lat=coordinator.latitude, lon=coordinator.longitude
             ),
         )
         self.entity_description = description
@@ -233,7 +232,8 @@ SENSORS: tuple[BlitzortungSensorEntityDescription, ...] = (
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, config_entry: BlitzortungConfigEntry,
+    hass: HomeAssistant,
+    config_entry: BlitzortungConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Add Blitzortung sensor entity from a config_entry."""

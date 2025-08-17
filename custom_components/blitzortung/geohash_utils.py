@@ -33,7 +33,7 @@ def box_overlap(box1: Box, box2: Box) -> bool:
     )
 
 
-def compute_geohash_tiles(lat: float, lon: float, radius: int, precision: int)  -> set:
+def compute_geohash_tiles(lat: float, lon: float, radius: int, precision: int) -> set:
     """Compute geohash tiles that overlap with a given radius around a point."""
     bounds = bbox(lat, lon, radius)
     center = geohash.encode(lat, lon, precision)
@@ -53,7 +53,7 @@ def compute_geohash_tiles(lat: float, lon: float, radius: int, precision: int)  
     return checked
 
 
-def geohash_overlap(lat: float, lon: float, radius: int, _max_tiles: int=9) -> set:
+def geohash_overlap(lat: float, lon: float, radius: int, _max_tiles: int = 9) -> set:
     """Find geohash tiles that overlap with a given radius around a point."""
     result = []
     for precision in range(1, 13):

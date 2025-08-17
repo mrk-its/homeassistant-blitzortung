@@ -74,7 +74,7 @@ class BlitzortungEvent(GeolocationEvent):
         unit: str,
         time: int,
         status: int,
-        region: int
+        region: int,
     ) -> None:
         """Initialize entity with data provided."""
         self._time = time
@@ -198,7 +198,8 @@ class BlitzortungEventManager:
         _LOGGER.debug("Going to remove %s", events)
         for event in events:
             async_dispatcher_send(
-                self._hass, SIGNAL_DELETE_ENTITY.format(event._strike_id)  # noqa: SLF001
+                self._hass,
+                SIGNAL_DELETE_ENTITY.format(event._strike_id),  # noqa: SLF001
             )
 
     def tick(self) -> None:

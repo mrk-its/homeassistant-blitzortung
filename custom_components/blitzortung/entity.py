@@ -4,6 +4,7 @@ from typing import Any
 from .mqtt import Message
 from .const import ATTRIBUTION
 
+
 class BlitzortungEntity:
     """Define a Blitzortung sensor."""
 

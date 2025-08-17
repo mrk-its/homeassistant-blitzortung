@@ -82,9 +82,9 @@ class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             return self.async_update_reload_and_abort(
-                    reconfigure_entry,
-                    data_updates=user_input,
-                )
+                reconfigure_entry,
+                data_updates=user_input,
+            )
 
         return self.async_show_form(
             step_id="reconfigure",
