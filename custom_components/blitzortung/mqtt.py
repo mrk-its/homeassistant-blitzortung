@@ -120,9 +120,9 @@ class MQTT:
                 self._mqttc.publish, topic, payload, qos, retain
             )
 
-    async def async_connect(self) -> str:
+    async def async_connect(self) -> None:
         """Connect to the host. Does not process messages yet."""
-        result: int = None
+        result: int | None = None
         try:
             result = await self.hass.async_add_executor_job(
                 self._mqttc.connect,
@@ -195,7 +195,7 @@ class MQTT:
         """
         _LOGGER.debug("Unsubscribing from %s", topic)
         async with self._paho_lock:
-            result: int = None
+            result: int | None = None
             result, _ = await self.hass.async_add_executor_job(
                 self._mqttc.unsubscribe, topic
             )
@@ -206,7 +206,7 @@ class MQTT:
         _LOGGER.debug("Subscribing to %s", topic)
 
         async with self._paho_lock:
-            result: int = None
+            result: int | None = None
             result, _ = await self.hass.async_add_executor_job(
                 self._mqttc.subscribe, topic, qos
             )

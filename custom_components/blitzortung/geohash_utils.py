@@ -55,7 +55,7 @@ def compute_geohash_tiles(lat: float, lon: float, radius: int, precision: int) -
 
 def geohash_overlap(lat: float, lon: float, radius: int, _max_tiles: int = 9) -> set:
     """Find geohash tiles that overlap with a given radius around a point."""
-    result = []
+    result = set()
     for precision in range(1, 13):
         tiles = compute_geohash_tiles(lat, lon, radius, precision)
         if len(tiles) <= 9:  # noqa: PLR2004
