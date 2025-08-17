@@ -1,8 +1,9 @@
 """Define Blitzortung entity."""
 
 from typing import Any
-from .mqtt import Message
+
 from .const import ATTRIBUTION
+from .mqtt import Message
 
 
 class BlitzortungEntity:
