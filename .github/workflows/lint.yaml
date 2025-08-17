@@ -27,3 +27,6 @@ jobs:
 
       - name: Lint with ruff
         run: ruff check custom_components/blitzortung
+
+      - name: Check format with ruff
+        run: ruff format --check custom_components/blitzortung
