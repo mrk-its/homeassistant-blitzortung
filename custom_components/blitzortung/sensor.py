@@ -2,13 +2,16 @@
 
 import logging
 from dataclasses import dataclass
+from typing import Any
 
+from homeassistant.components.sensor import (
+    DOMAIN as SENSOR_PLATFORM,
+)
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
     SensorEntityDescription,
     SensorStateClass,
-    DOMAIN as SENSOR_PLATFORM,
 )
 from homeassistant.const import (
     CONF_NAME,
@@ -17,24 +20,28 @@ from homeassistant.const import (
     UnitOfLength,
     UnitOfTime,
 )
-from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
-from homeassistant.helpers.typing import UNDEFINED
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
-from . import BlitzortungConfigEntry
+from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.helpers.typing import UNDEFINED
+
+from . import BlitzortungConfigEntry, BlitzortungCoordinator
 from .const import (
     ATTR_LAT,
     ATTR_LIGHTNING_AZIMUTH,
     ATTR_LIGHTNING_COUNTER,
     ATTR_LIGHTNING_DISTANCE,
     ATTR_LON,
-    ATTRIBUTION,
     BLITZORTUNG_CONFIG,
     BLIZORTUNG_URL,
     DOMAIN,
     SERVER_STATS,
     SW_VERSION,
 )
+from .entity import BlitzortungEntity
+from .mqtt import Message
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -46,18 +53,21 @@ class BlitzortungSensorEntityDescription(SensorEntityDescription):
     entity_class: type["BlitzortungSensor"]
 
 
-class BlitzortungSensor(SensorEntity):
+class BlitzortungSensor(BlitzortungEntity, SensorEntity):
     """Define a Blitzortung sensor."""
 
-    _attr_should_poll = False
-
-    def __init__(self, coordinator, description, integration_name, unique_prefix):
+    def __init__(
+        self,
+        coordinator: BlitzortungCoordinator,
+        description: BlitzortungSensorEntityDescription,
+        integration_name: str,
+        unique_prefix: str,
+    ) -> None:
         """Initialize."""
         self.coordinator = coordinator
         self._attr_unique_id = f"{unique_prefix}-{description.key}"
         if description.name is UNDEFINED:
-            self._attr_name = f"Server {description.key.replace("_", " ").lower()}"
-        self._attr_attribution = ATTRIBUTION
+            self._attr_name = f"Server {description.key.replace('_', ' ').lower()}"
         self._attr_device_info = DeviceInfo(
             name=integration_name,
             identifiers={(DOMAIN, unique_prefix)},
@@ -65,31 +75,23 @@ class BlitzortungSensor(SensorEntity):
             sw_version=SW_VERSION,
             entry_type=DeviceEntryType.SERVICE,
             configuration_url=BLIZORTUNG_URL.format(
-                lat=coordinator.latitude,
-                lon=coordinator.longitude
+                lat=coordinator.latitude, lon=coordinator.longitude
             ),
         )
         self.entity_description = description
 
     @property
-    def available(self):
+    def available(self) -> bool:
+        """Return True if the sensor is available."""
         return self.coordinator.is_connected
 
-    async def async_added_to_hass(self):
+    async def async_added_to_hass(self) -> None:
         """Connect to dispatcher listening for entity data notifications."""
         self.coordinator.register_sensor(self)
 
-    async def async_update(self):
+    async def async_update(self) -> None:
+        """Update the sensor data."""
         await self.coordinator.async_request_refresh()
-
-    def update_lightning(self, lightning):
-        pass
-
-    def on_message(self, message):
-        pass
-
-    def tick(self):
-        pass
 
 
 class LightningSensor(BlitzortungSensor):
@@ -97,12 +99,13 @@ class LightningSensor(BlitzortungSensor):
 
     INITIAL_STATE: int | None = None
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize."""
         super().__init__(*args, **kwargs)
         self._attr_native_value = self.INITIAL_STATE
 
-    def tick(self):
+    def tick(self) -> None:
+        """Handle tick."""
         if (
             self._attr_native_value != self.INITIAL_STATE
             and self.coordinator.is_inactive
@@ -114,7 +117,7 @@ class LightningSensor(BlitzortungSensor):
 class DistanceSensor(LightningSensor):
     """Define a Blitzortung distance sensor."""
 
-    def update_lightning(self, lightning):
+    def update_lightning(self, lightning: dict[str, Any]) -> None:
         """Update the sensor data."""
         self._attr_native_value = lightning[ATTR_LIGHTNING_DISTANCE]
         self._attr_extra_state_attributes = {
@@ -127,7 +130,7 @@ class DistanceSensor(LightningSensor):
 class AzimuthSensor(LightningSensor):
     """Define a Blitzortung azimuth sensor."""
 
-    def update_lightning(self, lightning):
+    def update_lightning(self, lightning: dict[str, Any]) -> None:
         """Update the sensor data."""
         self._attr_native_value = lightning[ATTR_LIGHTNING_AZIMUTH]
         self._attr_extra_state_attributes = {
@@ -142,7 +145,8 @@ class CounterSensor(LightningSensor):
 
     INITIAL_STATE = 0
 
-    def update_lightning(self, lightning):
+    def update_lightning(self, _lightning: dict[str, Any]) -> None:
+        """Update the sensor data."""
         self._attr_native_value = self._attr_native_value + 1
         self.async_write_ha_state()
 
@@ -151,8 +155,13 @@ class ServerStatSensor(BlitzortungSensor):
     """Define a Blitzortung server stats sensor."""
 
     def __init__(
-        self, topic, coordinator, description, integration_name, unique_prefix
-    ):
+        self,
+        topic: str,
+        coordinator: BlitzortungCoordinator,
+        description: BlitzortungSensorEntityDescription,
+        integration_name: str,
+        unique_prefix: str,
+    ) -> None:
         """Initialize."""
         self._topic = topic
 
@@ -170,14 +179,16 @@ class ServerStatSensor(BlitzortungSensor):
         super().__init__(coordinator, description, integration_name, unique_prefix)
 
     @property
-    def native_unit_of_measurement(self):
+    def native_unit_of_measurement(self) -> str | None:
+        """Return the unit of measurement."""
         if self.kind == "uptime":
             return UnitOfTime.SECONDS
         if self.data_type in (int, float):
             return "clients" if self.kind == "clients_connected" else " "
         return None
 
-    def on_message(self, topic, message):
+    def on_message(self, topic: str, message: Message) -> None:
+        """Handle incoming MQTT messages."""
         if topic == self._topic:
             payload = message.payload.decode("utf-8")
             if self.kind == "uptime":
@@ -221,8 +232,10 @@ SENSORS: tuple[BlitzortungSensorEntityDescription, ...] = (
 
 
 async def async_setup_entry(
-    hass, config_entry: BlitzortungConfigEntry, async_add_entities
-):
+    hass: HomeAssistant,
+    config_entry: BlitzortungConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
     """Add Blitzortung sensor entity from a config_entry."""
     integration_name = config_entry.data[CONF_NAME]
 
@@ -315,7 +328,7 @@ async def async_setup_entry(
     if config.get(SERVER_STATS):
         server_stat_sensors: dict[str, ServerStatSensor] = {}
 
-        def on_message(message):
+        def on_message(message: Message) -> None:
             if not message.topic.startswith("$SYS/broker/"):
                 return
             topic = message.topic.replace("$SYS/broker/", "")

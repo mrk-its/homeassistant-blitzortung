@@ -1,8 +1,9 @@
 """Config flow for blitzortung integration."""
 
-import voluptuous as vol
 from typing import Any
+
 import homeassistant.helpers.config_validation as cv
+import voluptuous as vol
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
@@ -81,9 +82,9 @@ class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             return self.async_update_reload_and_abort(
-                    reconfigure_entry,
-                    data_updates=user_input,
-                )
+                reconfigure_entry,
+                data_updates=user_input,
+            )
 
         return self.async_show_form(
             step_id="reconfigure",
@@ -96,7 +97,8 @@ class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     @staticmethod
-    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
+    def async_get_options_flow(_config_entry: ConfigEntry) -> OptionsFlow:
+        """Return the options flow handler."""
         return BlitzortungOptionsFlowHandler()
 
 

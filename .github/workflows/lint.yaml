@@ -1,0 +1,32 @@
+name: Lint
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          activate-environment: true
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: uv pip install -r requirements-lint.txt
+
+      - name: Lint with ruff
+        run: ruff check custom_components/blitzortung
+
+      - name: Check format with ruff
+        run: ruff format --check custom_components/blitzortung
