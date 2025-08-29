@@ -29,3 +29,13 @@ To change the detection radius, time window, and max tracked lightnings, go to *
 # Reviews and How-Tos
 You can read and see (youtube) how this component was used in the following community video.
 [How to Add a Lightning Sensor](https://www.vcloudinfo.com/2020/08/adding-a-lightning-sensor-to-home-assistant.html)
+
+# How to create dev environment
+```
+git clone https://github.com/mrk-its/homeassistant-blitzortung.git
+cd homeassistant-blitzortung
+python3.13 -m venv venv
+source venv/bin/activate
+pip install -r requirements-dev.txt
+pre-commit install
+```
