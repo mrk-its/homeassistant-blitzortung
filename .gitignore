@@ -134,3 +134,6 @@ dmypy.json
 /*.yaml
 home-assistant*
 .storage
+
+# pre-commit
+!.pre-commit-config.yaml
