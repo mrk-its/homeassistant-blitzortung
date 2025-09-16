@@ -1,3 +1,3 @@
 """Contains the version of the Blitzortung integration."""
 
-__version__ = "1.3.11-b1"
+__version__ = "1.3.11"
