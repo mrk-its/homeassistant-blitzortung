@@ -6,16 +6,20 @@ repos:
         args:
           - --fix
       - id: ruff-format
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+  - repo: builtin
     hooks:
       - id: end-of-file-fixer
-      - id: mixed-line-ending
       - id: trailing-whitespace
+      - id: check-yaml
       - id: check-json
-      - id: pretty-format-json
-        args:
-          - --no-sort-keys
+      - id: check-toml
+      - id: mixed-line-ending
       - id: no-commit-to-branch
         args:
           - --branch=master
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: pretty-format-json
+        args:
+          - --no-sort-keys
