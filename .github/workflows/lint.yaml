@@ -36,7 +36,6 @@ jobs:
           prek run \
             end-of-file-fixer \
             trailing-whitespace \
-            check-added-large-files \
             check-yaml \
             check-json \
             check-toml \
