@@ -28,6 +28,7 @@ exclude = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = [
+    "ARG001",    # Unused function argument
     "PLR2004",   # Magic value used in comparison
     "S101",      # Use of `assert` detected
 ]
