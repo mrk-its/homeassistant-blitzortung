@@ -1,0 +1,39 @@
+name: Prek auto-update
+
+on:
+  schedule:
+    - cron: "0 0 * * 1"
+
+jobs:
+  auto-update:
+    name: Prek auto-update
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          activate-environment: true
+          python-version: 3.13
+
+      - name: Install prek
+        run: uv pip install prek
+
+      - name: Run prek auto-update
+        run: prek auto-update
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v8.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: update/prek-auto-update
+          title: Auto-update prek hooks
+          commit-message: Auto-update prek hooks
+          body: Update versions of tools in prek configs to latest version
+          labels: dependencies
