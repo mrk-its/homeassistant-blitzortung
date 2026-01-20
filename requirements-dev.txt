@@ -1,5 +1,5 @@
 -r requirements-lint.txt
-homeassistant
 prek==0.2.29
 pytest
 pytest-homeassistant-custom-component==0.13.307
+ruff==0.12.9
