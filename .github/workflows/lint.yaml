@@ -31,5 +31,16 @@ jobs:
       - name: Check format with ruff
         run: ruff format --check custom_components/blitzortung
 
+      - name: Run prek
+        run: |
+          prek run \
+            end-of-file-fixer \
+            trailing-whitespace \
+            check-yaml \
+            check-json \
+            check-toml \
+            mixed-line-ending \
+            --all-files
+
       - name: Run tests
         run: pytest tests --cov=custom_components/blitzortung --cov-report=term-missing
