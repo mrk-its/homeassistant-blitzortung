@@ -40,6 +40,12 @@ async def test_user_flow_success(hass: HomeAssistant) -> None:
         CONF_LATITUDE: 50.0,
         CONF_LONGITUDE: 10.0,
     }
+    assert result["options"] == {
+        CONF_RADIUS: 100,
+        CONF_MAX_TRACKED_LIGHTNINGS: 100,
+        CONF_TIME_WINDOW: 120,
+    }
+    assert result["result"].unique_id == "50.0-10.0"
 
 
 @pytest.mark.asyncio
