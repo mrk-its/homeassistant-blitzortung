@@ -37,5 +37,5 @@ cd homeassistant-blitzortung
 python3.13 -m venv venv
 source venv/bin/activate
 pip install -r requirements-dev.txt
-pre-commit install
+prek install
 ```
