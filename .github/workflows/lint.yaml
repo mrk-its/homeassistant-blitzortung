@@ -32,4 +32,4 @@ jobs:
         run: ruff format --check custom_components/blitzortung
 
       - name: Run tests
-        run: pytest tests
+        run: pytest tests --cov=custom_components/blitzortung --cov-report=term-missing
