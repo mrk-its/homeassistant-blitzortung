@@ -1,0 +1,20 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      runtime:
+        patterns:
+          - "imgw_pib"
+
+      dev:
+        patterns:
+          - "prek"
+          - "pytest-homeassistant-custom-component"
+          - "ruff"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
