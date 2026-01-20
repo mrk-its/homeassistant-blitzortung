@@ -7,7 +7,12 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.blitzortung.const import DOMAIN
+from custom_components.blitzortung.const import (
+    CONF_MAX_TRACKED_LIGHTNINGS,
+    CONF_RADIUS,
+    CONF_TIME_WINDOW,
+    DOMAIN,
+)
 
 
 @pytest.mark.asyncio
@@ -87,3 +92,32 @@ async def test_reconfigure_flow_success(
     assert result["reason"] == "reconfigure_successful"
     assert mock_config_entry.data[CONF_LATITUDE] == 51.0
     assert mock_config_entry.data[CONF_LONGITUDE] == 11.0
+
+
+@pytest.mark.asyncio
+async def test_options_flow_success(
+    hass: HomeAssistant, mock_config_entry: MockConfigEntry
+) -> None:
+    """Test successful options flow."""
+    mock_config_entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(
+        mock_config_entry.entry_id, context={"source": "user"}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "init"
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            CONF_RADIUS: 200,
+            CONF_TIME_WINDOW: 300,
+            CONF_MAX_TRACKED_LIGHTNINGS: 150,
+        },
+    )
+
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["data"] == {
+        CONF_RADIUS: 200,
+        CONF_TIME_WINDOW: 300,
+        CONF_MAX_TRACKED_LIGHTNINGS: 150,
+    }
