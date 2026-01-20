@@ -26,5 +26,15 @@ exclude = [
     "custom_components/blitzortung/geohash.py",
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "PLR2004",   # Magic value used in comparison
+    "S101",      # Use of `assert` detected
+]
+
 [tool.ruff.lint.mccabe]
 max-complexity = 25
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
