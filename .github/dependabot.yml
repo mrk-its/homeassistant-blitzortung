@@ -5,10 +5,6 @@ updates:
     schedule:
       interval: "weekly"
     groups:
-      runtime:
-        patterns:
-          - "imgw_pib"
-
       dev:
         patterns:
           - "prek"
