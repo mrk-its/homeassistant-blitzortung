@@ -2,19 +2,21 @@
   "config": {
     "step": {
       "user": {
-        "description": "Configurer Blitzortung détection de fourdre",
+        "description": "Configurer Blitzortung détection de foudre",
         "data": {
           "name": "Nom de l'instance de cette intégration",
           "latitude": "Latitude",
-          "longitude": "Longitude"
+          "longitude": "Longitude",
+          "location_entity": "Entité de localisation (optionnelle)"
         }
       },
-      "reconfigure_confirm": {
-        "description": "Mise à jour de la configuration pour {name}.",
+      "reconfigure": {
         "data": {
           "latitude": "Latitude",
-          "longitude": "Longitude"
-        }
+          "longitude": "Longitude",
+          "location_entity": "Entité de localisation (optionnelle)"
+        },
+        "description": "Mise à jour de la configuration pour {name}."
       }
     },
     "error": {},
@@ -26,10 +28,10 @@
   "options": {
     "step": {
       "init": {
-        "title": "Options Blitzortung ",
+        "title": "Options Blitzortung",
         "description": "Configurer les options de Blitzortung détection de foudre",
         "data": {
-          "radius": "Rayon de detection de la foudre (km / mi)",
+          "radius": "Rayon de détection de la foudre (km / mi)",
           "time_window": "Fenêtre de temps (minutes, 0 - désactivé)",
           "max_tracked_lightnings": "Nombre maximum d'éclairs suivis"
         }
@@ -45,6 +47,12 @@
           },
           "lon": {
             "name": "Longitude"
+          },
+          "reference_lat": {
+            "name": "Latitude de référence"
+          },
+          "reference_lon": {
+            "name": "Longitude de référence"
           }
         }
       },
@@ -55,6 +63,12 @@
           },
           "lon": {
             "name": "Longitude"
+          },
+          "reference_lat": {
+            "name": "Latitude de référence"
+          },
+          "reference_lon": {
+            "name": "Longitude de référence"
           }
         }
       }

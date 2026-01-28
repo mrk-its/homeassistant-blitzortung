@@ -34,6 +34,8 @@ from .const import (
     ATTR_LIGHTNING_COUNTER,
     ATTR_LIGHTNING_DISTANCE,
     ATTR_LON,
+    ATTR_REFERENCE_LAT,
+    ATTR_REFERENCE_LON,
     BLITZORTUNG_CONFIG,
     BLIZORTUNG_URL,
     DOMAIN,
@@ -68,22 +70,39 @@ class BlitzortungSensor(BlitzortungEntity, SensorEntity):
         self._attr_unique_id = f"{unique_prefix}-{description.key}"
         if description.name is UNDEFINED:
             self._attr_name = f"Server {description.key.replace('_', ' ').lower()}"
-        self._attr_device_info = DeviceInfo(
-            name=integration_name,
-            identifiers={(DOMAIN, unique_prefix)},
+        self._integration_name = integration_name
+        self._unique_prefix = unique_prefix
+        self.entity_description = description
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device information."""
+        return DeviceInfo(
+            name=self._integration_name,
+            identifiers={(DOMAIN, self._unique_prefix)},
             model="Blitzortung Lightning Detector",
             sw_version=SW_VERSION,
             entry_type=DeviceEntryType.SERVICE,
             configuration_url=BLIZORTUNG_URL.format(
-                lat=coordinator.latitude, lon=coordinator.longitude
+                lat=self.coordinator.latitude, lon=self.coordinator.longitude
             ),
         )
-        self.entity_description = description
 
     @property
     def available(self) -> bool:
         """Return True if the sensor is available."""
         return self.coordinator.is_connected
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Return extra state attributes."""
+        base: dict[str, Any] = {
+            ATTR_REFERENCE_LAT: self.coordinator.latitude,
+            ATTR_REFERENCE_LON: self.coordinator.longitude,
+        }
+        if getattr(self, "_attr_extra_state_attributes", None):
+            base.update(self._attr_extra_state_attributes)
+        return base
 
     async def async_added_to_hass(self) -> None:
         """Connect to dispatcher listening for entity data notifications."""
@@ -204,29 +223,26 @@ class ServerStatSensor(BlitzortungSensor):
 SENSORS: tuple[BlitzortungSensorEntityDescription, ...] = (
     BlitzortungSensorEntityDescription(
         key=ATTR_LIGHTNING_AZIMUTH,
-        name="Lightning azimuth",
-        translation_key=ATTR_LIGHTNING_AZIMUTH,
-        has_entity_name=True,
+        name="Lightning Azimuth",
+        icon="mdi:compass-outline",
         native_unit_of_measurement=DEGREE,
         entity_class=AzimuthSensor,
     ),
     BlitzortungSensorEntityDescription(
-        key=ATTR_LIGHTNING_COUNTER,
-        name="Lightning counter",
-        translation_key=ATTR_LIGHTNING_COUNTER,
-        has_entity_name=True,
-        native_unit_of_measurement="↯",
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        entity_class=CounterSensor,
-    ),
-    BlitzortungSensorEntityDescription(
         key=ATTR_LIGHTNING_DISTANCE,
-        name="Lightning distance",
-        translation_key=ATTR_LIGHTNING_DISTANCE,
-        has_entity_name=True,
+        name="Lightning Distance",
+        icon="mdi:map-marker-distance",
         native_unit_of_measurement=UnitOfLength.KILOMETERS,
         device_class=SensorDeviceClass.DISTANCE,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_class=DistanceSensor,
+    ),
+    BlitzortungSensorEntityDescription(
+        key=ATTR_LIGHTNING_COUNTER,
+        name="Lightning Counter",
+        icon="mdi:counter",
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        entity_class=CounterSensor,
     ),
 )
 
@@ -236,120 +252,76 @@ async def async_setup_entry(
     config_entry: BlitzortungConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Add Blitzortung sensor entity from a config_entry."""
-    integration_name = config_entry.data[CONF_NAME]
-
+    """Set up Blitzortung sensor platform from a config entry."""
     coordinator = config_entry.runtime_data
+    config = hass.data[BLITZORTUNG_CONFIG]
 
+    # This block of code can be removed in some time. For now it has to stay to clean up
+    # user registry after https://github.com/mrk-its/homeassistant-blitzortung/pull/128
+    entity_reg = er.async_get(hass)
+    if entities := er.async_entries_for_config_entry(entity_reg, config_entry.entry_id):
+        for entity in entities:
+            if entity.entity_id.startswith(SENSOR_PLATFORM):
+                continue
+            entity_reg.async_remove(entity.entity_id)
+
+    integration_name = config_entry.title
     unique_prefix = config_entry.entry_id
 
-    # Migrate old service identifiers to new identifiers
-    device_registry = dr.async_get(hass)
-    old_ids = (DOMAIN, config_entry.title)
-    if device_entry := device_registry.async_get_device(identifiers={old_ids}):
-        new_ids = (DOMAIN, unique_prefix)
-        _LOGGER.debug(
-            "Migrating service %s from old IDs '%s' to new IDs '%s'",
-            device_entry.name,
-            old_ids,
-            new_ids,
+    sensors: list[BlitzortungSensor] = [
+        sensor.entity_class(
+            coordinator=coordinator,
+            description=sensor,
+            integration_name=integration_name,
+            unique_prefix=unique_prefix,
         )
-        device_registry.async_update_device(device_entry.id, new_identifiers={new_ids})
-
-    # Migrate old unique IDs to new unique IDs
-    entity_registry = er.async_get(hass)
-    old_unique_id = f"{config_entry.title}-server_stats"
-    if entity_id := entity_registry.async_get_entity_id(
-        SENSOR_PLATFORM, DOMAIN, old_unique_id
-    ):
-        new_unique_id = f"{unique_prefix}-clients_connected"
-        _LOGGER.debug(
-            "Migrating entity %s from old unique ID '%s' to new unique ID '%s'",
-            entity_id,
-            old_unique_id,
-            new_unique_id,
-        )
-        entity_registry.async_update_entity(entity_id, new_unique_id=new_unique_id)
-
-    for sensor_type in (
-        ATTR_LIGHTNING_AZIMUTH,
-        ATTR_LIGHTNING_COUNTER,
-        ATTR_LIGHTNING_DISTANCE,
-        "bytes_received",
-        "bytes_sent",
-        "clients_connected",
-        "heap_current",
-        "load_bytes_received_1min",
-        "load_bytes_sent_1min",
-        "load_connections_1min",
-        "load_messages_received_1min",
-        "load_messages_sent_1min",
-        "load_publish_received_1min",
-        "load_publish_sent_1min",
-        "load_sockets_1min",
-        "messages_received",
-        "messages_sent",
-        "messages_stored",
-        "publish_bytes_received",
-        "publish_bytes_sent",
-        "publish_messages_received",
-        "publish_messages_sent",
-        "publish_messages_sent",
-        "retained messages_count",
-        "store_messages_bytes",
-        "store_messages_count",
-        "subscriptions_count",
-        "uptime",
-        "version",
-    ):
-        old_unique_id = f"{config_entry.title}-{sensor_type}"
-        if entity_id := entity_registry.async_get_entity_id(
-            SENSOR_PLATFORM, DOMAIN, old_unique_id
-        ):
-            new_unique_id = f"{unique_prefix}-{sensor_type}"
-            _LOGGER.debug(
-                "Migrating entity %s from old unique ID '%s' to new unique ID '%s'",
-                entity_id,
-                old_unique_id,
-                new_unique_id,
-            )
-            entity_registry.async_update_entity(entity_id, new_unique_id=new_unique_id)
-
-    sensors = [
-        description.entity_class(
-            coordinator, description, integration_name, unique_prefix
-        )
-        for description in SENSORS
+        for sensor in SENSORS
     ]
 
-    async_add_entities(sensors, False)
-
-    config = hass.data[BLITZORTUNG_CONFIG]
     if config.get(SERVER_STATS):
-        server_stat_sensors: dict[str, ServerStatSensor] = {}
+        device_reg = dr.async_get(hass)
+        device_reg.async_get_or_create(
+            config_entry_id=config_entry.entry_id,
+            identifiers={(DOMAIN, unique_prefix)},
+            name=integration_name,
+            manufacturer="Blitzortung",
+            model="Blitzortung Lightning Detector",
+            sw_version=SW_VERSION,
+            entry_type=DeviceEntryType.SERVICE,
+        )
 
-        def on_message(message: Message) -> None:
-            if not message.topic.startswith("$SYS/broker/"):
-                return
-            topic = message.topic.replace("$SYS/broker/", "")
-            if topic.startswith("load") and not topic.endswith("/1min"):
-                return
-            if topic.startswith("clients") and topic != "clients/connected":
-                return
-            sensor = server_stat_sensors.get(topic)
-            if not sensor:
-                description = BlitzortungSensorEntityDescription(
-                    key=topic.replace("/", "_"),
-                    translation_key="server_stats",
-                    has_entity_name=False,
-                    entity_category=EntityCategory.DIAGNOSTIC,
-                    entity_class=ServerStatSensor,
+        for topic in (
+            "$SYS/broker/clients/connected",
+            "$SYS/broker/load/bytes/received/1min",
+            "$SYS/broker/load/bytes/sent/1min",
+            "$SYS/broker/load/messages/received/1min",
+            "$SYS/broker/load/messages/sent/1min",
+            "$SYS/broker/load/publish/received/1min",
+            "$SYS/broker/load/publish/sent/1min",
+            "$SYS/broker/uptime",
+            "$SYS/broker/version",
+        ):
+            sensors.append(
+                ServerStatSensor(
+                    topic=topic,
+                    coordinator=coordinator,
+                    description=BlitzortungSensorEntityDescription(
+                        key=f"server_{topic.split('/')[-1]}",
+                        name=UNDEFINED,
+                        entity_category=EntityCategory.DIAGNOSTIC,
+                        icon="mdi:server",
+                        entity_class=ServerStatSensor,
+                    ),
+                    integration_name=integration_name,
+                    unique_prefix=unique_prefix,
                 )
-                sensor = description.entity_class(
-                    topic, coordinator, description, integration_name, unique_prefix
-                )
-                server_stat_sensors[topic] = sensor
-                async_add_entities([sensor], False)
-            sensor.on_message(topic, message)
+            )
 
-        coordinator.register_message_receiver(on_message)
+        def on_sys_message(message: Message) -> None:
+            for s in sensors:
+                if isinstance(s, ServerStatSensor):
+                    s.on_message(message.topic, message)
+
+        coordinator.register_message_receiver(on_sys_message)
+
+    async_add_entities(sensors)

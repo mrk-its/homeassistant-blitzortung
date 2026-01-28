@@ -4,7 +4,17 @@
       "user": {
         "description": "Blitzortung bliksemdetectie instellen",
         "data": {
-          "name": "Naam van de integratie-instantie"
+          "name": "Naam van de integratie-instantie",
+          "latitude": "Breedtegraad",
+          "longitude": "Lengtegraad",
+          "location_entity": "Locatie-entiteit (optioneel)"
+        }
+      },
+      "reconfigure": {
+        "data": {
+          "latitude": "Breedtegraad",
+          "longitude": "Lengtegraad",
+          "location_entity": "Locatie-entiteit (optioneel)"
         }
       }
     },
@@ -22,6 +32,42 @@
           "max_tracked_lightnings": "Max aantal gevolgde bliksems",
           "latitude": "Breedtegraad",
           "longitude": "Lengtegraad"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "state_attributes": {
+          "lat": {
+            "name": "Breedtegraad"
+          },
+          "lon": {
+            "name": "Lengtegraad"
+          },
+          "reference_lat": {
+            "name": "Referentie-breedtegraad"
+          },
+          "reference_lon": {
+            "name": "Referentie-lengtegraad"
+          }
+        }
+      },
+      "distance": {
+        "state_attributes": {
+          "lat": {
+            "name": "Breedtegraad"
+          },
+          "lon": {
+            "name": "Lengtegraad"
+          },
+          "reference_lat": {
+            "name": "Referentie-breedtegraad"
+          },
+          "reference_lon": {
+            "name": "Referentie-lengtegraad"
+          }
         }
       }
     }

@@ -6,15 +6,17 @@
         "data": {
           "name": "Name of the integration instance",
           "latitude": "Latitude",
-          "longitude": "Longitude"
+          "longitude": "Longitude",
+          "location_entity": "Location entity (optional)"
         }
       },
-      "reconfigure_confirm": {
-        "description": "Update configuration for {name}.",
+      "reconfigure": {
         "data": {
           "latitude": "Latitude",
-          "longitude": "Longitude"
-        }
+          "longitude": "Longitude",
+          "location_entity": "Location entity (optional)"
+        },
+        "description": "Update configuration for {name}."
       }
     },
     "error": {},
@@ -45,6 +47,12 @@
           },
           "lon": {
             "name": "Longitude"
+          },
+          "reference_lat": {
+            "name": "Reference latitude"
+          },
+          "reference_lon": {
+            "name": "Reference longitude"
           }
         }
       },
@@ -55,6 +63,12 @@
           },
           "lon": {
             "name": "Longitude"
+          },
+          "reference_lat": {
+            "name": "Reference latitude"
+          },
+          "reference_lon": {
+            "name": "Reference longitude"
           }
         }
       }
