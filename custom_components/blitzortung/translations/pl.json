@@ -6,15 +6,17 @@
         "data": {
           "name": "Nazwa instancji integracji",
           "latitude": "Szerokość geograficzna",
-          "longitude": "Długość geograficzna"
+          "longitude": "Długość geograficzna",
+          "location_entity": "Encja śledząca lokalizację (opcjonalnie)"
         }
       },
-      "reconfigure_confirm": {
-        "description": "Zaktualizuj konfigurację dla {name}.",
+      "reconfigure": {
         "data": {
           "latitude": "Szerokość geograficzna",
-          "longitude": "Długość geograficzna"
-        }
+          "longitude": "Długość geograficzna",
+          "location_entity": "Encja śledząca lokalizację (opcjonalnie)"
+        },
+        "description": "Zaktualizuj konfigurację dla {name}."
       }
     },
     "error": {},
@@ -45,6 +47,12 @@
           },
           "lon": {
             "name": "Długość geograficzna"
+          },
+          "reference_lat": {
+            "name": "Szerokość geograficzna odniesienia"
+          },
+          "reference_lon": {
+            "name": "Długość geograficzna odniesienia"
           }
         }
       },
@@ -55,6 +63,12 @@
           },
           "lon": {
             "name": "Długość geograficzna"
+          },
+          "reference_lat": {
+            "name": "Szerokość geograficzna odniesienia"
+          },
+          "reference_lon": {
+            "name": "Długość geograficzna odniesienia"
           }
         }
       }

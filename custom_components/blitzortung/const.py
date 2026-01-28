@@ -37,6 +37,8 @@ CONF_IDLE_RESET_TIMEOUT = "idle_reset_timeout"
 CONF_TIME_WINDOW = "time_window"
 CONF_MAX_TRACKED_LIGHTNINGS = "max_tracked_lightnings"
 
+CONF_LOCATION_ENTITY = "location_entity"
+
 DEFAULT_IDLE_RESET_TIMEOUT = 120
 DEFAULT_RADIUS = 100
 DEFAULT_MAX_TRACKED_LIGHTNINGS = 100
@@ -45,6 +47,8 @@ DEFAULT_UPDATE_INTERVAL = datetime.timedelta(seconds=60)
 
 ATTR_LAT = "lat"
 ATTR_LON = "lon"
+ATTR_REFERENCE_LAT = "reference_lat"
+ATTR_REFERENCE_LON = "reference_lon"
 ATTRIBUTION = "Data provided by blitzortung.org"
 ATTR_EXTERNAL_ID = "external_id"
 ATTR_PUBLICATION_DATE = "publication_date"

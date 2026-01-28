@@ -4,7 +4,17 @@
       "user": {
         "description": "Sett opp lynregistrering av Blitzortung",
         "data": {
-          "name": "Navnet på integrasjonsforekomsten"
+          "name": "Navnet på integrasjonsforekomsten",
+          "latitude": "Breddegrad",
+          "longitude": "Lengdegrad",
+          "location_entity": "Sporingsenhet (valgfritt)"
+        }
+      },
+      "reconfigure": {
+        "data": {
+          "latitude": "Breddegrad",
+          "longitude": "Lengdegrad",
+          "location_entity": "Sporingsenhet (valgfritt)"
         }
       }
     },
@@ -22,6 +32,42 @@
           "max_tracked_lightnings": "Maks antall sporede lyn",
           "latitude": "Breddegrad",
           "longitude": "Lengdegrad"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "state_attributes": {
+          "lat": {
+            "name": "Breddegrad"
+          },
+          "lon": {
+            "name": "Lengdegrad"
+          },
+          "reference_lat": {
+            "name": "Referanse-breddegrad"
+          },
+          "reference_lon": {
+            "name": "Referanse-lengdegrad"
+          }
+        }
+      },
+      "distance": {
+        "state_attributes": {
+          "lat": {
+            "name": "Breddegrad"
+          },
+          "lon": {
+            "name": "Lengdegrad"
+          },
+          "reference_lat": {
+            "name": "Referanse-breddegrad"
+          },
+          "reference_lon": {
+            "name": "Referanse-lengdegrad"
+          }
         }
       }
     }

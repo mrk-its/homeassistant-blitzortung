@@ -32,7 +32,7 @@
         "description": "Konfigurera alternativ för Blitzortung åskdetektering",
         "data": {
           "radius": "Detekteringsradie för åska (km / mi)",
-          "time_window": "Tidsfönster (minuter, 0 - inaktiverad)",
+          "time_window": "Tidsfönster (minuter, 0 – inaktiverad)",
           "max_tracked_lightnings": "Maximalt antal spårade blixtar"
         }
       }

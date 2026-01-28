@@ -4,7 +4,17 @@
       "user": {
         "description": "Postavke zaznavanja strel Blitzortung",
         "data": {
-          "name": "Ime integracije"
+          "name": "Ime integracije",
+          "latitude": "Zemljepisna širina središča zaznavanja",
+          "longitude": "Zemljepisna dolžina središča zaznavanja",
+          "location_entity": "Sledilna entiteta lokacije (neobvezno)"
+        }
+      },
+      "reconfigure": {
+        "data": {
+          "latitude": "Zemljepisna širina središča zaznavanja",
+          "longitude": "Zemljepisna dolžina središča zaznavanja",
+          "location_entity": "Sledilna entiteta lokacije (neobvezno)"
         }
       }
     },
@@ -22,6 +32,42 @@
           "max_tracked_lightnings": "Maksimalno število zaznanih strel",
           "latitude": "Zemljepisna širina središča zaznavanja",
           "longitude": "Zemljepisna dolžina središča zaznavanja"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "state_attributes": {
+          "lat": {
+            "name": "Zemljepisna širina"
+          },
+          "lon": {
+            "name": "Zemljepisna dolžina"
+          },
+          "reference_lat": {
+            "name": "Referenčna zemljepisna širina"
+          },
+          "reference_lon": {
+            "name": "Referenčna zemljepisna dolžina"
+          }
+        }
+      },
+      "distance": {
+        "state_attributes": {
+          "lat": {
+            "name": "Zemljepisna širina"
+          },
+          "lon": {
+            "name": "Zemljepisna dolžina"
+          },
+          "reference_lat": {
+            "name": "Referenčna zemljepisna širina"
+          },
+          "reference_lon": {
+            "name": "Referenčna zemljepisna dolžina"
+          }
         }
       }
     }
