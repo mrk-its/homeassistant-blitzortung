@@ -297,7 +297,7 @@ async def async_setup_entry(
                 key=(
                     f"server_"
                     f"{topic.removeprefix('$SYS/broker/').replace('/', '_')}"
-                ),            
+                ),
                 name=UNDEFINED,
                 entity_category=EntityCategory.DIAGNOSTIC,
                 icon="mdi:server",
