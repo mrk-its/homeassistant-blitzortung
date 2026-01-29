@@ -14,7 +14,6 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    CONF_NAME,
     DEGREE,
     EntityCategory,
     UnitOfLength,
@@ -290,6 +289,23 @@ async def async_setup_entry(
             entry_type=DeviceEntryType.SERVICE,
         )
 
+    sensors.extend(
+        ServerStatSensor(
+            topic=topic,
+            coordinator=coordinator,
+            description=BlitzortungSensorEntityDescription(
+                key=(
+                    f"server_"
+                    f"{topic.removeprefix('$SYS/broker/').replace('/', '_')}"
+                ),            
+                name=UNDEFINED,
+                entity_category=EntityCategory.DIAGNOSTIC,
+                icon="mdi:server",
+                entity_class=ServerStatSensor,
+            ),
+            integration_name=integration_name,
+            unique_prefix=unique_prefix,
+        )
         for topic in (
             "$SYS/broker/clients/connected",
             "$SYS/broker/load/bytes/received/1min",
@@ -300,28 +316,13 @@ async def async_setup_entry(
             "$SYS/broker/load/publish/sent/1min",
             "$SYS/broker/uptime",
             "$SYS/broker/version",
-        ):
-            sensors.append(
-                ServerStatSensor(
-                    topic=topic,
-                    coordinator=coordinator,
-                    description=BlitzortungSensorEntityDescription(
-                        key=f"server_{topic.split('/')[-1]}",
-                        name=UNDEFINED,
-                        entity_category=EntityCategory.DIAGNOSTIC,
-                        icon="mdi:server",
-                        entity_class=ServerStatSensor,
-                    ),
-                    integration_name=integration_name,
-                    unique_prefix=unique_prefix,
-                )
-            )
+        )
+    )
+    def on_sys_message(message: Message) -> None:
+        for s in sensors:
+            if isinstance(s, ServerStatSensor):
+                s.on_message(message.topic, message)
 
-        def on_sys_message(message: Message) -> None:
-            for s in sensors:
-                if isinstance(s, ServerStatSensor):
-                    s.on_message(message.topic, message)
-
-        coordinator.register_message_receiver(on_sys_message)
+    coordinator.register_message_receiver(on_sys_message)
 
     async_add_entities(sensors)

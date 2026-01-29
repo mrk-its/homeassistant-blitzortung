@@ -44,6 +44,8 @@ from .geohash_utils import geohash_overlap
 from .mqtt import MQTT, MQTT_CONNECTED, MQTT_DISCONNECTED, Message
 from .version import __version__
 
+TWO = 2
+
 _LOGGER = logging.getLogger(__name__)
 
 CONFIG_SCHEMA = vol.Schema(
@@ -292,7 +294,7 @@ class BlitzortungCoordinator:
         # Some entities expose GPS as a tuple/list.
         if (lat is None or lon is None) and "gps" in state.attributes:
             gps = state.attributes.get("gps")
-            if isinstance(gps, (list, tuple)) and len(gps) >= 2:
+            if isinstance(gps, (list, tuple)) and len(gps) >= TWO:
                 lat, lon = gps[0], gps[1]
 
         try:
@@ -310,7 +312,9 @@ class BlitzortungCoordinator:
 
     async def _async_refresh_geohash_subscriptions(self) -> None:
         """Recalculate geohash overlap and refresh MQTT subscriptions if needed."""
-        new_geohash_overlap = geohash_overlap(self.latitude, self.longitude, self.radius)
+        new_geohash_overlap = geohash_overlap(
+            self.latitude, self.longitude, self.radius
+        )
 
         if new_geohash_overlap == self.geohash_overlap:
             return

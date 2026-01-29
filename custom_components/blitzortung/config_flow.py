@@ -84,10 +84,18 @@ class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
             step_id="user",
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_NAME, default=self.hass.config.location_name): str,
-                    vol.Optional(CONF_LOCATION_ENTITY): TRACKER_ENTITY_SELECTOR,
-                    vol.Optional(CONF_LATITUDE, default=self.hass.config.latitude): cv.latitude,
-                    vol.Optional(CONF_LONGITUDE, default=self.hass.config.longitude): cv.longitude,
+                    vol.Required(
+                        CONF_NAME, default=self.hass.config.location_name
+                    ): str,
+                    vol.Optional(
+                        CONF_LOCATION_ENTITY
+                    ): TRACKER_ENTITY_SELECTOR,
+                    vol.Optional(
+                        CONF_LATITUDE, default=self.hass.config.latitude
+                    ): cv.latitude,
+                    vol.Optional(
+                        CONF_LONGITUDE, default=self.hass.config.longitude
+                    ): cv.longitude,
                 }
             ),
         )
