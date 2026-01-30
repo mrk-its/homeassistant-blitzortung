@@ -1,28 +1,74 @@
 {
   "config": {
+    "abort": {},
+    "error": {},
     "step": {
-      "user": {
-        "description": "Määritä Blitzortung ukkostutka",
+      "reconfigure": {
         "data": {
+          "latitude": "Leveysaste",
+          "location_entity": "Sijaintiseuranta (valinnainen)",
+          "longitude": "Pituusaste"
+        }
+      },
+      "user": {
+        "data": {
+          "latitude": "Leveysaste",
+          "location_entity": "Sijaintiseuranta (valinnainen)",
+          "longitude": "Pituusaste",
           "name": "Integraation instanssin nimi"
+        },
+        "description": "Määritä Blitzortung ukkostutka"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "state_attributes": {
+          "lat": {
+            "name": "Leveysaste"
+          },
+          "lon": {
+            "name": "Pituusaste"
+          },
+          "reference_lat": {
+            "name": "Viite-leveysaste"
+          },
+          "reference_lon": {
+            "name": "Viite-pituusaste"
+          }
+        }
+      },
+      "distance": {
+        "state_attributes": {
+          "lat": {
+            "name": "Leveysaste"
+          },
+          "lon": {
+            "name": "Pituusaste"
+          },
+          "reference_lat": {
+            "name": "Viite-leveysaste"
+          },
+          "reference_lon": {
+            "name": "Viite-pituusaste"
+          }
         }
       }
-    },
-    "error": {},
-    "abort": {}
+    }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Blitzortung Asetukset",
-        "description": "Määritä Blitzortung ukkostutkan asetukset",
         "data": {
-          "radius": "Salamoiden seuranta-alue (km / mi)",
-          "time_window": "Aikaikkuna (minuuttia, 0 - ei käytössä)",
-          "max_tracked_lightnings": "Seurattavien salamoiden enimmäismäärä",
           "latitude": "Leveysaste",
-          "longitude": "Pituusaste"
-        }
+          "longitude": "Pituusaste",
+          "max_tracked_lightnings": "Seurattavien salamoiden enimmäismäärä",
+          "radius": "Salamoiden seuranta-alue (km / mi)",
+          "time_window": "Aikaikkuna (minuuttia, 0 - ei käytössä)"
+        },
+        "description": "Määritä Blitzortung ukkostutkan asetukset",
+        "title": "Blitzortung Asetukset"
       }
     }
   }

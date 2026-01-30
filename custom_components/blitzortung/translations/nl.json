@@ -1,28 +1,74 @@
 {
   "config": {
+    "abort": {},
+    "error": {},
     "step": {
-      "user": {
-        "description": "Blitzortung bliksemdetectie instellen",
+      "reconfigure": {
         "data": {
+          "latitude": "Breedtegraad",
+          "location_entity": "Locatietracker (optioneel)",
+          "longitude": "Lengtegraad"
+        }
+      },
+      "user": {
+        "data": {
+          "latitude": "Breedtegraad",
+          "location_entity": "Locatietracker (optioneel)",
+          "longitude": "Lengtegraad",
           "name": "Naam van de integratie-instantie"
+        },
+        "description": "Blitzortung bliksemdetectie instellen"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "state_attributes": {
+          "lat": {
+            "name": "Breedtegraad"
+          },
+          "lon": {
+            "name": "Lengtegraad"
+          },
+          "reference_lat": {
+            "name": "Referentie-breedtegraad"
+          },
+          "reference_lon": {
+            "name": "Referentie-lengtegraad"
+          }
+        }
+      },
+      "distance": {
+        "state_attributes": {
+          "lat": {
+            "name": "Breedtegraad"
+          },
+          "lon": {
+            "name": "Lengtegraad"
+          },
+          "reference_lat": {
+            "name": "Referentie-breedtegraad"
+          },
+          "reference_lon": {
+            "name": "Referentie-lengtegraad"
+          }
         }
       }
-    },
-    "error": {},
-    "abort": {}
+    }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Blitzortung Opties",
-        "description": "Blitzortung bliksemdetectie opties instellen",
         "data": {
-          "radius": "Bliksemdetectie-radius (km / mi)",
-          "time_window": "Tijdvenster (minuten, 0 - uitgeschakeld)",
-          "max_tracked_lightnings": "Max aantal gevolgde bliksems",
           "latitude": "Breedtegraad",
-          "longitude": "Lengtegraad"
-        }
+          "longitude": "Lengtegraad",
+          "max_tracked_lightnings": "Max aantal gevolgde bliksems",
+          "radius": "Bliksemdetectie-radius (km / mi)",
+          "time_window": "Tijdvenster (minuten, 0 - uitgeschakeld)"
+        },
+        "description": "Blitzortung bliksemdetectie opties instellen",
+        "title": "Blitzortung Opties"
       }
     }
   }

@@ -1,28 +1,74 @@
 {
   "config": {
+    "abort": {},
+    "error": {},
     "step": {
-      "user": {
-        "description": "Postavke zaznavanja strel Blitzortung",
+      "reconfigure": {
         "data": {
+          "latitude": "Zemljepisna širina središča zaznavanja",
+          "location_entity": "Sledilnik lokacije (neobvezno)",
+          "longitude": "Zemljepisna dolžina središča zaznavanja"
+        }
+      },
+      "user": {
+        "data": {
+          "latitude": "Zemljepisna širina središča zaznavanja",
+          "location_entity": "Sledilnik lokacije (neobvezno)",
+          "longitude": "Zemljepisna dolžina središča zaznavanja",
           "name": "Ime integracije"
+        },
+        "description": "Postavke zaznavanja strel Blitzortung"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "state_attributes": {
+          "lat": {
+            "name": "Zemljepisna širina"
+          },
+          "lon": {
+            "name": "Zemljepisna dolžina"
+          },
+          "reference_lat": {
+            "name": "Referenčna zemljepisna širina"
+          },
+          "reference_lon": {
+            "name": "Referenčna zemljepisna dolžina"
+          }
+        }
+      },
+      "distance": {
+        "state_attributes": {
+          "lat": {
+            "name": "Zemljepisna širina"
+          },
+          "lon": {
+            "name": "Zemljepisna dolžina"
+          },
+          "reference_lat": {
+            "name": "Referenčna zemljepisna širina"
+          },
+          "reference_lon": {
+            "name": "Referenčna zemljepisna dolžina"
+          }
         }
       }
-    },
-    "error": {},
-    "abort": {}
+    }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Možnosti Blitzortung",
-        "description": "Nastavite možnosti zaznavanja strel Blitzortung",
         "data": {
-          "radius": "Doseg zaznavanja strel (km / mi)",
-          "time_window": "Časovni okvir (v minutah, 0 - disabled)",
-          "max_tracked_lightnings": "Maksimalno število zaznanih strel",
           "latitude": "Zemljepisna širina središča zaznavanja",
-          "longitude": "Zemljepisna dolžina središča zaznavanja"
-        }
+          "longitude": "Zemljepisna dolžina središča zaznavanja",
+          "max_tracked_lightnings": "Maksimalno število zaznanih strel",
+          "radius": "Doseg zaznavanja strel (km / mi)",
+          "time_window": "Časovni okvir (v minutah, 0 - disabled)"
+        },
+        "description": "Nastavite možnosti zaznavanja strel Blitzortung",
+        "title": "Možnosti Blitzortung"
       }
     }
   }

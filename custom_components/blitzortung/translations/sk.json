@@ -1,38 +1,27 @@
 {
   "config": {
-    "step": {
-      "user": {
-        "description": "Nastavte detekciu bleskov Blitzortung",
-        "data": {
-          "name": "Názov inštancie integrácie",
-          "latitude": "Zemepisná šírka",
-          "longitude": "Zemepisná dĺžka"
-        }
-      },
-      "reconfigure_confirm": {
-        "description": "Aktualizovať konfiguráciu {name}.",
-        "data": {
-          "latitude": "Zemepisná šírka",
-          "longitude": "Zemepisná dĺžka"
-        }
-      }
+    "abort": {
+      "already_configured": "Tjänsten är redan konfigurerad",
+      "reconfigure_successful": "Omkonfigurationen lyckades"
     },
     "error": {},
-    "abort": {
-      "already_configured": "Služba už je nakonfigurovaná",
-      "reconfigure_successful": "Zmena konfigurácie bola úspešná"
-    }
-  },
-  "options": {
     "step": {
-      "init": {
-        "title": "Možnosti Blitzortung",
-        "description": "Nastavte možnosti detekcie bleskov Blitzortung",
+      "reconfigure": {
         "data": {
-          "radius": "Polomer detekcie bleskov (km/míle)",
-          "time_window": "Časové okno (minúty, 0 = vypnuté)",
-          "max_tracked_lightnings": "Max. počet sledovaných bleskov"
-        }
+          "latitude": "Latitud",
+          "location_entity": "Platsspårare (valfri)",
+          "longitude": "Longitud"
+        },
+        "description": "Uppdatera konfigurationen för {name}."
+      },
+      "user": {
+        "data": {
+          "latitude": "Latitud",
+          "location_entity": "Platsspårare (valfri)",
+          "longitude": "Longitud",
+          "name": "Namn på integrationsinstansen"
+        },
+        "description": "Konfigurera Blitzortung åskdetektering"
       }
     }
   },
@@ -41,22 +30,47 @@
       "azimuth": {
         "state_attributes": {
           "lat": {
-            "name": "Zemepisná šírka"
+            "name": "Latitud"
           },
           "lon": {
-            "name": "Zemepisná dĺžka"
+            "name": "Longitud"
+          },
+          "reference_lat": {
+            "name": "Referenslatitud"
+          },
+          "reference_lon": {
+            "name": "Referenslongitud"
           }
         }
       },
       "distance": {
         "state_attributes": {
           "lat": {
-            "name": "Zemepisná šírka"
+            "name": "Latitud"
           },
           "lon": {
-            "name": "Zemepisná dĺžka"
+            "name": "Longitud"
+          },
+          "reference_lat": {
+            "name": "Referenslatitud"
+          },
+          "reference_lon": {
+            "name": "Referenslongitud"
           }
         }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "max_tracked_lightnings": "Maximalt antal spårade blixtar",
+          "radius": "Detekteringsradie för åska (km / mi)",
+          "time_window": "Tidsfönster (minuter, 0 - inaktiverad)"
+        },
+        "description": "Konfigurera alternativ för Blitzortung åskdetektering",
+        "title": "Blitzortung-alternativ"
       }
     }
   }

@@ -1,28 +1,74 @@
 {
   "config": {
+    "abort": {},
+    "error": {},
     "step": {
-      "user": {
-        "description": "Sett opp lynregistrering av Blitzortung",
+      "reconfigure": {
         "data": {
+          "latitude": "Breddegrad",
+          "location_entity": "Posisjonssporer (valgfritt)",
+          "longitude": "Lengdegrad"
+        }
+      },
+      "user": {
+        "data": {
+          "latitude": "Breddegrad",
+          "location_entity": "Posisjonssporer (valgfritt)",
+          "longitude": "Lengdegrad",
           "name": "Navnet på integrasjonsforekomsten"
+        },
+        "description": "Sett opp lynregistrering av Blitzortung"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "state_attributes": {
+          "lat": {
+            "name": "Breddegrad"
+          },
+          "lon": {
+            "name": "Lengdegrad"
+          },
+          "reference_lat": {
+            "name": "Referanse-breddegrad"
+          },
+          "reference_lon": {
+            "name": "Referanse-lengdegrad"
+          }
+        }
+      },
+      "distance": {
+        "state_attributes": {
+          "lat": {
+            "name": "Breddegrad"
+          },
+          "lon": {
+            "name": "Lengdegrad"
+          },
+          "reference_lat": {
+            "name": "Referanse-breddegrad"
+          },
+          "reference_lon": {
+            "name": "Referanse-lengdegrad"
+          }
         }
       }
-    },
-    "error": {},
-    "abort": {}
+    }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Blitzortung-alternativer",
-        "description": "Sett opp Blitzortung lyndeteksjonsalternativer",
         "data": {
-          "radius": "Lyndeteksjonsradius (km / mi)",
-          "time_window": "Tidsvindu (minutter, 0 - deaktivert)",
-          "max_tracked_lightnings": "Maks antall sporede lyn",
           "latitude": "Breddegrad",
-          "longitude": "Lengdegrad"
-        }
+          "longitude": "Lengdegrad",
+          "max_tracked_lightnings": "Maks antall sporede lyn",
+          "radius": "Lyndeteksjonsradius (km / mi)",
+          "time_window": "Tidsvindu (minutter, 0 - deaktivert)"
+        },
+        "description": "Sett opp Blitzortung lyndeteksjonsalternativer",
+        "title": "Blitzortung-alternativer"
       }
     }
   }
