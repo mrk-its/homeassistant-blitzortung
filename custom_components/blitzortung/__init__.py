@@ -368,3 +368,112 @@ class BlitzortungCoordinator:
         azimuth = int((bearing + 360) % 360)
 
         return round(distance, 1), azimuth
+
+    async def connect(self) -> None:
+        """Connect to MQTT broker."""
+        await self.mqtt_client.async_connect()
+        _LOGGER.info("Connected to Blitzortung proxy mqtt server")
+        for geohash_code in self.geohash_overlap:
+            geohash_part = "/".join(geohash_code)
+            unsub = await self.mqtt_client.async_subscribe(
+                f"blitzortung/1.1/{geohash_part}/#", self.on_mqtt_message, qos=0
+            )
+            self._geohash_unsubscribers.append(unsub)
+        if self.server_stats:
+            await self.mqtt_client.async_subscribe(
+                "$SYS/broker/#", self.on_mqtt_message, qos=0
+            )
+        await self.mqtt_client.async_subscribe(
+            "component/hello", self.on_hello_message, qos=0
+        )
+
+        self._disconnect_callbacks.append(
+            async_track_time_interval(self.hass, self._tick, DEFAULT_UPDATE_INTERVAL)
+        )
+
+    async def disconnect(self) -> None:
+        """Disconnect from MQTT broker."""
+        self.unloading = True
+        await self.mqtt_client.async_disconnect()
+        for cb in self._disconnect_callbacks:
+            cb()
+
+        if self._location_unsubscribe:
+            self._location_unsubscribe()
+            self._location_unsubscribe = None
+
+    def on_hello_message(self, message: Message, *args: Any) -> None:  # noqa: ARG002
+        """Handle incoming hello message."""
+
+        def parse_version(version_str: str) -> tuple[int, int, int]:
+            """Parse version string into a tuple of integers."""
+            return tuple(map(int, version_str.split(".")))
+
+        data = json_loads_object(message.payload)
+        latest_version_str = data.get("latest_version")
+        if latest_version_str:
+            default_message = (
+                f"New version {latest_version_str} is available. "
+                f"[Check it out](https://github.com/mrk-its/homeassistant-blitzortung)"
+            )
+            latest_version_message = data.get("latest_version_message", default_message)
+            latest_version_title = data.get("latest_version_title", "Blitzortung")
+            latest_version = parse_version(latest_version_str)
+            current_version = parse_version(__version__)
+            if latest_version > current_version:
+                _LOGGER.info("new version is available: %s", latest_version_str)
+                self.hass.components.persistent_notification.async_create(
+                    title=latest_version_title,
+                    message=latest_version_message,
+                    notification_id="blitzortung_new_version_available",
+                )
+
+    async def on_mqtt_message(self, message: Message, *args: Any) -> None:  # noqa: ARG002
+        """Handle incoming MQTT messages."""
+        for cb in self.callbacks:
+            cb(message)
+        if message.topic.startswith("blitzortung/1.1"):
+            lightning = json_loads_object(message.payload)
+            self.compute_polar_coords(lightning)
+            if lightning[SensorDeviceClass.DISTANCE] < self.radius:
+                _LOGGER.debug("lightning data: %s", lightning)
+                self.last_time = time.time()
+                for cb in self.lightning_callbacks:
+                    await cb(lightning)
+                for sensor in self.sensors:
+                    sensor.update_lightning(lightning)
+
+    def register_sensor(self, sensor: BlitzortungEntity) -> None:
+        """Register a sensor to be updated on each lightning strike."""
+        self.sensors.append(sensor)
+        self.register_on_tick(sensor.tick)
+
+    def register_message_receiver(self, message_cb: Callable) -> None:
+        """Register a callback to be called on each MQTT message."""
+        self.callbacks.append(message_cb)
+
+    def register_lightning_receiver(self, lightning_cb: Callable) -> None:
+        """Register a callback to be called on each lightning strike."""
+        self.lightning_callbacks.append(lightning_cb)
+
+    def register_on_tick(self, on_tick_cb: Callable) -> None:
+        """Register a callback to be called on each tick."""
+        self.on_tick_callbacks.append(on_tick_cb)
+
+    @property
+    def is_inactive(self) -> bool:
+        """Check if the coordinator is inactive."""
+        return bool(
+            self.time_window_seconds
+            and (time.time() - self.last_time) >= self.time_window_seconds
+        )
+
+    @property
+    def is_connected(self) -> bool:
+        """Check if the MQTT client is connected."""
+        return self.mqtt_client.connected
+
+    async def _tick(self, *args: Any) -> None:  # noqa: ARG002
+        """Call registered callbacks on each tick."""
+        for cb in self.on_tick_callbacks:
+            cb()
