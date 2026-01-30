@@ -1,0 +1,77 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "Blitzortung-Blitzerkennung einrichten",
+        "data": {
+          "name": "Name der Integrationsinstanz",
+          "latitude": "Breitengrad",
+          "longitude": "Längengrad",
+          "location_entity": "Standort-Tracker (optional)"
+        }
+      },
+      "reconfigure": {
+        "data": {
+          "latitude": "Breitengrad",
+          "longitude": "Längengrad",
+          "location_entity": "Standort-Tracker (optional)"
+        },
+        "description": "Konfiguration für {name} aktualisieren."
+      }
+    },
+    "error": {},
+    "abort": {
+      "already_configured": "Dienst ist bereits konfiguriert",
+      "reconfigure_successful": "Neu­konfiguration war erfolgreich"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Blitzortung-Optionen",
+        "description": "Optionen für die Blitzortung-Blitzerkennung festlegen",
+        "data": {
+          "radius": "Erkennungsradius für Blitze (km / mi)",
+          "time_window": "Zeitfenster (Minuten, 0 = deaktiviert)",
+          "max_tracked_lightnings": "Maximale Anzahl verfolgter Blitze"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "state_attributes": {
+          "lat": {
+            "name": "Breitengrad"
+          },
+          "lon": {
+            "name": "Längengrad"
+          },
+          "reference_lat": {
+            "name": "Referenz-Breitengrad"
+          },
+          "reference_lon": {
+            "name": "Referenz-Längengrad"
+          }
+        }
+      },
+      "distance": {
+        "state_attributes": {
+          "lat": {
+            "name": "Breitengrad"
+          },
+          "lon": {
+            "name": "Längengrad"
+          },
+          "reference_lat": {
+            "name": "Referenz-Breitengrad"
+          },
+          "reference_lon": {
+            "name": "Referenz-Längengrad"
+          }
+        }
+      }
+    }
+  }
+}
