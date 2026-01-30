@@ -6,15 +6,17 @@
         "data": {
           "name": "Назва екземпляра інтеграції",
           "latitude": "Широта",
-          "longitude": "Довгота"
+          "longitude": "Довгота",
+          "location_entity": "Сутність відстеження місцезнаходження (необов’язково)"
         }
       },
-      "reconfigure_confirm": {
-        "description": "Оновити конфігурацію для {name}.",
+      "reconfigure": {
         "data": {
           "latitude": "Широта",
-          "longitude": "Довгота"
-        }
+          "longitude": "Довгота",
+          "location_entity": "Сутність відстеження місцезнаходження (необов’язково)"
+        },
+        "description": "Оновити конфігурацію для {name}."
       }
     },
     "error": {},
@@ -45,6 +47,12 @@
           },
           "lon": {
             "name": "Довгота"
+          },
+          "reference_lat": {
+            "name": "Опорна широта"
+          },
+          "reference_lon": {
+            "name": "Опорна довгота"
           }
         }
       },
@@ -55,6 +63,12 @@
           },
           "lon": {
             "name": "Довгота"
+          },
+          "reference_lat": {
+            "name": "Опорна широта"
+          },
+          "reference_lon": {
+            "name": "Опорна довгота"
           }
         }
       }

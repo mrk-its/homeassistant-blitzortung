@@ -294,7 +294,10 @@ async def async_setup_entry(
             topic=topic,
             coordinator=coordinator,
             description=BlitzortungSensorEntityDescription(
-                key=(f"server_{topic.removeprefix('$SYS/broker/').replace('/', '_')}"),
+                key=(
+                    f"server_"
+                    f"{topic.removeprefix('$SYS/broker/').replace('/', '_')}"
+                ),
                 name=UNDEFINED,
                 entity_category=EntityCategory.DIAGNOSTIC,
                 icon="mdi:server",
@@ -315,7 +318,6 @@ async def async_setup_entry(
             "$SYS/broker/version",
         )
     )
-
     def on_sys_message(message: Message) -> None:
         for s in sensors:
             if isinstance(s, ServerStatSensor):

@@ -4,7 +4,17 @@
       "user": {
         "description": "Määritä Blitzortung ukkostutka",
         "data": {
-          "name": "Integraation instanssin nimi"
+          "name": "Integraation instanssin nimi",
+          "latitude": "Leveysaste",
+          "longitude": "Pituusaste",
+          "location_entity": "Seurantalaitteen sijaintientiteetti (valinnainen)"
+        }
+      },
+      "reconfigure": {
+        "data": {
+          "latitude": "Leveysaste",
+          "longitude": "Pituusaste",
+          "location_entity": "Seurantalaitteen sijaintientiteetti (valinnainen)"
         }
       }
     },
@@ -22,6 +32,42 @@
           "max_tracked_lightnings": "Seurattavien salamoiden enimmäismäärä",
           "latitude": "Leveysaste",
           "longitude": "Pituusaste"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "state_attributes": {
+          "lat": {
+            "name": "Leveysaste"
+          },
+          "lon": {
+            "name": "Pituusaste"
+          },
+          "reference_lat": {
+            "name": "Viite-leveysaste"
+          },
+          "reference_lon": {
+            "name": "Viite-pituusaste"
+          }
+        }
+      },
+      "distance": {
+        "state_attributes": {
+          "lat": {
+            "name": "Leveysaste"
+          },
+          "lon": {
+            "name": "Pituusaste"
+          },
+          "reference_lat": {
+            "name": "Viite-leveysaste"
+          },
+          "reference_lon": {
+            "name": "Viite-pituusaste"
+          }
         }
       }
     }

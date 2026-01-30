@@ -2,36 +2,38 @@
   "config": {
     "step": {
       "user": {
-        "description": "Nastavte detekciu bleskov Blitzortung",
+        "description": "Konfigurera Blitzortung åskdetektering",
         "data": {
-          "name": "Názov inštancie integrácie",
-          "latitude": "Zemepisná šírka",
-          "longitude": "Zemepisná dĺžka"
+          "name": "Namn på integrationsinstansen",
+          "latitude": "Latitud",
+          "longitude": "Longitud",
+          "location_entity": "Spårningsenhet (valfri)"
         }
       },
-      "reconfigure_confirm": {
-        "description": "Aktualizovať konfiguráciu {name}.",
+      "reconfigure": {
         "data": {
-          "latitude": "Zemepisná šírka",
-          "longitude": "Zemepisná dĺžka"
-        }
+          "latitude": "Latitud",
+          "longitude": "Longitud",
+          "location_entity": "Spårningsenhet (valfri)"
+        },
+        "description": "Uppdatera konfigurationen för {name}."
       }
     },
     "error": {},
     "abort": {
-      "already_configured": "Služba už je nakonfigurovaná",
-      "reconfigure_successful": "Zmena konfigurácie bola úspešná"
+      "already_configured": "Tjänsten är redan konfigurerad",
+      "reconfigure_successful": "Omkonfigurationen lyckades"
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Možnosti Blitzortung",
-        "description": "Nastavte možnosti detekcie bleskov Blitzortung",
+        "title": "Blitzortung-alternativ",
+        "description": "Konfigurera alternativ för Blitzortung åskdetektering",
         "data": {
-          "radius": "Polomer detekcie bleskov (km/míle)",
-          "time_window": "Časové okno (minúty, 0 = vypnuté)",
-          "max_tracked_lightnings": "Max. počet sledovaných bleskov"
+          "radius": "Detekteringsradie för åska (km / mi)",
+          "time_window": "Tidsfönster (minuter, 0 - inaktiverad)",
+          "max_tracked_lightnings": "Maximalt antal spårade blixtar"
         }
       }
     }
@@ -41,20 +43,32 @@
       "azimuth": {
         "state_attributes": {
           "lat": {
-            "name": "Zemepisná šírka"
+            "name": "Latitud"
           },
           "lon": {
-            "name": "Zemepisná dĺžka"
+            "name": "Longitud"
+          },
+          "reference_lat": {
+            "name": "Referenslatitud"
+          },
+          "reference_lon": {
+            "name": "Referenslongitud"
           }
         }
       },
       "distance": {
         "state_attributes": {
           "lat": {
-            "name": "Zemepisná šírka"
+            "name": "Latitud"
           },
           "lon": {
-            "name": "Zemepisná dĺžka"
+            "name": "Longitud"
+          },
+          "reference_lat": {
+            "name": "Referenslatitud"
+          },
+          "reference_lon": {
+            "name": "Referenslongitud"
           }
         }
       }
