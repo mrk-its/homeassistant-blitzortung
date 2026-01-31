@@ -1,7 +1,9 @@
 {
   "config": {
     "abort": {},
-    "error": {},
+    "error": {
+      "lat_lon_required": "Vnesite zemljepisno širino in dolžino skupaj ali izberite sledilnik lokacije"
+    },
     "step": {
       "reconfigure": {
         "data": {

@@ -1,7 +1,9 @@
 {
   "config": {
     "abort": {},
-    "error": {},
+    "error": {
+      "lat_lon_required": "Geef breedtegraad en lengtegraad samen op, of selecteer een locatie-tracker"
+    },
     "step": {
       "reconfigure": {
         "data": {

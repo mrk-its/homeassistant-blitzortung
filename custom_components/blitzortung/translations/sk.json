@@ -4,7 +4,9 @@
       "already_configured": "Tjänsten är redan konfigurerad",
       "reconfigure_successful": "Omkonfigurationen lyckades"
     },
-    "error": {},
+    "error": {
+      "lat_lon_required": "Zadajte zemepisnú šírku a dĺžku spolu alebo vyberte sledovanie polohy"
+    },
     "step": {
       "reconfigure": {
         "data": {

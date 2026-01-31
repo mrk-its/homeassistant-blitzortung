@@ -1,4 +1,4 @@
-"""The blitzortungx integration."""
+"""The blitzortung integration."""
 
 import logging
 import math
@@ -44,7 +44,7 @@ from .geohash_utils import geohash_overlap
 from .mqtt import MQTT, MQTT_CONNECTED, MQTT_DISCONNECTED, Message
 from .version import __version__
 
-TWO = 2
+MIN_COORDINATE_COUNT = 2
 _LOGGER = logging.getLogger(__name__)
 
 CONFIG_SCHEMA = vol.Schema(
@@ -136,17 +136,24 @@ async def async_migrate_entry(
     if entry.version == 1:
         latitude = entry.data[CONF_LATITUDE]
         longitude = entry.data[CONF_LONGITUDE]
-        radius = entry.data[CONF_RADIUS]
+        radius = entry.data.get(CONF_RADIUS, DEFAULT_RADIUS)
         name = entry.data[CONF_NAME]
 
-        entry.unique_id = f"{latitude}-{longitude}-{name}-lightning"
-        entry.data = {CONF_NAME: name}
-        entry.options = {
+        new_unique_id = f"{latitude}-{longitude}-{name}-lightning"
+        new_data = {CONF_NAME: name}
+        new_options = {
             CONF_LATITUDE: latitude,
             CONF_LONGITUDE: longitude,
             CONF_RADIUS: radius,
         }
-        entry.version = 2
+
+        hass.config_entries.async_update_entry(
+            entry,
+            unique_id=new_unique_id,
+            data=new_data,
+            options=new_options,
+            version=2,
+        )
     if entry.version == 2:  # noqa: PLR2004
         entry.options = dict(entry.options)
         entry.options[CONF_IDLE_RESET_TIMEOUT] = DEFAULT_IDLE_RESET_TIMEOUT
@@ -179,9 +186,6 @@ async def async_migrate_entry(
         hass.config_entries.async_update_entry(
             entry, data=new_data, options=new_options, version=5
         )
-
-    if entry.version == 5:  # noqa: PLR2004
-        hass.config_entries.async_update_entry(entry, version=6)
 
     return True
 
@@ -316,7 +320,7 @@ class BlitzortungCoordinator:
         # Some entities expose GPS as a tuple/list.
         if (lat is None or lon is None) and "gps" in state.attributes:
             gps = state.attributes.get("gps")
-            if isinstance(gps, (list, tuple)) and len(gps) >= TWO:
+            if isinstance(gps, (list, tuple)) and len(gps) >= MIN_COORDINATE_COUNT:
                 lat, lon = gps[0], gps[1]
 
         try:

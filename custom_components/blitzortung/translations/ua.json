@@ -4,7 +4,9 @@
       "already_configured": "Сервіс вже налаштовано",
       "reconfigure_successful": "Повторна конфігурація пройшла успішно"
     },
-    "error": {},
+    "error": {
+      "lat_lon_required": "Вкажіть широту та довготу разом або виберіть трекер місцезнаходження"
+    },
     "step": {
       "reconfigure": {
         "data": {

@@ -4,7 +4,9 @@
       "already_configured": "Usługa jest już skonfigurowana",
       "reconfigure_successful": "Ponowna konfiguracja powiodła się"
     },
-    "error": {},
+    "error": {
+      "lat_lon_required": "Podaj szerokość i długość geograficzną razem lub wybierz lokalizator urządzenia"
+    },
     "step": {
       "reconfigure": {
         "data": {

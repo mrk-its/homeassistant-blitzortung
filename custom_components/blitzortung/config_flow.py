@@ -29,12 +29,14 @@ TRACKER_ENTITY_SELECTOR = selector.EntitySelector(
     selector.EntitySelectorConfig(domain=["device_tracker", "person"])
 )
 
+TRACKER_ENTITY_SELECTOR_OR_NONE = vol.Any(None, TRACKER_ENTITY_SELECTOR)
+
 RECONFIGURE_SCHEMA = vol.Schema(
     {
         # Keep lat/lon visible but not required (can be empty when using a tracker)
         vol.Optional(CONF_LATITUDE): cv.latitude,
         vol.Optional(CONF_LONGITUDE): cv.longitude,
-        vol.Optional(CONF_LOCATION_ENTITY): TRACKER_ENTITY_SELECTOR,
+        vol.Optional(CONF_LOCATION_ENTITY): TRACKER_ENTITY_SELECTOR_OR_NONE,
     }
 )
 
@@ -42,7 +44,7 @@ RECONFIGURE_SCHEMA = vol.Schema(
 class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for blitzortung."""
 
-    VERSION = 6
+    VERSION = 5
 
     def _ensure_lat_lon(self, data: dict[str, Any]) -> dict[str, Any]:
         """Ensure config entry always stores lat/lon (fallback to HA defaults)."""
@@ -57,45 +59,74 @@ class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle the initial step."""
+        errors: dict[str, str] = {}
+
         if user_input is not None:
-            user_input = self._ensure_lat_lon(user_input)
-
             location_entity = user_input.get(CONF_LOCATION_ENTITY)
-            unique_id = (
-                f"entity-{location_entity}"
-                if location_entity
-                else f"{user_input[CONF_LATITUDE]}-{user_input[CONF_LONGITUDE]}"
-            )
-            await self.async_set_unique_id(unique_id)
-            self._abort_if_unique_id_configured()
 
-            return self.async_create_entry(
-                title=user_input[CONF_NAME],
-                data=user_input,
-                options={
-                    CONF_RADIUS: DEFAULT_RADIUS,
-                    CONF_MAX_TRACKED_LIGHTNINGS: DEFAULT_MAX_TRACKED_LIGHTNINGS,
-                    CONF_TIME_WINDOW: DEFAULT_TIME_WINDOW,
-                },
-            )
+            lat_provided = CONF_LATITUDE in user_input
+            lon_provided = CONF_LONGITUDE in user_input
+
+            # Require either:
+            # - a tracker entity, OR
+            # - latitude + longitude together (no half-filled coordinates)
+            if not location_entity and (lat_provided ^ lon_provided):
+                errors["base"] = "lat_lon_required"
+            else:
+                user_input = self._ensure_lat_lon(user_input)
+
+                if location_entity is None:
+                    user_input.pop(CONF_LOCATION_ENTITY, None)
+
+                lat = user_input[CONF_LATITUDE]
+                lon = user_input[CONF_LONGITUDE]
+
+                unique_id = (
+                    f"tracker-{location_entity.lower()}"
+                    if location_entity
+                    else f"{lat}-{lon}"
+                )
+                await self.async_set_unique_id(unique_id)
+                self._abort_if_unique_id_configured()
+
+                return self.async_create_entry(
+                    title=user_input[CONF_NAME],
+                    data=user_input,
+                    options={
+                        CONF_RADIUS: DEFAULT_RADIUS,
+                        CONF_MAX_TRACKED_LIGHTNINGS: DEFAULT_MAX_TRACKED_LIGHTNINGS,
+                        CONF_TIME_WINDOW: DEFAULT_TIME_WINDOW,
+                    },
+                )
 
         # lat/lon are shown but optional; defaults prefilled
+        # If we re-show due to errors, keep the user's inputs as defaults.
+        defaults = user_input or {}
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema(
                 {
                     vol.Required(
-                        CONF_NAME, default=self.hass.config.location_name
+                        CONF_NAME, default=defaults.get(
+                            CONF_NAME, self.hass.config.location_name
+                        )
                     ): str,
-                    vol.Optional(CONF_LOCATION_ENTITY): TRACKER_ENTITY_SELECTOR,
                     vol.Optional(
-                        CONF_LATITUDE, default=self.hass.config.latitude
+                        CONF_LOCATION_ENTITY, default=defaults.get(CONF_LOCATION_ENTITY)
+                    ): TRACKER_ENTITY_SELECTOR_OR_NONE,
+                    vol.Optional(
+                        CONF_LATITUDE, default=defaults.get(
+                            CONF_LATITUDE, self.hass.config.latitude
+                        )
                     ): cv.latitude,
                     vol.Optional(
-                        CONF_LONGITUDE, default=self.hass.config.longitude
+                        CONF_LONGITUDE, default=defaults.get(
+                            CONF_LONGITUDE, self.hass.config.longitude
+                        )
                     ): cv.longitude,
                 }
             ),
+            errors=errors,
         )
 
     async def async_step_reconfigure(
@@ -146,6 +177,8 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
     ) -> ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
+            if user_input.get(CONF_LOCATION_ENTITY) is None:
+                user_input.pop(CONF_LOCATION_ENTITY, None)
             return self.async_create_entry(data=user_input)
 
         options_schema = vol.Schema(

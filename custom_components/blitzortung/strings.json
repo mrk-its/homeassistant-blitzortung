@@ -27,7 +27,9 @@
         }
       }
     },
-    "error": {},
+    "error": {
+      "lat_lon_required": "Provide latitude and longitude together, or select a location tracker"
+    },
     "abort": {
       "already_configured": "Service is already configured",
       "reconfigure_successful": "Re-configuration was successful"

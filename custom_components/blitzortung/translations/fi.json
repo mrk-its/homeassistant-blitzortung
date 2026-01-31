@@ -1,7 +1,9 @@
 {
   "config": {
     "abort": {},
-    "error": {},
+    "error": {
+      "lat_lon_required": "Anna leveys- ja pituusaste yhdessä tai valitse sijainnin seuranta"
+    },
     "step": {
       "reconfigure": {
         "data": {

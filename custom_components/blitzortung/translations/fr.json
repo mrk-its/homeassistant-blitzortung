@@ -4,7 +4,9 @@
       "already_configured": "Le service est déjà configuré",
       "reconfigure_successful": "La re-configuration a réussie"
     },
-    "error": {},
+    "error": {
+      "lat_lon_required": "Fournissez la latitude et la longitude ensemble, ou sélectionnez un traceur de localisation"
+    },
     "step": {
       "reconfigure": {
         "data": {
