@@ -58,7 +58,7 @@ CONFIG_TYPE_SELECTOR = selector.SelectSelector(
 class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for blitzortung."""
 
-    VERSION = 6
+    VERSION = 5
 
     def _ensure_lat_lon(self, data: dict[str, Any]) -> dict[str, Any]:
         """Ensure config entry always stores lat/lon (fallback to HA defaults)."""
