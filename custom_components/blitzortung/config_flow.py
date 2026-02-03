@@ -126,7 +126,7 @@ class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
                         default=defaults.get(CONF_LOCATION_ENTITY),
                     ): TRACKER_ENTITY_SELECTOR,
                 }
-            )
+            ),
         )
 
     async def async_step_coordinates(
@@ -163,32 +163,24 @@ class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
                 {
                     vol.Required(
                         CONF_NAME,
-                        default=defaults.get(
-                            CONF_NAME,
-                            self.hass.config.location_name
-                        ),
+                        default=defaults.get(CONF_NAME, self.hass.config.location_name),
                     ): str,
                     vol.Required(
                         CONF_LATITUDE,
-                        default=defaults.get(
-                            CONF_LATITUDE,
-                            self.hass.config.latitude
-                        ),
+                        default=defaults.get(CONF_LATITUDE, self.hass.config.latitude),
                     ): cv.latitude,
                     vol.Required(
                         CONF_LONGITUDE,
                         default=defaults.get(
-                            CONF_LONGITUDE,
-                            self.hass.config.longitude
+                            CONF_LONGITUDE, self.hass.config.longitude
                         ),
                     ): cv.longitude,
                 }
-            )
+            ),
         )
 
     async def async_step_reconfigure(
-        self,
-        user_input: dict[str, Any] | None = None
+        self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle a reconfiguration flow initialized by the user."""
         reconfigure_entry = self._get_reconfigure_entry()
@@ -216,7 +208,7 @@ class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
                 data_schema=RECONFIGURE_SCHEMA,
                 suggested_values=suggested | (user_input or {}),
             ),
-            description_placeholders={"name": reconfigure_entry.title}
+            description_placeholders={"name": reconfigure_entry.title},
         )
 
     @staticmethod
@@ -246,14 +238,14 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
                 vol.Optional(
                     CONF_TIME_WINDOW,
                     default=self.config_entry.options.get(
-                    CONF_TIME_WINDOW,
+                        CONF_TIME_WINDOW,
                         DEFAULT_TIME_WINDOW,
                     ),
                 ): int,
                 vol.Optional(
                     CONF_MAX_TRACKED_LIGHTNINGS,
                     default=self.config_entry.options.get(
-                    CONF_MAX_TRACKED_LIGHTNINGS,
+                        CONF_MAX_TRACKED_LIGHTNINGS,
                         DEFAULT_MAX_TRACKED_LIGHTNINGS,
                     ),
                 ): int,
