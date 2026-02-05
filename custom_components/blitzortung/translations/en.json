@@ -6,18 +6,22 @@
         "data": {
           "name": "Name of the integration instance",
           "latitude": "Latitude",
-          "longitude": "Longitude"
+          "longitude": "Longitude",
+          "location_entity": "Location tracker (optional)"
         }
       },
-      "reconfigure_confirm": {
-        "description": "Update configuration for {name}.",
+      "reconfigure": {
         "data": {
           "latitude": "Latitude",
-          "longitude": "Longitude"
-        }
+          "longitude": "Longitude",
+          "location_entity": "Location tracker (optional)"
+        },
+        "description": "Update configuration for {name}."
       }
     },
-    "error": {},
+    "error": {
+      "lat_lon_required": "Provide latitude and longitude together, or select a location tracker"
+    },
     "abort": {
       "already_configured": "Service is already configured",
       "reconfigure_successful": "Re-configuration was successful"
@@ -45,6 +49,12 @@
           },
           "lon": {
             "name": "Longitude"
+          },
+          "reference_lat": {
+            "name": "Reference latitude"
+          },
+          "reference_lon": {
+            "name": "Reference longitude"
           }
         }
       },
@@ -55,6 +65,12 @@
           },
           "lon": {
             "name": "Longitude"
+          },
+          "reference_lat": {
+            "name": "Reference latitude"
+          },
+          "reference_lon": {
+            "name": "Reference longitude"
           }
         }
       }
