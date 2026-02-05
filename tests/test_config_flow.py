@@ -206,4 +206,3 @@ async def test_options_flow_success(
         CONF_TIME_WINDOW: 300,
         CONF_MAX_TRACKED_LIGHTNINGS: 150,
     }
-    
