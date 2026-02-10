@@ -1,2 +1,2 @@
-pytest-homeassistant-custom-component==0.13.311
-ruff==0.14.14
+pytest-homeassistant-custom-component==0.13.314
+ruff==0.15.0
