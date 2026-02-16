@@ -1,26 +1,41 @@
 {
   "config": {
-    "abort": {},
-    "error": {
-      "lat_lon_required": "Anna leveys- ja pituusaste yhdessä tai valitse sijainnin seuranta"
-    },
     "step": {
-      "reconfigure": {
+      "user": {
+        "description": "Määritä Blitzortung ukkostutka",
         "data": {
+          "config_type": "Määritystyyppi"
+        }
+      },
+      "tracker": {
+        "description": "Käytä seurantaentiteettiä viitesijaintina.",
+        "data": {
+          "location_entity": "Sijaintiseuranta"
+        }
+      },
+      "coordinates": {
+        "description": "Anna viitekoordinaatit.",
+        "data": {
+          "name": "Integraation esiintymän nimi",
           "latitude": "Leveysaste",
-          "location_entity": "Sijaintiseuranta (valinnainen)",
           "longitude": "Pituusaste"
         }
       },
-      "user": {
+      "reconfigure": {
+        "description": "Päivitä asetukset kohteelle {name}.",
         "data": {
           "latitude": "Leveysaste",
-          "location_entity": "Sijaintiseuranta (valinnainen)",
           "longitude": "Pituusaste",
-          "name": "Integraation instanssin nimi"
-        },
-        "description": "Määritä Blitzortung ukkostutka"
+          "location_entity": "Sijaintiseuranta"
+        }
       }
+    },
+    "error": {
+      "lat_lon_required": "Anna leveys- ja pituusaste yhdessä tai valitse sijainnin seuranta"
+    },
+    "abort": {
+      "already_configured": "Palvelu on jo määritetty",
+      "reconfigure_successful": "Uudelleenmääritys onnistui"
     }
   },
   "entity": {
@@ -56,21 +71,6 @@
             "name": "Viite-pituusaste"
           }
         }
-      }
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "data": {
-          "latitude": "Leveysaste",
-          "longitude": "Pituusaste",
-          "max_tracked_lightnings": "Seurattavien salamoiden enimmäismäärä",
-          "radius": "Salamoiden seuranta-alue (km / mi)",
-          "time_window": "Aikaikkuna (minuuttia, 0 - ei käytössä)"
-        },
-        "description": "Määritä Blitzortung ukkostutkan asetukset",
-        "title": "Blitzortung Asetukset"
       }
     }
   }

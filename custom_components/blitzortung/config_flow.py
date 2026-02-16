@@ -25,43 +25,49 @@ from .const import (
 )
 
 # Only allow tracker-like entities
-TRACKER_ENTITY_SELECTOR = selector.EntitySelector(
+LOCATION_ENTITY_SELECTOR = selector.EntitySelector(
     selector.EntitySelectorConfig(domain=["device_tracker", "person"])
 )
 
-TRACKER_ENTITY_SELECTOR_OR_NONE = vol.Any(None, TRACKER_ENTITY_SELECTOR)
+LOCATION_ENTITY_SELECTOR_OR_NONE = vol.Any(None, LOCATION_ENTITY_SELECTOR)
 
 RECONFIGURE_SCHEMA = vol.Schema(
     {
         # Keep lat/lon visible but not required (can be empty when using a tracker)
         vol.Optional(CONF_LATITUDE): cv.latitude,
         vol.Optional(CONF_LONGITUDE): cv.longitude,
-        vol.Optional(CONF_LOCATION_ENTITY): TRACKER_ENTITY_SELECTOR_OR_NONE,
+        vol.Optional(CONF_LOCATION_ENTITY): LOCATION_ENTITY_SELECTOR_OR_NONE,
     }
 )
 
 CONF_CONFIG_TYPE = "config_type"
-CONFIG_TYPE_COORDINATES = "coordinates"
 CONFIG_TYPE_TRACKER = "tracker"
+CONFIG_TYPE_COORDINATES = "coordinates"
 
 CONFIG_TYPE_SELECTOR = selector.SelectSelector(
     selector.SelectSelectorConfig(
         options=[
-            {"value": CONFIG_TYPE_COORDINATES, "label": "Coordinates"},
-            {"value": CONFIG_TYPE_TRACKER, "label": "Tracking entity"},
+            selector.SelectOptionDict(
+                value=CONFIG_TYPE_TRACKER, label="Tracker entity"
+            ),
+            selector.SelectOptionDict(
+                value=CONFIG_TYPE_COORDINATES, label="Latitude/Longitude"
+            ),
         ],
         mode=selector.SelectSelectorMode.DROPDOWN,
+        translation_key=CONF_CONFIG_TYPE,
     )
 )
 
 
-class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for blitzortung."""
+class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
+    """Handle a config flow for Blitzortung."""
 
-    VERSION = 5
+    VERSION = 2
+    MINOR_VERSION = 0
 
     def _ensure_lat_lon(self, data: dict[str, Any]) -> dict[str, Any]:
-        """Ensure config entry always stores lat/lon (fallback to HA defaults)."""
+        """Ensure latitude/longitude exist (fallback to HA defaults)."""
         out = dict(data)
         if CONF_LATITUDE not in out:
             out[CONF_LATITUDE] = self.hass.config.latitude
@@ -74,6 +80,7 @@ class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Select how the user wants to configure the entry."""
         if user_input is not None:
+            # Store temporary selection to determine the next flow step
             self.context[CONF_CONFIG_TYPE] = user_input[CONF_CONFIG_TYPE]
             if user_input[CONF_CONFIG_TYPE] == CONFIG_TYPE_TRACKER:
                 return await self.async_step_tracker()
@@ -95,16 +102,23 @@ class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Configure the entry using a tracking entity."""
         if user_input is not None:
-            user_input = self._ensure_lat_lon(user_input)
             location_entity = user_input[CONF_LOCATION_ENTITY]
 
             unique_id = f"tracker-{location_entity.lower()}"
             await self.async_set_unique_id(unique_id)
             self._abort_if_unique_id_configured()
 
+            title = user_input[CONF_NAME]
+
+            data = {
+                CONF_NAME: title,
+                CONF_CONFIG_TYPE: CONFIG_TYPE_TRACKER,
+                CONF_LOCATION_ENTITY: location_entity,
+            }
+
             return self.async_create_entry(
-                title=user_input[CONF_NAME],
-                data=user_input,
+                title=title,
+                data=data,
                 options={
                     CONF_RADIUS: DEFAULT_RADIUS,
                     CONF_MAX_TRACKED_LIGHTNINGS: DEFAULT_MAX_TRACKED_LIGHTNINGS,
@@ -124,7 +138,7 @@ class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
                     vol.Required(
                         CONF_LOCATION_ENTITY,
                         default=defaults.get(CONF_LOCATION_ENTITY),
-                    ): TRACKER_ENTITY_SELECTOR,
+                    ): LOCATION_ENTITY_SELECTOR,
                 }
             ),
         )
@@ -134,11 +148,6 @@ class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Configure the entry using fixed coordinates."""
         if user_input is not None:
-            user_input = self._ensure_lat_lon(user_input)
-
-            # Coordinates-based entries do not store a tracker entity
-            user_input.pop(CONF_LOCATION_ENTITY, None)
-
             lat = user_input[CONF_LATITUDE]
             lon = user_input[CONF_LONGITUDE]
 
@@ -146,9 +155,16 @@ class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
             await self.async_set_unique_id(unique_id)
             self._abort_if_unique_id_configured()
 
+            data = {
+                CONF_NAME: user_input[CONF_NAME],
+                CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
+                CONF_LATITUDE: lat,
+                CONF_LONGITUDE: lon,
+            }
+
             return self.async_create_entry(
                 title=user_input[CONF_NAME],
-                data=user_input,
+                data=data,
                 options={
                     CONF_RADIUS: DEFAULT_RADIUS,
                     CONF_MAX_TRACKED_LIGHTNINGS: DEFAULT_MAX_TRACKED_LIGHTNINGS,
@@ -182,79 +198,92 @@ class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_reconfigure(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle a reconfiguration flow initialized by the user."""
-        reconfigure_entry = self._get_reconfigure_entry()
-
+        """Handle reconfiguration of an existing entry."""
+        entry = self._get_reconfigure_entry()
         if user_input is not None:
-            # If the user is reconfiguring and leaves lat/lon blank, keep existing ones.
-            merged = dict(reconfigure_entry.data)
-            merged.update(user_input)
-            merged = self._ensure_lat_lon(merged)
+            data: dict[str, Any] = dict(entry.data)
+            data.update(user_input)
 
-            # Only update the fields the user changed + ensure lat/lon exist
-            # (We pass full merged to keep entry.data consistent)
-            return self.async_update_reload_and_abort(
-                reconfigure_entry,
-                data_updates=merged,
-            )
+            config_type = data.get(CONF_CONFIG_TYPE)
+            if config_type is None:
+                config_type = (
+                    CONFIG_TYPE_TRACKER
+                    if data.get(CONF_LOCATION_ENTITY)
+                    else CONFIG_TYPE_COORDINATES
+                )
 
-        # Suggested values should include existing entry data, with HA fallback
-        suggested = dict(reconfigure_entry.data)
-        suggested = self._ensure_lat_lon(suggested)
+            if config_type == CONFIG_TYPE_TRACKER:
+                # Do not allow reconfigure to switch config mode or store coordinates.
+                if CONF_LOCATION_ENTITY in entry.data:
+                    data[CONF_LOCATION_ENTITY] = entry.data[CONF_LOCATION_ENTITY]
+                data.pop(CONF_LATITUDE, None)
+                data.pop(CONF_LONGITUDE, None)
+            else:
+                # Do not allow reconfigure to switch config mode/store a tracker entity.
+                data.pop(CONF_LOCATION_ENTITY, None)
+                data = self._ensure_lat_lon(data)
+
+            data[CONF_CONFIG_TYPE] = config_type
+            self.hass.config_entries.async_update_entry(entry, data=data)
+
+            return self.async_abort(reason="reconfigure_successful")
 
         return self.async_show_form(
             step_id="reconfigure",
-            data_schema=self.add_suggested_values_to_schema(
-                data_schema=RECONFIGURE_SCHEMA,
-                suggested_values=suggested | (user_input or {}),
-            ),
-            description_placeholders={"name": reconfigure_entry.title},
+            data_schema=RECONFIGURE_SCHEMA,
+            description_placeholders={"name": entry.title},
         )
 
+    def _get_reconfigure_entry(self) -> ConfigEntry:
+        """Return the entry that is being reconfigured."""
+        entry_id = self.context.get("entry_id")
+        if not entry_id:
+            raise ValueError("Missing entry_id in reconfigure context")
+
+        entry = self.hass.config_entries.async_get_entry(entry_id)
+        if entry is None:
+            raise ValueError(f"Unknown entry_id: {entry_id}")
+
+        return entry
+
     @staticmethod
-    def async_get_options_flow(_config_entry: ConfigEntry) -> OptionsFlow:
-        """Return the options flow handler."""
-        return BlitzortungOptionsFlowHandler()
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
+        """Get the options flow for this handler."""
+        return BlitzortungOptionsFlowHandler(config_entry)
 
 
 class BlitzortungOptionsFlowHandler(OptionsFlow):
-    """Handle an options flow for Blitzortung."""
+    """Handle options for Blitzortung."""
+
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        """Initialize options flow."""
+        self._config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
-            if user_input.get(CONF_LOCATION_ENTITY) is None:
-                user_input.pop(CONF_LOCATION_ENTITY, None)
-            return self.async_create_entry(data=user_input)
+            return self.async_create_entry(title="", data=user_input)
 
-        options_schema = vol.Schema(
-            {
-                vol.Required(
-                    CONF_RADIUS,
-                    default=self.config_entry.options.get(CONF_RADIUS, DEFAULT_RADIUS),
-                ): int,
-                vol.Optional(
-                    CONF_TIME_WINDOW,
-                    default=self.config_entry.options.get(
-                        CONF_TIME_WINDOW,
-                        DEFAULT_TIME_WINDOW,
-                    ),
-                ): int,
-                vol.Optional(
-                    CONF_MAX_TRACKED_LIGHTNINGS,
-                    default=self.config_entry.options.get(
-                        CONF_MAX_TRACKED_LIGHTNINGS,
-                        DEFAULT_MAX_TRACKED_LIGHTNINGS,
-                    ),
-                ): int,
-            }
-        )
-
+        options = self._config_entry.options
         return self.async_show_form(
             step_id="init",
-            data_schema=self.add_suggested_values_to_schema(
-                options_schema, self.config_entry.options
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_RADIUS, default=options.get(CONF_RADIUS, DEFAULT_RADIUS)
+                    ): vol.Coerce(int),
+                    vol.Required(
+                        CONF_TIME_WINDOW,
+                        default=options.get(CONF_TIME_WINDOW, DEFAULT_TIME_WINDOW),
+                    ): vol.Coerce(int),
+                    vol.Required(
+                        CONF_MAX_TRACKED_LIGHTNINGS,
+                        default=options.get(
+                            CONF_MAX_TRACKED_LIGHTNINGS, DEFAULT_MAX_TRACKED_LIGHTNINGS
+                        ),
+                    ): vol.Coerce(int),
+                }
             ),
         )

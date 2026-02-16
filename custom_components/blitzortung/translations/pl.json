@@ -1,30 +1,41 @@
 {
   "config": {
-    "abort": {
-      "already_configured": "Usługa jest już skonfigurowana",
-      "reconfigure_successful": "Ponowna konfiguracja powiodła się"
+    "step": {
+      "user": {
+        "description": "Konfiguracja wykrywania błyskawic Blitzortung",
+        "data": {
+          "config_type": "Typ konfiguracji"
+        }
+      },
+      "tracker": {
+        "description": "Użyj encji trackera jako lokalizacji referencyjnej.",
+        "data": {
+          "location_entity": "Śledzenie lokalizacji"
+        }
+      },
+      "coordinates": {
+        "description": "Wprowadź współrzędne referencyjne.",
+        "data": {
+          "name": "Nazwa instancji integracji",
+          "latitude": "Szerokość geograficzna",
+          "longitude": "Długość geograficzna"
+        }
+      },
+      "reconfigure": {
+        "description": "Zaktualizuj konfigurację dla {name}.",
+        "data": {
+          "latitude": "Szerokość geograficzna",
+          "longitude": "Długość geograficzna",
+          "location_entity": "Śledzenie lokalizacji"
+        }
+      }
     },
     "error": {
       "lat_lon_required": "Podaj szerokość i długość geograficzną razem lub wybierz lokalizator urządzenia"
     },
-    "step": {
-      "reconfigure": {
-        "data": {
-          "latitude": "Szerokość geograficzna",
-          "location_entity": "Śledzenie lokalizacji (opcjonalnie)",
-          "longitude": "Długość geograficzna"
-        },
-        "description": "Zaktualizuj konfigurację dla {name}."
-      },
-      "user": {
-        "data": {
-          "latitude": "Szerokość geograficzna",
-          "location_entity": "Śledzenie lokalizacji (opcjonalnie)",
-          "longitude": "Długość geograficzna",
-          "name": "Nazwa instancji integracji"
-        },
-        "description": "Konfiguracja wykrywania błyskawic Blitzortung"
-      }
+    "abort": {
+      "already_configured": "Usługa jest już skonfigurowana",
+      "reconfigure_successful": "Ponowna konfiguracja powiodła się"
     }
   },
   "entity": {
@@ -60,19 +71,6 @@
             "name": "Długość geograficzna odniesienia"
           }
         }
-      }
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "data": {
-          "max_tracked_lightnings": "Maksymalna ilość śledzonych błyskawic",
-          "radius": "Promień wykrywania błyskawic (km / mi)",
-          "time_window": "Okno czasowe (minuty, 0 - wyłączony)"
-        },
-        "description": "Konfiguracja wykrywania błyskawic Blitzortung",
-        "title": "Opcje Blitzortung"
       }
     }
   }

@@ -1,26 +1,41 @@
 {
   "config": {
-    "abort": {},
-    "error": {
-      "lat_lon_required": "Oppgi breddegrad og lengdegrad sammen, eller velg en posisjonssporing"
-    },
     "step": {
-      "reconfigure": {
+      "user": {
+        "description": "Sett opp lynregistrering av Blitzortung",
         "data": {
+          "config_type": "Konfigurasjonstype"
+        }
+      },
+      "tracker": {
+        "description": "Bruk en sporingsenhet som referanselokasjon.",
+        "data": {
+          "location_entity": "Posisjonssporer"
+        }
+      },
+      "coordinates": {
+        "description": "Angi referansekoordinatene.",
+        "data": {
+          "name": "Navn på integrasjonsinstansen",
           "latitude": "Breddegrad",
-          "location_entity": "Posisjonssporer (valgfritt)",
           "longitude": "Lengdegrad"
         }
       },
-      "user": {
+      "reconfigure": {
+        "description": "Oppdater konfigurasjonen for {name}.",
         "data": {
           "latitude": "Breddegrad",
-          "location_entity": "Posisjonssporer (valgfritt)",
           "longitude": "Lengdegrad",
-          "name": "Navnet på integrasjonsforekomsten"
-        },
-        "description": "Sett opp lynregistrering av Blitzortung"
+          "location_entity": "Posisjonssporer"
+        }
       }
+    },
+    "error": {
+      "lat_lon_required": "Oppgi breddegrad og lengdegrad sammen, eller velg en posisjonssporing"
+    },
+    "abort": {
+      "already_configured": "Tjenesten er allerede konfigurert",
+      "reconfigure_successful": "Omkonfigurering var vellykket"
     }
   },
   "entity": {
@@ -56,21 +71,6 @@
             "name": "Referanse-lengdegrad"
           }
         }
-      }
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "data": {
-          "latitude": "Breddegrad",
-          "longitude": "Lengdegrad",
-          "max_tracked_lightnings": "Maks antall sporede lyn",
-          "radius": "Lyndeteksjonsradius (km / mi)",
-          "time_window": "Tidsvindu (minutter, 0 - deaktivert)"
-        },
-        "description": "Sett opp Blitzortung lyndeteksjonsalternativer",
-        "title": "Blitzortung-alternativer"
       }
     }
   }

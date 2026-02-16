@@ -26,6 +26,10 @@ exclude = [
     "custom_components/blitzortung/geohash.py",
 ]
 
+extend-exclude = [
+    "ws_client",
+]
+
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = [
     "ARG001",    # Unused function argument

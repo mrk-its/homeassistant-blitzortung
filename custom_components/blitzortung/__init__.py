@@ -18,6 +18,7 @@ from homeassistant.helpers.event import (
 )
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.util.json import json_loads_object
+from homeassistant.util.location import distance
 from homeassistant.util.unit_conversion import DistanceConverter
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 
@@ -25,17 +26,21 @@ from .const import (
     ATTR_LIGHTNING_AZIMUTH,
     ATTR_LIGHTNING_DISTANCE,
     BLITZORTUNG_CONFIG,
+    CONF_CONFIG_TYPE,
     CONF_IDLE_RESET_TIMEOUT,
     CONF_LOCATION_ENTITY,
     CONF_MAX_TRACKED_LIGHTNINGS,
     CONF_RADIUS,
     CONF_TIME_WINDOW,
+    CONFIG_TYPE_COORDINATES,
+    CONFIG_TYPE_TRACKER,
     DEFAULT_IDLE_RESET_TIMEOUT,
     DEFAULT_MAX_TRACKED_LIGHTNINGS,
     DEFAULT_RADIUS,
     DEFAULT_TIME_WINDOW,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
+    MIN_LOCATION_CHANGE_METERS,
     PLATFORMS,
     SERVER_STATS,
 )
@@ -44,7 +49,6 @@ from .geohash_utils import geohash_overlap
 from .mqtt import MQTT, MQTT_CONNECTED, MQTT_DISCONNECTED, Message
 from .version import __version__
 
-MIN_COORDINATE_COUNT = 2
 _LOGGER = logging.getLogger(__name__)
 
 CONFIG_SCHEMA = vol.Schema(
@@ -67,8 +71,8 @@ async def async_setup_entry(
     """Set up blitzortung from a config entry."""
     config = hass.data[BLITZORTUNG_CONFIG]
 
-    latitude = config_entry.data[CONF_LATITUDE]
-    longitude = config_entry.data[CONF_LONGITUDE]
+    latitude = config_entry.data.get(CONF_LATITUDE, hass.config.latitude)
+    longitude = config_entry.data.get(CONF_LONGITUDE, hass.config.longitude)
     location_entity = config_entry.data.get(CONF_LOCATION_ENTITY)
 
     radius = config_entry.options[CONF_RADIUS]
@@ -91,13 +95,12 @@ async def async_setup_entry(
 
     config_entry.runtime_data = BlitzortungCoordinator(
         hass,
-        latitude,
-        longitude,
-        location_entity,
-        radius,
-        max_tracked_lightnings,
-        time_window_seconds,
-        DEFAULT_UPDATE_INTERVAL,
+        latitude=latitude,
+        longitude=longitude,
+        location_entity=location_entity,
+        radius=radius,
+        max_tracked_lightnings=max_tracked_lightnings,
+        time_window_seconds=time_window_seconds,
         server_stats=config.get(SERVER_STATS),
     )
 
@@ -187,6 +190,29 @@ async def async_migrate_entry(
             entry, data=new_data, options=new_options, version=5
         )
 
+    if entry.version == 5:  # noqa: PLR2004
+        # Introduce config_type in entry data and avoid persisting irrelevant keys.
+        old_data = dict(entry.data)
+        location_entity = old_data.get(CONF_LOCATION_ENTITY)
+
+        if location_entity:
+            config_type = CONFIG_TYPE_TRACKER
+            new_data = {
+                CONF_NAME: old_data.get(CONF_NAME, ""),
+                CONF_CONFIG_TYPE: config_type,
+                CONF_LOCATION_ENTITY: location_entity,
+            }
+        else:
+            config_type = CONFIG_TYPE_COORDINATES
+            new_data = {
+                CONF_NAME: old_data.get(CONF_NAME, ""),
+                CONF_CONFIG_TYPE: config_type,
+                CONF_LATITUDE: old_data.get(CONF_LATITUDE, hass.config.latitude),
+                CONF_LONGITUDE: old_data.get(CONF_LONGITUDE, hass.config.longitude),
+            }
+
+        hass.config_entries.async_update_entry(entry, data=new_data, version=6)
+
     return True
 
 
@@ -196,39 +222,16 @@ class BlitzortungCoordinator:
     def __init__(
         self,
         hass: HomeAssistant,
+        *,
         latitude: float,
         longitude: float,
         location_entity: str | None,
-        radius: int,  # unit: km
+        radius: int,
         max_tracked_lightnings: int,
         time_window_seconds: int,
-        _update_interval: int,
-        server_stats: bool = False,
+        server_stats: bool,
     ) -> None:
         """Initialize."""
-        # Compatibility shim for legacy positional constructor calls.
-        #
-        # Before `location_entity` was added, some callers used:
-        #   hass, latitude, longitude, radius, max_tracked_lightnings,
-        #   time_window_seconds, _update_interval, server_stats
-        #
-        # With `location_entity` inserted, those positional args shift and the
-        # old `radius` (often 100) can end up in `location_entity`.
-        if isinstance(location_entity, int):
-            old_radius = location_entity
-            old_max_tracked = radius
-            old_time_window = max_tracked_lightnings
-            old_update_interval = time_window_seconds
-            old_server_stats = bool(_update_interval)
-
-            location_entity = None
-            radius = old_radius
-            max_tracked_lightnings = old_max_tracked
-            time_window_seconds = old_time_window
-            _update_interval = old_update_interval
-            server_stats = old_server_stats
-        # ---- END COMPAT SHIM ----
-
         self.hass = hass
         self._static_latitude = latitude
         self._static_longitude = longitude
@@ -317,23 +320,17 @@ class BlitzortungCoordinator:
         lat = state.attributes.get("latitude")
         lon = state.attributes.get("longitude")
 
-        # Some entities expose GPS as a tuple/list.
-        if (lat is None or lon is None) and "gps" in state.attributes:
-            gps = state.attributes.get("gps")
-            if isinstance(gps, (list, tuple)) and len(gps) >= MIN_COORDINATE_COUNT:
-                lat, lon = gps[0], gps[1]
-
-        try:
-            lat_f = float(lat)
-            lon_f = float(lon)
-        except (TypeError, ValueError):
+        if lat is None or lon is None:
             return False
 
-        if lat_f == self.latitude and lon_f == self.longitude:
-            return False
+        # Ignore insignificant GPS jitter
+        if self.latitude is not None and self.longitude is not None:
+            moved = distance(self.latitude, self.longitude, lat, lon)
+            if moved < MIN_LOCATION_CHANGE_METERS:
+                return False
 
-        self.latitude = lat_f
-        self.longitude = lon_f
+        self.latitude = lat
+        self.longitude = lon
         return True
 
     async def _async_refresh_geohash_subscriptions(self) -> None:

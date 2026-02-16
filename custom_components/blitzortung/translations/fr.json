@@ -1,30 +1,41 @@
 {
   "config": {
-    "abort": {
-      "already_configured": "Le service est déjà configuré",
-      "reconfigure_successful": "La re-configuration a réussie"
+    "step": {
+      "user": {
+        "description": "Configurer Blitzortung détection de foudre",
+        "data": {
+          "config_type": "Type de configuration"
+        }
+      },
+      "tracker": {
+        "description": "Utilisez une entité de suivi comme emplacement de référence.",
+        "data": {
+          "location_entity": "Traceur de localisation"
+        }
+      },
+      "coordinates": {
+        "description": "Saisissez les coordonnées de référence.",
+        "data": {
+          "name": "Nom de l'instance de l'intégration",
+          "latitude": "Latitude",
+          "longitude": "Longitude"
+        }
+      },
+      "reconfigure": {
+        "description": "Mise à jour de la configuration pour {name}.",
+        "data": {
+          "latitude": "Latitude",
+          "longitude": "Longitude",
+          "location_entity": "Traceur de localisation"
+        }
+      }
     },
     "error": {
       "lat_lon_required": "Fournissez la latitude et la longitude ensemble, ou sélectionnez un traceur de localisation"
     },
-    "step": {
-      "reconfigure": {
-        "data": {
-          "latitude": "Latitude",
-          "location_entity": "Traceur de localisation (optionnelle)",
-          "longitude": "Longitude"
-        },
-        "description": "Mise à jour de la configuration pour {name}."
-      },
-      "user": {
-        "data": {
-          "latitude": "Latitude",
-          "location_entity": "Traceur de localisation (optionnelle)",
-          "longitude": "Longitude",
-          "name": "Nom de l'instance de cette intégration"
-        },
-        "description": "Configurer Blitzortung détection de foudre"
-      }
+    "abort": {
+      "already_configured": "Le service est déjà configuré",
+      "reconfigure_successful": "La re-configuration a réussie"
     }
   },
   "entity": {
@@ -60,19 +71,6 @@
             "name": "Longitude de référence"
           }
         }
-      }
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "data": {
-          "max_tracked_lightnings": "Nombre maximum d'éclairs suivis",
-          "radius": "Rayon de détection de la foudre (km / mi)",
-          "time_window": "Fenêtre de temps (minutes, 0 - désactivé)"
-        },
-        "description": "Configurer les options de Blitzortung détection de foudre",
-        "title": "Options Blitzortung"
       }
     }
   }

@@ -1,26 +1,41 @@
 {
   "config": {
-    "abort": {},
-    "error": {
-      "lat_lon_required": "Unesite zemljopisnu širinu i dužinu zajedno ili odaberite uređaj za praćenje lokacije"
-    },
     "step": {
-      "reconfigure": {
+      "user": {
+        "description": "Postavke Blitzortung senzora groma",
         "data": {
+          "config_type": "Vrsta konfiguracije"
+        }
+      },
+      "tracker": {
+        "description": "Koristite entitet praćenja za referentnu lokaciju.",
+        "data": {
+          "location_entity": "Praćenje lokacije"
+        }
+      },
+      "coordinates": {
+        "description": "Unesite referentne koordinate.",
+        "data": {
+          "name": "Naziv instance integracije",
           "latitude": "Zemljopisna širina",
-          "location_entity": "Praćenje lokacije (neobavezno)",
           "longitude": "Zemljopisna dužina"
         }
       },
-      "user": {
+      "reconfigure": {
+        "description": "Ažuriraj konfiguraciju za {name}.",
         "data": {
           "latitude": "Zemljopisna širina",
-          "location_entity": "Praćenje lokacije (neobavezno)",
           "longitude": "Zemljopisna dužina",
-          "name": "Naziv instance integracije"
-        },
-        "description": "Postavke Blitzortung senzora groma"
+          "location_entity": "Praćenje lokacije"
+        }
       }
+    },
+    "error": {
+      "lat_lon_required": "Unesite zemljopisnu širinu i dužinu zajedno ili odaberite uređaj za praćenje lokacije"
+    },
+    "abort": {
+      "already_configured": "Usluga je već konfigurirana",
+      "reconfigure_successful": "Ponovna konfiguracija je uspješna"
     }
   },
   "entity": {
@@ -56,21 +71,6 @@
             "name": "Referentna zemljopisna dužina"
           }
         }
-      }
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "data": {
-          "latitude": "Zemljopisna širina",
-          "longitude": "Zemljopisna dužina",
-          "max_tracked_lightnings": "Maksimalan broj praćenih gromova",
-          "radius": "Radijus prepoznavanja groma (km / mi)",
-          "time_window": "Vremenski period (minuta, 0 - onemogućeno)"
-        },
-        "description": "Podesite Blitzortung opcije otkrivanja groma",
-        "title": "Blitzortung opcije"
       }
     }
   }

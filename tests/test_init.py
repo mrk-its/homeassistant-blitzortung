@@ -42,7 +42,16 @@ def test_compute_polar_coords(
 ) -> None:
     """Test compute_polar_coords with various lightning locations."""
     hass = MagicMock()
-    coordinator = BlitzortungCoordinator(hass, 0.0, 0.0, 100, 500, 600, 60, False)
+    coordinator = BlitzortungCoordinator(
+        hass,
+        latitude=0.0,
+        longitude=0.0,
+        location_entity=None,
+        radius=100,
+        max_tracked_lightnings=500,
+        time_window_seconds=600,
+        server_stats=False,
+    )
     lightning = {"lat": lightning_lat, "lon": lightning_lon}
     coordinator.compute_polar_coords(lightning)
     assert lightning[ATTR_LIGHTNING_DISTANCE] == expected_distance

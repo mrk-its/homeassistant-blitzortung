@@ -1,30 +1,41 @@
 {
   "config": {
-    "abort": {
-      "already_configured": "Tjänsten är redan konfigurerad",
-      "reconfigure_successful": "Omkonfigurationen lyckades"
+    "step": {
+      "user": {
+        "description": "Konfigurera Blitzortung åskdetektering",
+        "data": {
+          "config_type": "Typ konfigurácie"
+        }
+      },
+      "tracker": {
+        "description": "Použite entitu sledovania ako referenčnú polohu.",
+        "data": {
+          "location_entity": "Platsspårare"
+        }
+      },
+      "coordinates": {
+        "description": "Zadajte referenčné súradnice.",
+        "data": {
+          "name": "Názov inštancie integrácie",
+          "latitude": "Latitud",
+          "longitude": "Longitud"
+        }
+      },
+      "reconfigure": {
+        "description": "Uppdatera konfigurationen för {name}.",
+        "data": {
+          "latitude": "Latitud",
+          "longitude": "Longitud",
+          "location_entity": "Platsspårare"
+        }
+      }
     },
     "error": {
       "lat_lon_required": "Zadajte zemepisnú šírku a dĺžku spolu alebo vyberte sledovanie polohy"
     },
-    "step": {
-      "reconfigure": {
-        "data": {
-          "latitude": "Latitud",
-          "location_entity": "Platsspårare (valfri)",
-          "longitude": "Longitud"
-        },
-        "description": "Uppdatera konfigurationen för {name}."
-      },
-      "user": {
-        "data": {
-          "latitude": "Latitud",
-          "location_entity": "Platsspårare (valfri)",
-          "longitude": "Longitud",
-          "name": "Namn på integrationsinstansen"
-        },
-        "description": "Konfigurera Blitzortung åskdetektering"
-      }
+    "abort": {
+      "already_configured": "Tjänsten är redan konfigurerad",
+      "reconfigure_successful": "Omkonfigurationen lyckades"
     }
   },
   "entity": {
@@ -60,19 +71,6 @@
             "name": "Referenslongitud"
           }
         }
-      }
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "data": {
-          "max_tracked_lightnings": "Maximalt antal spårade blixtar",
-          "radius": "Detekteringsradie för åska (km / mi)",
-          "time_window": "Tidsfönster (minuter, 0 - inaktiverad)"
-        },
-        "description": "Konfigurera alternativ för Blitzortung åskdetektering",
-        "title": "Blitzortung-alternativ"
       }
     }
   }

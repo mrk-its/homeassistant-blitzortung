@@ -1,18 +1,18 @@
 #!/usr/bin/env python
+import argparse
+import asyncio
+import json
+import logging
+import random
+import ssl
 import struct
+import time
 from urllib.parse import urlparse
 
 import geohash
-import random
-import time
-import logging
-import json
-import asyncio
-import ssl
-import websockets
 import paho.mqtt.client as mqtt
-import socket
-import argparse
+import websockets
+
 from . import component_version
 
 logger = logging.getLogger(__name__)
@@ -36,10 +36,11 @@ def decode(b):
         g.append(a)
         c = a[0]
         e[o] = f + c
-        o+=1
+        o += 1
         f = a
 
     return "".join(g)
+
 
 async def run(args):
     class userdata:
@@ -60,7 +61,7 @@ async def run(args):
                 if client.reconnect() == 0:
                     userdata.is_connected = True
                     return
-            except socket.error:
+            except OSError:
                 pass
             time.sleep(1)
 
@@ -70,9 +71,15 @@ async def run(args):
 
     def publish_latest_version(self, client):
         latest_version = component_version.__version__
-        client.publish("component/hello", json.dumps({
-            "latest_version": latest_version,
-        }), retain=True)
+        client.publish(
+            "component/hello",
+            json.dumps(
+                {
+                    "latest_version": latest_version,
+                }
+            ),
+            retain=True,
+        )
 
     mqtt_client.on_disconnect = mqtt_on_disconnect
     mqtt_client.on_connect = mqtt_on_connect
@@ -84,7 +91,7 @@ async def run(args):
     while True:
         try:
             hosts = ["ws1", "ws3", "ws7", "ws7", "ws8"]
-            uri = "wss://{}.blitzortung.org:443/".format(random.choice(hosts))
+            uri = f"wss://{random.choice(hosts)}.blitzortung.org:443/"
             async with websockets.connect(uri, ssl=ssl_context) as websocket:
                 logger.info("connected to %s", uri)
                 await websocket.send('{"a": 111}')
@@ -99,14 +106,17 @@ async def run(args):
                         )
                         logger.debug("received: %r", data)
                         if args.json:
-                            topic = "blitzortung/1.1/{}".format(geohash_part)
-                            to_send = {k: data.get(k) for k in ('lat', 'lon', 'status', 'region', 'time')}
-                            payload = json.dumps(to_send, separators=(',', ':'))
+                            topic = f"blitzortung/1.1/{geohash_part}"
+                            to_send = {
+                                k: data.get(k)
+                                for k in ("lat", "lon", "status", "region", "time")
+                            }
+                            payload = json.dumps(to_send, separators=(",", ":"))
                             mqtt_client.publish(topic, payload)
                             logger.info("topic: %s: %r", topic, payload)
                         if args.binary:
-                            new_topic = "b/{}".format(geohash_part)
-                            new_payload = struct.pack("ff", data['lat'], data['lon'])
+                            new_topic = f"b/{geohash_part}"
+                            new_payload = struct.pack("ff", data["lat"], data["lon"])
                             mqtt_client.publish(new_topic, new_payload)
                             logger.info("topic: %s: %r", new_topic, new_payload)
 

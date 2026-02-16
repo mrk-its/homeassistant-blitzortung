@@ -4,74 +4,56 @@
       "user": {
         "description": "Set up Blitzortung lightning detection",
         "data": {
+          "config_type": "Configuration type"
+        }
+      },
+      "tracker": {
+        "description": "Use a tracker entity for the reference location.",
+        "data": {
+          "location_entity": "Tracker entity"
+        }
+      },
+      "coordinates": {
+        "description": "Enter the reference coordinates.",
+        "data": {
           "name": "Name of the integration instance",
           "latitude": "Latitude",
-          "longitude": "Longitude",
-          "location_entity": "Location tracker (optional)"
+          "longitude": "Longitude"
         }
       },
       "reconfigure": {
+        "description": "Update configuration for {name}.",
         "data": {
           "latitude": "Latitude",
           "longitude": "Longitude",
-          "location_entity": "Location tracker (optional)"
-        },
-        "description": "Update configuration for {name}."
+          "location_entity": "Tracker entity"
+        }
       }
     },
     "error": {
-      "lat_lon_required": "Provide latitude and longitude together, or select a location tracker"
+      "lat_lon_required": "Provide latitude and longitude together."
     },
     "abort": {
       "already_configured": "Service is already configured",
       "reconfigure_successful": "Re-configuration was successful"
     }
   },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Blitzortung Options",
-        "description": "Set up Blitzortung lightning detection options",
-        "data": {
-          "radius": "Lightning detection radius (km / mi)",
-          "time_window": "Time window (minutes, 0 - disabled)",
-          "max_tracked_lightnings": "Max number of tracked lightnings"
-        }
-      }
-    }
-  },
   "entity": {
     "sensor": {
       "azimuth": {
         "state_attributes": {
-          "lat": {
-            "name": "Latitude"
-          },
-          "lon": {
-            "name": "Longitude"
-          },
-          "reference_lat": {
-            "name": "Reference latitude"
-          },
-          "reference_lon": {
-            "name": "Reference longitude"
-          }
+          "lat": { "name": "Latitude" },
+          "lon": { "name": "Longitude" },
+          "reference_lat": { "name": "Reference latitude" },
+          "reference_lon": { "name": "Reference longitude" }
         }
       },
       "distance": {
         "state_attributes": {
-          "lat": {
-            "name": "Latitude"
-          },
-          "lon": {
-            "name": "Longitude"
-          },
-          "reference_lat": {
-            "name": "Reference latitude"
-          },
-          "reference_lon": {
-            "name": "Reference longitude"
-          }
+          "lat": { "name": "Latitude" },
+          "lon": { "name": "Longitude" },
+          "reference_lat": { "name": "Reference latitude" },
+          "reference_lon": { "name": "Reference longitude" }
         }
       }
     }

@@ -54,6 +54,7 @@ async def test_user_flow_success(hass: HomeAssistant) -> None:
         CONF_NAME: "Test Location",
         CONF_LATITUDE: 50.0,
         CONF_LONGITUDE: 10.0,
+        CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
     }
     assert result["options"] == {
         CONF_RADIUS: 100,
@@ -144,8 +145,7 @@ async def test_user_flow_success_tracker(hass: HomeAssistant) -> None:
     assert result["data"] == {
         CONF_NAME: "Tracked Location",
         CONF_LOCATION_ENTITY: tracker_entity_id,
-        CONF_LATITUDE: 52.0,
-        CONF_LONGITUDE: 4.0,
+        CONF_CONFIG_TYPE: CONFIG_TYPE_TRACKER,
     }
     assert result["options"] == {
         CONF_RADIUS: 100,

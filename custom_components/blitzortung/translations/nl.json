@@ -1,26 +1,41 @@
 {
   "config": {
-    "abort": {},
-    "error": {
-      "lat_lon_required": "Geef breedtegraad en lengtegraad samen op, of selecteer een locatie-tracker"
-    },
     "step": {
-      "reconfigure": {
+      "user": {
+        "description": "Blitzortung bliksemdetectie instellen",
         "data": {
+          "config_type": "Configuratietype"
+        }
+      },
+      "tracker": {
+        "description": "Gebruik een tracker-entiteit als referentielocatie.",
+        "data": {
+          "location_entity": "Locatietracker"
+        }
+      },
+      "coordinates": {
+        "description": "Voer de referentiecoördinaten in.",
+        "data": {
+          "name": "Naam van de integratie-instantie",
           "latitude": "Breedtegraad",
-          "location_entity": "Locatietracker (optioneel)",
           "longitude": "Lengtegraad"
         }
       },
-      "user": {
+      "reconfigure": {
+        "description": "Configuratie bijwerken voor {name}.",
         "data": {
           "latitude": "Breedtegraad",
-          "location_entity": "Locatietracker (optioneel)",
           "longitude": "Lengtegraad",
-          "name": "Naam van de integratie-instantie"
-        },
-        "description": "Blitzortung bliksemdetectie instellen"
+          "location_entity": "Locatietracker"
+        }
       }
+    },
+    "error": {
+      "lat_lon_required": "Geef breedtegraad en lengtegraad samen op, of selecteer een locatie-tracker"
+    },
+    "abort": {
+      "already_configured": "Service is al geconfigureerd",
+      "reconfigure_successful": "Herconfiguratie was succesvol"
     }
   },
   "entity": {
@@ -56,21 +71,6 @@
             "name": "Referentie-lengtegraad"
           }
         }
-      }
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "data": {
-          "latitude": "Breedtegraad",
-          "longitude": "Lengtegraad",
-          "max_tracked_lightnings": "Max aantal gevolgde bliksems",
-          "radius": "Bliksemdetectie-radius (km / mi)",
-          "time_window": "Tijdvenster (minuten, 0 - uitgeschakeld)"
-        },
-        "description": "Blitzortung bliksemdetectie opties instellen",
-        "title": "Blitzortung Opties"
       }
     }
   }
