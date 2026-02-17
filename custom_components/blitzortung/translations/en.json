@@ -43,17 +43,13 @@
       "azimuth": {
         "state_attributes": {
           "lat": { "name": "Latitude" },
-          "lon": { "name": "Longitude" },
-          "reference_lat": { "name": "Reference latitude" },
-          "reference_lon": { "name": "Reference longitude" }
+          "lon": { "name": "Longitude" }
         }
       },
       "distance": {
         "state_attributes": {
           "lat": { "name": "Latitude" },
-          "lon": { "name": "Longitude" },
-          "reference_lat": { "name": "Reference latitude" },
-          "reference_lon": { "name": "Reference longitude" }
+          "lon": { "name": "Longitude" }
         }
       }
     }

@@ -47,12 +47,6 @@
           },
           "lon": {
             "name": "Zemljopisna dužina"
-          },
-          "reference_lat": {
-            "name": "Referentna zemljopisna širina"
-          },
-          "reference_lon": {
-            "name": "Referentna zemljopisna dužina"
           }
         }
       },
@@ -63,12 +57,6 @@
           },
           "lon": {
             "name": "Zemljopisna dužina"
-          },
-          "reference_lat": {
-            "name": "Referentna zemljopisna širina"
-          },
-          "reference_lon": {
-            "name": "Referentna zemljopisna dužina"
           }
         }
       }

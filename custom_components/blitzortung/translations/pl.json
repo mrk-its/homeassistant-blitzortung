@@ -47,12 +47,6 @@
           },
           "lon": {
             "name": "Długość geograficzna"
-          },
-          "reference_lat": {
-            "name": "Szerokość geograficzna odniesienia"
-          },
-          "reference_lon": {
-            "name": "Długość geograficzna odniesienia"
           }
         }
       },
@@ -63,12 +57,6 @@
           },
           "lon": {
             "name": "Długość geograficzna"
-          },
-          "reference_lat": {
-            "name": "Szerokość geograficzna odniesienia"
-          },
-          "reference_lon": {
-            "name": "Długość geograficzna odniesienia"
           }
         }
       }

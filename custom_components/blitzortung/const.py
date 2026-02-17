@@ -53,8 +53,6 @@ MIN_LOCATION_CHANGE_METERS = 25.0
 
 ATTR_LAT = "lat"
 ATTR_LON = "lon"
-ATTR_REFERENCE_LAT = "reference_lat"
-ATTR_REFERENCE_LON = "reference_lon"
 ATTRIBUTION = "Data provided by blitzortung.org"
 ATTR_EXTERNAL_ID = "external_id"
 ATTR_PUBLICATION_DATE = "publication_date"

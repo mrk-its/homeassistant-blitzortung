@@ -47,12 +47,6 @@
           },
           "lon": {
             "name": "Longitude"
-          },
-          "reference_lat": {
-            "name": "Latitude de référence"
-          },
-          "reference_lon": {
-            "name": "Longitude de référence"
           }
         }
       },
@@ -63,12 +57,6 @@
           },
           "lon": {
             "name": "Longitude"
-          },
-          "reference_lat": {
-            "name": "Latitude de référence"
-          },
-          "reference_lon": {
-            "name": "Longitude de référence"
           }
         }
       }

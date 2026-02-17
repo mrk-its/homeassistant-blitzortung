@@ -47,12 +47,6 @@
           },
           "lon": {
             "name": "Lengdegrad"
-          },
-          "reference_lat": {
-            "name": "Referanse-breddegrad"
-          },
-          "reference_lon": {
-            "name": "Referanse-lengdegrad"
           }
         }
       },
@@ -63,12 +57,6 @@
           },
           "lon": {
             "name": "Lengdegrad"
-          },
-          "reference_lat": {
-            "name": "Referanse-breddegrad"
-          },
-          "reference_lon": {
-            "name": "Referanse-lengdegrad"
           }
         }
       }

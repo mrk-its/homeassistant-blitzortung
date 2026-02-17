@@ -47,12 +47,6 @@
           },
           "lon": {
             "name": "Pituusaste"
-          },
-          "reference_lat": {
-            "name": "Viite-leveysaste"
-          },
-          "reference_lon": {
-            "name": "Viite-pituusaste"
           }
         }
       },
@@ -63,12 +57,6 @@
           },
           "lon": {
             "name": "Pituusaste"
-          },
-          "reference_lat": {
-            "name": "Viite-leveysaste"
-          },
-          "reference_lon": {
-            "name": "Viite-pituusaste"
           }
         }
       }
