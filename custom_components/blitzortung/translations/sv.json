@@ -1,0 +1,77 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "Konfigurera Blitzortung åskdetektering",
+        "data": {
+          "name": "Namn på integrationsinstansen",
+          "latitude": "Latitud",
+          "longitude": "Longitud",
+          "location_entity": "Platsspårning (valfri)"
+        }
+      },
+      "reconfigure": {
+        "data": {
+          "latitude": "Latitud",
+          "longitude": "Longitud",
+          "location_entity": "Platsspårning (valfri)"
+        },
+        "description": "Uppdatera konfigurationen för {name}."
+      }
+    },
+    "error": {},
+    "abort": {
+      "already_configured": "Tjänsten är redan konfigurerad",
+      "reconfigure_successful": "Omkonfigurationen lyckades"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Blitzortung-alternativ",
+        "description": "Ställ in alternativ för Blitzortung åskdetektering",
+        "data": {
+          "radius": "Detekteringsradie för åska (km / mi)",
+          "time_window": "Tidsfönster (minuter, 0 = inaktiverad)",
+          "max_tracked_lightnings": "Maximalt antal spårade blixtar"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "state_attributes": {
+          "lat": {
+            "name": "Latitud"
+          },
+          "lon": {
+            "name": "Longitud"
+          },
+          "reference_lat": {
+            "name": "Referenslatitud"
+          },
+          "reference_lon": {
+            "name": "Referenslongitud"
+          }
+        }
+      },
+      "distance": {
+        "state_attributes": {
+          "lat": {
+            "name": "Latitud"
+          },
+          "lon": {
+            "name": "Longitud"
+          },
+          "reference_lat": {
+            "name": "Referenslatitud"
+          },
+          "reference_lon": {
+            "name": "Referenslongitud"
+          }
+        }
+      }
+    }
+  }
+}
