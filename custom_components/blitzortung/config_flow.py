@@ -47,6 +47,7 @@ RECONFIGURE_SCHEMA = vol.Schema(
     }
 )
 
+
 def _get_reconfigure_schema(entry: ConfigEntry) -> vol.Schema:
     """Build the reconfigure schema with suggested values.
 
@@ -257,10 +258,9 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
                 data.pop(CONF_LOCATION_ENTITY, None)
 
                 # Preserve stored coordinates if the user clears them.
-                if (
-                    data.get(CONF_LATITUDE) in (None, "")
-                    or data.get(CONF_LONGITUDE) in (None, "")
-                ):
+                if data.get(CONF_LATITUDE) in (None, "") or data.get(
+                    CONF_LONGITUDE
+                ) in (None, ""):
                     entry_lat = entry.data.get(CONF_LATITUDE)
                     entry_lon = entry.data.get(CONF_LONGITUDE)
                     if entry_lat is not None and entry_lon is not None:

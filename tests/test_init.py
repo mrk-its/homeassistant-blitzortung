@@ -62,6 +62,7 @@ def test_compute_polar_coords(
     assert lightning[ATTR_LIGHTNING_DISTANCE] == expected_distance
     assert lightning[ATTR_LIGHTNING_AZIMUTH] == expected_azimuth
 
+
 @pytest.mark.asyncio
 async def test_migrate_entry_v5_to_v6_tracker(hass: HomeAssistant) -> None:
     """Migrate v5 entry with location_entity to v6 tracker mode."""
