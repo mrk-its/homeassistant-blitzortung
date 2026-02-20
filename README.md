@@ -24,11 +24,11 @@ Search for Blitzortung on `Configuration/Integrations` page. After adding the in
 
 During configuration there are two ways of providing the location of the center of the map:
 1. By providing latitude and longitude. Blitzortung defaults to the `home` location of your Home Assistant instance but you can override that.
-2. By providing a tracker or person. Blitzortung will the follow the provided tracker or person - great for boats, RV's and people.
+2. By providing a tracker. Blitzortung will then follow the provided tracker - great for boats, RV's and people.
 
 To change the detection radius, time window, and max tracked lightnings, go to **Settings** >> **Devices & services** >> **Blitzortung** >> **Configure**.
 
-Blitzorting integration allows multiple entries, e.g. one for home and one for your boat.
+Blitzortung integration allows multiple entries, e.g. one for home and one for your boat.
 
 # Reviews and How-Tos
 You can read and see (YouTube) how this component was used in the following community video.

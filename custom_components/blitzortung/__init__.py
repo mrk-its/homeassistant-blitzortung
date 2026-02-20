@@ -247,9 +247,10 @@ class BlitzortungCoordinator:
         self.callbacks = []
         self.lightning_callbacks = []
         self.on_tick_callbacks = []
-        self.geohash_overlap = geohash_overlap(
-            self.latitude, self.longitude, self.radius
-        )
+        if not self.location_entity:
+            self.geohash_overlap = geohash_overlap(
+                self.latitude, self.longitude, self.radius
+            )
         self._disconnect_callbacks = []
         self.unloading = False
 
@@ -315,12 +316,20 @@ class BlitzortungCoordinator:
     def _apply_location_entity_state(self, state: Any) -> bool:
         """Apply coordinates from a state object. Returns True if changed."""
         if state is None:
+            _LOGGER.warning(
+                "Configured location entity '%s' not found.",
+                self.location_entity,
+            )
             return False
 
         lat = state.attributes.get("latitude")
         lon = state.attributes.get("longitude")
 
         if lat is None or lon is None:
+            _LOGGER.warning(
+                "Location entity '%s' has no latitude/longitude attributes.",
+                self.location_entity,
+            )
             return False
 
         # Ignore insignificant GPS jitter
