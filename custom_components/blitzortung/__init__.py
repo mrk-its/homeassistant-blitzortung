@@ -158,15 +158,16 @@ async def async_migrate_entry(
             version=2,
         )
     if entry.version == 2:  # noqa: PLR2004
-        entry.options = dict(entry.options)
-        entry.options[CONF_IDLE_RESET_TIMEOUT] = DEFAULT_IDLE_RESET_TIMEOUT
-        entry.version = 3
+        new_options = dict(entry.options)
+        new_options[CONF_IDLE_RESET_TIMEOUT] = DEFAULT_IDLE_RESET_TIMEOUT
+        hass.config_entries.async_update_entry(entry, options=new_options, version=3)
+
     if entry.version == 3:  # noqa: PLR2004
-        entry.options = dict(entry.options)
-        entry.options[CONF_TIME_WINDOW] = entry.options.pop(
+        new_options = dict(entry.options)
+        new_options[CONF_TIME_WINDOW] = new_options.pop(
             CONF_IDLE_RESET_TIMEOUT, DEFAULT_TIME_WINDOW
         )
-        entry.version = 4
+        hass.config_entries.async_update_entry(entry, options=new_options, version=4)
     if entry.version == 4:  # noqa: PLR2004
         new_data = entry.data.copy()
 
