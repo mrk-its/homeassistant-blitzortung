@@ -4,24 +4,60 @@
       "user": {
         "description": "Määritä Blitzortung ukkostutka",
         "data": {
-          "name": "Integraation instanssin nimi"
+          "config_type": "Määritystyyppi"
+        }
+      },
+      "tracker": {
+        "description": "Käytä seurantaentiteettiä viitesijaintina.",
+        "data": {
+          "location_entity": "Sijaintiseuranta"
+        }
+      },
+      "coordinates": {
+        "description": "Anna viitekoordinaatit.",
+        "data": {
+          "name": "Integraation esiintymän nimi",
+          "latitude": "Leveysaste",
+          "longitude": "Pituusaste"
+        }
+      },
+      "reconfigure": {
+        "description": "Päivitä asetukset kohteelle {name}.",
+        "data": {
+          "latitude": "Leveysaste",
+          "longitude": "Pituusaste",
+          "location_entity": "Sijaintiseuranta"
         }
       }
     },
-    "error": {},
-    "abort": {}
+    "error": {
+      "lat_lon_required": "Anna leveys- ja pituusaste yhdessä tai valitse sijainnin seuranta"
+    },
+    "abort": {
+      "already_configured": "Palvelu on jo määritetty",
+      "reconfigure_successful": "Uudelleenmääritys onnistui"
+    }
   },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Blitzortung Asetukset",
-        "description": "Määritä Blitzortung ukkostutkan asetukset",
-        "data": {
-          "radius": "Salamoiden seuranta-alue (km / mi)",
-          "time_window": "Aikaikkuna (minuuttia, 0 - ei käytössä)",
-          "max_tracked_lightnings": "Seurattavien salamoiden enimmäismäärä",
-          "latitude": "Leveysaste",
-          "longitude": "Pituusaste"
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "state_attributes": {
+          "lat": {
+            "name": "Leveysaste"
+          },
+          "lon": {
+            "name": "Pituusaste"
+          }
+        }
+      },
+      "distance": {
+        "state_attributes": {
+          "lat": {
+            "name": "Leveysaste"
+          },
+          "lon": {
+            "name": "Pituusaste"
+          }
         }
       }
     }

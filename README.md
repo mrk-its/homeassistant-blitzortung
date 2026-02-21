@@ -14,17 +14,21 @@ Blitzortung.org is a worldwide, real time, community collaborative lightning loc
 - data is realtime, with average delay of few seconds
 
 # Manual installation
-Place `custom_components/blitzortung` directory inside custom_components dir and restart Home Assistant
+Place `custom_components/blitzortung` directory inside custom_components dir and restart Home Assistant.
 
 # HACS installation
-This component is available on HACS default
+This component is available on HACS default. Download the integration Blitzortung and then restart Home Assistant.
 
 # Configuration
-Search for Blitzortung on `Configuration/Integrations` page. After adding integration, you can optionally configure the location and radius with Blitzortung/Options (by default your home location is used with 100km radius).
+Search for Blitzortung on `Configuration/Integrations` page. After adding the integration, you can optionally configure the location or tracker and radius with Blitzortung/Options (by default your home location is used with 100km radius).
 
-You can change the coordinates for an existing Blitzortung configuration using the reconfigure flow, go to **Settings** >> **Devices & services** >> **Blitzortung** >> **3 dot menu** >> **Reconfigure**.
+During configuration there are two ways of providing the location of the center of the map:
+1. By providing latitude and longitude. Blitzortung defaults to the `home` location of your Home Assistant instance but you can override that.
+2. By providing a tracker. Blitzortung will then follow the provided tracker - great for boats, RV's and people.
 
 To change the detection radius, time window, and max tracked lightnings, go to **Settings** >> **Devices & services** >> **Blitzortung** >> **Configure**.
+
+Blitzortung integration allows multiple entries, e.g. one for home and one for your boat.
 
 # Reviews and How-Tos
 You can read and see (YouTube) how this component was used in the following community video.

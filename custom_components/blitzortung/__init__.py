@@ -12,9 +12,13 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME, UnitOfLength
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
-from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.event import (
+    async_track_state_change_event,
+    async_track_time_interval,
+)
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.util.json import json_loads_object
+from homeassistant.util.location import distance
 from homeassistant.util.unit_conversion import DistanceConverter
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 
@@ -22,16 +26,21 @@ from .const import (
     ATTR_LIGHTNING_AZIMUTH,
     ATTR_LIGHTNING_DISTANCE,
     BLITZORTUNG_CONFIG,
+    CONF_CONFIG_TYPE,
     CONF_IDLE_RESET_TIMEOUT,
+    CONF_LOCATION_ENTITY,
     CONF_MAX_TRACKED_LIGHTNINGS,
     CONF_RADIUS,
     CONF_TIME_WINDOW,
+    CONFIG_TYPE_COORDINATES,
+    CONFIG_TYPE_TRACKER,
     DEFAULT_IDLE_RESET_TIMEOUT,
     DEFAULT_MAX_TRACKED_LIGHTNINGS,
     DEFAULT_RADIUS,
     DEFAULT_TIME_WINDOW,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
+    MIN_LOCATION_CHANGE_METERS,
     PLATFORMS,
     SERVER_STATS,
 )
@@ -62,8 +71,10 @@ async def async_setup_entry(
     """Set up blitzortung from a config entry."""
     config = hass.data[BLITZORTUNG_CONFIG]
 
-    latitude = config_entry.data[CONF_LATITUDE]
-    longitude = config_entry.data[CONF_LONGITUDE]
+    latitude = config_entry.data.get(CONF_LATITUDE, hass.config.latitude)
+    longitude = config_entry.data.get(CONF_LONGITUDE, hass.config.longitude)
+    location_entity = config_entry.data.get(CONF_LOCATION_ENTITY)
+
     radius = config_entry.options[CONF_RADIUS]
     max_tracked_lightnings = config_entry.options[CONF_MAX_TRACKED_LIGHTNINGS]
     time_window_seconds = config_entry.options[CONF_TIME_WINDOW] * 60
@@ -84,12 +95,12 @@ async def async_setup_entry(
 
     config_entry.runtime_data = BlitzortungCoordinator(
         hass,
-        latitude,
-        longitude,
-        radius,
-        max_tracked_lightnings,
-        time_window_seconds,
-        DEFAULT_UPDATE_INTERVAL,
+        latitude=latitude,
+        longitude=longitude,
+        location_entity=location_entity,
+        radius=radius,
+        max_tracked_lightnings=max_tracked_lightnings,
+        time_window_seconds=time_window_seconds,
         server_stats=config.get(SERVER_STATS),
     )
 
@@ -128,17 +139,24 @@ async def async_migrate_entry(
     if entry.version == 1:
         latitude = entry.data[CONF_LATITUDE]
         longitude = entry.data[CONF_LONGITUDE]
-        radius = entry.data[CONF_RADIUS]
+        radius = entry.data.get(CONF_RADIUS, DEFAULT_RADIUS)
         name = entry.data[CONF_NAME]
 
-        entry.unique_id = f"{latitude}-{longitude}-{name}-lightning"
-        entry.data = {CONF_NAME: name}
-        entry.options = {
+        new_unique_id = f"{latitude}-{longitude}-{name}-lightning"
+        new_data = {CONF_NAME: name}
+        new_options = {
             CONF_LATITUDE: latitude,
             CONF_LONGITUDE: longitude,
             CONF_RADIUS: radius,
         }
-        entry.version = 2
+
+        hass.config_entries.async_update_entry(
+            entry,
+            unique_id=new_unique_id,
+            data=new_data,
+            options=new_options,
+            version=2,
+        )
     if entry.version == 2:  # noqa: PLR2004
         entry.options = dict(entry.options)
         entry.options[CONF_IDLE_RESET_TIMEOUT] = DEFAULT_IDLE_RESET_TIMEOUT
@@ -172,6 +190,29 @@ async def async_migrate_entry(
             entry, data=new_data, options=new_options, version=5
         )
 
+    if entry.version == 5:  # noqa: PLR2004
+        # Introduce config_type in entry data and avoid persisting irrelevant keys.
+        old_data = dict(entry.data)
+        location_entity = old_data.get(CONF_LOCATION_ENTITY)
+
+        if location_entity:
+            config_type = CONFIG_TYPE_TRACKER
+            new_data = {
+                CONF_NAME: old_data.get(CONF_NAME, ""),
+                CONF_CONFIG_TYPE: config_type,
+                CONF_LOCATION_ENTITY: location_entity,
+            }
+        else:
+            config_type = CONFIG_TYPE_COORDINATES
+            new_data = {
+                CONF_NAME: old_data.get(CONF_NAME, ""),
+                CONF_CONFIG_TYPE: config_type,
+                CONF_LATITUDE: old_data.get(CONF_LATITUDE, hass.config.latitude),
+                CONF_LONGITUDE: old_data.get(CONF_LONGITUDE, hass.config.longitude),
+            }
+
+        hass.config_entries.async_update_entry(entry, data=new_data, version=6)
+
     return True
 
 
@@ -181,16 +222,20 @@ class BlitzortungCoordinator:
     def __init__(
         self,
         hass: HomeAssistant,
+        *,
         latitude: float,
         longitude: float,
-        radius: int,  # unit: km
+        location_entity: str | None,
+        radius: int,
         max_tracked_lightnings: int,
         time_window_seconds: int,
-        _update_interval: int,
-        server_stats: bool = False,
+        server_stats: bool,
     ) -> None:
         """Initialize."""
         self.hass = hass
+        self._static_latitude = latitude
+        self._static_longitude = longitude
+        self.location_entity = location_entity
         self.latitude = latitude
         self.longitude = longitude
         self.radius = radius
@@ -202,11 +247,27 @@ class BlitzortungCoordinator:
         self.callbacks = []
         self.lightning_callbacks = []
         self.on_tick_callbacks = []
-        self.geohash_overlap = geohash_overlap(
-            self.latitude, self.longitude, self.radius
-        )
+        if not self.location_entity:
+            self.geohash_overlap = geohash_overlap(
+                self.latitude, self.longitude, self.radius
+            )
         self._disconnect_callbacks = []
         self.unloading = False
+
+        self._geohash_unsubscribers: list[Callable[[], None]] = []
+        self._location_unsubscribe: Callable[[], None] | None = None
+
+        # If configured, initialize reference coordinates from the location entity.
+        if self.location_entity:
+            self._apply_location_entity_state(
+                self.hass.states.get(self.location_entity)
+            )
+            self.geohash_overlap = geohash_overlap(
+                self.latitude, self.longitude, self.radius
+            )
+            self._location_unsubscribe = async_track_state_change_event(
+                self.hass, [self.location_entity], self._handle_location_entity_change
+            )
 
         _LOGGER.info(
             "lat: %s, lon: %s, radius: %skm, geohashes: %s",
@@ -241,6 +302,82 @@ class BlitzortungCoordinator:
         for sensor in self.sensors:
             sensor.async_write_ha_state()
 
+    @callback
+    def _handle_location_entity_change(self, event: Any) -> None:
+        """Handle updates from the configured location entity."""
+        if self.unloading:
+            return
+        new_state = event.data.get("new_state")
+        if self._apply_location_entity_state(new_state):
+            self.hass.async_create_task(self._async_refresh_geohash_subscriptions())
+            for sensor in self.sensors:
+                sensor.async_write_ha_state()
+
+    def _apply_location_entity_state(self, state: Any) -> bool:
+        """Apply coordinates from a state object. Returns True if changed."""
+        if state is None:
+            _LOGGER.warning(
+                "Configured location entity '%s' not found.",
+                self.location_entity,
+            )
+            return False
+
+        lat = state.attributes.get("latitude")
+        lon = state.attributes.get("longitude")
+
+        if lat is None or lon is None:
+            _LOGGER.warning(
+                "Location entity '%s' has no latitude/longitude attributes.",
+                self.location_entity,
+            )
+            return False
+
+        # Ignore insignificant GPS jitter
+        if self.latitude is not None and self.longitude is not None:
+            moved = distance(self.latitude, self.longitude, lat, lon)
+            if moved < MIN_LOCATION_CHANGE_METERS:
+                return False
+
+        self.latitude = lat
+        self.longitude = lon
+        return True
+
+    async def _async_refresh_geohash_subscriptions(self) -> None:
+        """Recalculate geohash overlap and refresh MQTT subscriptions if needed."""
+        new_geohash_overlap = geohash_overlap(
+            self.latitude, self.longitude, self.radius
+        )
+
+        if new_geohash_overlap == self.geohash_overlap:
+            return
+
+        self.geohash_overlap = new_geohash_overlap
+        _LOGGER.info(
+            "Updated location: lat=%s, lon=%s, radius=%skm, geohashes=%s",
+            self.latitude,
+            self.longitude,
+            self.radius,
+            self.geohash_overlap,
+        )
+
+        # If connected, re-subscribe to the new geohash topics.
+        if not self.is_connected:
+            return
+
+        for unsub in list(self._geohash_unsubscribers):
+            try:
+                unsub()
+            except Exception:  # noqa: BLE001
+                _LOGGER.debug("Failed to remove geohash subscription", exc_info=True)
+        self._geohash_unsubscribers.clear()
+
+        for geohash_code in self.geohash_overlap:
+            geohash_part = "/".join(geohash_code)
+            unsub = await self.mqtt_client.async_subscribe(
+                f"blitzortung/1.1/{geohash_part}/#", self.on_mqtt_message, qos=0
+            )
+            self._geohash_unsubscribers.append(unsub)
+
     def compute_polar_coords(self, lightning: dict[str, Any]) -> None:
         """Compute polar coordinates for the lightning strike."""
         dy = (lightning["lat"] - self.latitude) * math.pi / 180
@@ -262,9 +399,10 @@ class BlitzortungCoordinator:
         _LOGGER.info("Connected to Blitzortung proxy mqtt server")
         for geohash_code in self.geohash_overlap:
             geohash_part = "/".join(geohash_code)
-            await self.mqtt_client.async_subscribe(
+            unsub = await self.mqtt_client.async_subscribe(
                 f"blitzortung/1.1/{geohash_part}/#", self.on_mqtt_message, qos=0
             )
+            self._geohash_unsubscribers.append(unsub)
         if self.server_stats:
             await self.mqtt_client.async_subscribe(
                 "$SYS/broker/#", self.on_mqtt_message, qos=0
@@ -283,6 +421,10 @@ class BlitzortungCoordinator:
         await self.mqtt_client.async_disconnect()
         for cb in self._disconnect_callbacks:
             cb()
+
+        if self._location_unsubscribe:
+            self._location_unsubscribe()
+            self._location_unsubscribe = None
 
     def on_hello_message(self, message: Message, *args: Any) -> None:  # noqa: ARG002
         """Handle incoming hello message."""

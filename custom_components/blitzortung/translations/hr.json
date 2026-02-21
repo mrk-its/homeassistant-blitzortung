@@ -1,29 +1,65 @@
 {
-    "config": {
-      "step": {
-        "user": {
-          "description": "Postavke Blitzortung senzora groma",
-          "data": {
-            "name": "Naziv instance integracije"
+  "config": {
+    "step": {
+      "user": {
+        "description": "Postavke Blitzortung senzora groma",
+        "data": {
+          "config_type": "Vrsta konfiguracije"
+        }
+      },
+      "tracker": {
+        "description": "Koristite entitet praćenja za referentnu lokaciju.",
+        "data": {
+          "location_entity": "Praćenje lokacije"
+        }
+      },
+      "coordinates": {
+        "description": "Unesite referentne koordinate.",
+        "data": {
+          "name": "Naziv instance integracije",
+          "latitude": "Zemljopisna širina",
+          "longitude": "Zemljopisna dužina"
+        }
+      },
+      "reconfigure": {
+        "description": "Ažuriraj konfiguraciju za {name}.",
+        "data": {
+          "latitude": "Zemljopisna širina",
+          "longitude": "Zemljopisna dužina",
+          "location_entity": "Praćenje lokacije"
+        }
+      }
+    },
+    "error": {
+      "lat_lon_required": "Unesite zemljopisnu širinu i dužinu zajedno ili odaberite uređaj za praćenje lokacije"
+    },
+    "abort": {
+      "already_configured": "Usluga je već konfigurirana",
+      "reconfigure_successful": "Ponovna konfiguracija je uspješna"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "state_attributes": {
+          "lat": {
+            "name": "Zemljopisna širina"
+          },
+          "lon": {
+            "name": "Zemljopisna dužina"
           }
         }
       },
-      "error": {},
-      "abort": {}
-    },
-    "options": {
-      "step": {
-        "init": {
-          "title": "Blitzortung opcije",
-          "description": "Podesite Blitzortung opcije otkrivanja groma",
-          "data": {
-            "radius": "Radijus prepoznavanja groma (km / mi)",
-            "time_window": "Vremenski period (minuta, 0 - onemogućeno)",
-            "max_tracked_lightnings": "Maksimalan broj praćenih gromova",
-            "latitude": "Zemljopisna širina",
-            "longitude": "Zemljopisna dužina"
+      "distance": {
+        "state_attributes": {
+          "lat": {
+            "name": "Zemljopisna širina"
+          },
+          "lon": {
+            "name": "Zemljopisna dužina"
           }
         }
       }
     }
   }
+}

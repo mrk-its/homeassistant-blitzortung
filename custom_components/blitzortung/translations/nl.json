@@ -4,24 +4,60 @@
       "user": {
         "description": "Blitzortung bliksemdetectie instellen",
         "data": {
-          "name": "Naam van de integratie-instantie"
+          "config_type": "Configuratietype"
+        }
+      },
+      "tracker": {
+        "description": "Gebruik een tracker-entiteit als referentielocatie.",
+        "data": {
+          "location_entity": "Locatietracker"
+        }
+      },
+      "coordinates": {
+        "description": "Voer de referentiecoördinaten in.",
+        "data": {
+          "name": "Naam van de integratie-instantie",
+          "latitude": "Breedtegraad",
+          "longitude": "Lengtegraad"
+        }
+      },
+      "reconfigure": {
+        "description": "Configuratie bijwerken voor {name}.",
+        "data": {
+          "latitude": "Breedtegraad",
+          "longitude": "Lengtegraad",
+          "location_entity": "Locatietracker"
         }
       }
     },
-    "error": {},
-    "abort": {}
+    "error": {
+      "lat_lon_required": "Geef breedtegraad en lengtegraad samen op, of selecteer een locatie-tracker"
+    },
+    "abort": {
+      "already_configured": "Service is al geconfigureerd",
+      "reconfigure_successful": "Herconfiguratie was succesvol"
+    }
   },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Blitzortung Opties",
-        "description": "Blitzortung bliksemdetectie opties instellen",
-        "data": {
-          "radius": "Bliksemdetectie-radius (km / mi)",
-          "time_window": "Tijdvenster (minuten, 0 - uitgeschakeld)",
-          "max_tracked_lightnings": "Max aantal gevolgde bliksems",
-          "latitude": "Breedtegraad",
-          "longitude": "Lengtegraad"
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "state_attributes": {
+          "lat": {
+            "name": "Breedtegraad"
+          },
+          "lon": {
+            "name": "Lengtegraad"
+          }
+        }
+      },
+      "distance": {
+        "state_attributes": {
+          "lat": {
+            "name": "Breedtegraad"
+          },
+          "lon": {
+            "name": "Lengtegraad"
+          }
         }
       }
     }

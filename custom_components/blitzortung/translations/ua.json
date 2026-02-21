@@ -4,36 +4,38 @@
       "user": {
         "description": "Налаштування виявлення блискавок Blitzortung",
         "data": {
+          "config_type": "Тип конфігурації"
+        }
+      },
+      "tracker": {
+        "description": "Використовуйте сутність трекера як опорне розташування.",
+        "data": {
+          "location_entity": "Відстежувач місцезнаходження"
+        }
+      },
+      "coordinates": {
+        "description": "Введіть опорні координати.",
+        "data": {
           "name": "Назва екземпляра інтеграції",
           "latitude": "Широта",
           "longitude": "Довгота"
         }
       },
-      "reconfigure_confirm": {
+      "reconfigure": {
         "description": "Оновити конфігурацію для {name}.",
         "data": {
           "latitude": "Широта",
-          "longitude": "Довгота"
+          "longitude": "Довгота",
+          "location_entity": "Відстежувач місцезнаходження"
         }
       }
     },
-    "error": {},
+    "error": {
+      "lat_lon_required": "Вкажіть широту та довготу разом або виберіть трекер місцезнаходження"
+    },
     "abort": {
       "already_configured": "Сервіс вже налаштовано",
       "reconfigure_successful": "Повторна конфігурація пройшла успішно"
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Параметри Blitzortung",
-        "description": "Налаштуйте параметри виявлення блискавок Blitzortung",
-        "data": {
-          "radius": "Радіус виявлення блискавок (км / миль)",
-          "time_window": "Часове вікно (хвилини, 0 – вимкнено)",
-          "max_tracked_lightnings": "Максимальна кількість відстежуваних блискавок"
-        }
-      }
     }
   },
   "entity": {
