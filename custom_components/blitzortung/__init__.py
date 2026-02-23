@@ -245,9 +245,11 @@ class BlitzortungCoordinator:
         self.lightning_callbacks = []
         self.on_tick_callbacks = []
         if self.location_entity is None:
-            self.geohash_overlap = geohash_overlap(
-                self.latitude, self.longitude, self.radius
-            ) if self.latitude is not None and self.longitude is not None else []
+            self.geohash_overlap = (
+                geohash_overlap(self.latitude, self.longitude, self.radius)
+                if self.latitude is not None and self.longitude is not None
+                else []
+            )
         self._disconnect_callbacks = []
         self.unloading = False
 

@@ -216,11 +216,13 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
                 lon = entry.data.get(CONF_LONGITUDE)
 
             data[CONF_LATITUDE] = (
-                lat if lat is not None
+                lat
+                if lat is not None
                 else entry.data.get(CONF_LATITUDE, self.hass.config.latitude)
             )
             data[CONF_LONGITUDE] = (
-                lon if lon is not None
+                lon
+                if lon is not None
                 else entry.data.get(CONF_LONGITUDE, self.hass.config.longitude)
             )
 
