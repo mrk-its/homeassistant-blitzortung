@@ -3,13 +3,6 @@
 from typing import Any
 
 import homeassistant.helpers.config_validation as cv
-
-try:
-    from homeassistant.helpers.schema_config_entry_flow import (
-        add_suggested_values_to_schema,
-    )
-except ImportError:  # pragma: no cover
-    add_suggested_values_to_schema = None
 import voluptuous as vol
 from homeassistant.config_entries import (
     ConfigEntry,
@@ -19,12 +12,18 @@ from homeassistant.config_entries import (
 )
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME
 from homeassistant.helpers import selector
+from homeassistant.helpers.schema_config_entry_flow import (
+    add_suggested_values_to_schema,
+)
 
 from .const import (
+    CONF_CONFIG_TYPE,
     CONF_LOCATION_ENTITY,
     CONF_MAX_TRACKED_LIGHTNINGS,
     CONF_RADIUS,
     CONF_TIME_WINDOW,
+    CONFIG_TYPE_COORDINATES,
+    CONFIG_TYPE_TRACKER,
     DEFAULT_MAX_TRACKED_LIGHTNINGS,
     DEFAULT_RADIUS,
     DEFAULT_TIME_WINDOW,
@@ -35,43 +34,6 @@ from .const import (
 LOCATION_ENTITY_SELECTOR = selector.EntitySelector(
     selector.EntitySelectorConfig(domain=["device_tracker"])
 )
-
-LOCATION_ENTITY_SELECTOR_OR_NONE = vol.Any(None, LOCATION_ENTITY_SELECTOR)
-
-RECONFIGURE_SCHEMA = vol.Schema(
-    {
-        # Keep lat/lon visible but not required (can be empty when using a tracker)
-        vol.Optional(CONF_LATITUDE): cv.latitude,
-        vol.Optional(CONF_LONGITUDE): cv.longitude,
-        vol.Optional(CONF_LOCATION_ENTITY): LOCATION_ENTITY_SELECTOR_OR_NONE,
-    }
-)
-
-
-def _get_reconfigure_schema(entry: ConfigEntry) -> vol.Schema:
-    """Build the reconfigure schema with suggested values.
-
-    We only suggest fields relevant to the existing configuration mode.
-    """
-    suggested: dict[str, object] = {}
-    config_type = entry.data.get(CONF_CONFIG_TYPE)
-    if config_type == CONFIG_TYPE_TRACKER:
-        if (tracker_entity := entry.data.get(CONF_LOCATION_ENTITY)) is not None:
-            suggested[CONF_LOCATION_ENTITY] = tracker_entity
-    else:
-        if (lat := entry.data.get(CONF_LATITUDE)) is not None:
-            suggested[CONF_LATITUDE] = lat
-        if (lon := entry.data.get(CONF_LONGITUDE)) is not None:
-            suggested[CONF_LONGITUDE] = lon
-
-    if add_suggested_values_to_schema is None:
-        return RECONFIGURE_SCHEMA
-    return add_suggested_values_to_schema(RECONFIGURE_SCHEMA, suggested)
-
-
-CONF_CONFIG_TYPE = "config_type"
-CONFIG_TYPE_TRACKER = "tracker"
-CONFIG_TYPE_COORDINATES = "coordinates"
 
 CONFIG_TYPE_SELECTOR = selector.SelectSelector(
     selector.SelectSelectorConfig(
@@ -88,6 +50,24 @@ CONFIG_TYPE_SELECTOR = selector.SelectSelector(
     )
 )
 
+RECONFIGURE_COORDINATES_SCHEMA = vol.Schema(
+    {
+        vol.Optional(CONF_LATITUDE): cv.latitude,
+        vol.Optional(CONF_LONGITUDE): cv.longitude,
+    }
+)
+
+
+def _get_reconfigure_schema(entry: ConfigEntry) -> vol.Schema:
+    """Build the reconfigure schema with suggested values for coordinate entries."""
+    suggested: dict[str, object] = {}
+    if (lat := entry.data.get(CONF_LATITUDE)) is not None:
+        suggested[CONF_LATITUDE] = lat
+    if (lon := entry.data.get(CONF_LONGITUDE)) is not None:
+        suggested[CONF_LONGITUDE] = lon
+
+    return add_suggested_values_to_schema(RECONFIGURE_COORDINATES_SCHEMA, suggested)
+
 
 class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Blitzortung."""
@@ -95,21 +75,11 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 6
     MINOR_VERSION = 0
 
-    def _ensure_lat_lon(self, data: dict[str, Any]) -> dict[str, Any]:
-        """Ensure latitude/longitude exist (fallback to HA defaults)."""
-        out = dict(data)
-        if CONF_LATITUDE not in out:
-            out[CONF_LATITUDE] = self.hass.config.latitude
-        if CONF_LONGITUDE not in out:
-            out[CONF_LONGITUDE] = self.hass.config.longitude
-        return out
-
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Select how the user wants to configure the entry."""
         if user_input is not None:
-            # Store temporary selection to determine the next flow step
             self.context[CONF_CONFIG_TYPE] = user_input[CONF_CONFIG_TYPE]
             if user_input[CONF_CONFIG_TYPE] == CONFIG_TYPE_TRACKER:
                 return await self.async_step_tracker()
@@ -155,19 +125,15 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
                 },
             )
 
-        defaults = user_input or {}
         return self.async_show_form(
             step_id="tracker",
             data_schema=vol.Schema(
                 {
                     vol.Required(
                         CONF_NAME,
-                        default=defaults.get(CONF_NAME, self.hass.config.location_name),
+                        default=self.hass.config.location_name,
                     ): str,
-                    vol.Required(
-                        CONF_LOCATION_ENTITY,
-                        default=defaults.get(CONF_LOCATION_ENTITY),
-                    ): LOCATION_ENTITY_SELECTOR,
+                    vol.Required(CONF_LOCATION_ENTITY): LOCATION_ENTITY_SELECTOR,
                 }
             ),
         )
@@ -201,24 +167,21 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
                 },
             )
 
-        defaults = user_input or {}
         return self.async_show_form(
             step_id="coordinates",
             data_schema=vol.Schema(
                 {
                     vol.Required(
                         CONF_NAME,
-                        default=defaults.get(CONF_NAME, self.hass.config.location_name),
+                        default=self.hass.config.location_name,
                     ): str,
                     vol.Required(
                         CONF_LATITUDE,
-                        default=defaults.get(CONF_LATITUDE, self.hass.config.latitude),
+                        default=self.hass.config.latitude,
                     ): cv.latitude,
                     vol.Required(
                         CONF_LONGITUDE,
-                        default=defaults.get(
-                            CONF_LONGITUDE, self.hass.config.longitude
-                        ),
+                        default=self.hass.config.longitude,
                     ): cv.longitude,
                 }
             ),
@@ -227,50 +190,45 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_reconfigure(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle reconfiguration of an existing entry."""
+        """Handle reconfiguration of an existing entry (coordinates only).
+
+        Changing the location entity type is not supported via reconfigure.
+        To change from tracker to coordinates or vice versa, remove and re-add
+        the integration.
+        """
         entry = self._get_reconfigure_entry()
+
+        # Only coordinate entries can be reconfigured this way.
+        # Tracker entries show a read-only notice and abort immediately.
+        config_type = entry.data.get(CONF_CONFIG_TYPE)
+        if config_type == CONFIG_TYPE_TRACKER:
+            return self.async_abort(reason="tracker_reconfigure_not_supported")
+
         if user_input is not None:
             data: dict[str, Any] = dict(entry.data)
-            data.update(user_input)
 
-            config_type = data.get(CONF_CONFIG_TYPE)
-            if config_type is None:
-                config_type = (
-                    CONFIG_TYPE_TRACKER
-                    if data.get(CONF_LOCATION_ENTITY)
-                    else CONFIG_TYPE_COORDINATES
-                )
+            # Preserve stored coordinates if the user clears them.
+            lat = user_input.get(CONF_LATITUDE)
+            lon = user_input.get(CONF_LONGITUDE)
+            if lat in (None, ""):
+                lat = entry.data.get(CONF_LATITUDE)
+            if lon in (None, ""):
+                lon = entry.data.get(CONF_LONGITUDE)
 
-            if config_type == CONFIG_TYPE_TRACKER:
-                # Do not allow reconfigure to switch config mode or store coordinates.
-                tracker_entity = entry.data.get(CONF_LOCATION_ENTITY) or data.get(
-                    CONF_LOCATION_ENTITY
-                )
-                if tracker_entity:
-                    data[CONF_LOCATION_ENTITY] = tracker_entity
-                else:
-                    data.pop(CONF_LOCATION_ENTITY, None)
+            data[CONF_LATITUDE] = (
+                lat if lat is not None
+                else entry.data.get(CONF_LATITUDE, self.hass.config.latitude)
+            )
+            data[CONF_LONGITUDE] = (
+                lon if lon is not None
+                else entry.data.get(CONF_LONGITUDE, self.hass.config.longitude)
+            )
 
-                data.pop(CONF_LATITUDE, None)
-                data.pop(CONF_LONGITUDE, None)
-            else:
-                # Do not allow reconfigure to switch config mode/store a tracker entity.
-                data.pop(CONF_LOCATION_ENTITY, None)
+            # Never store a tracker entity in a coordinates entry.
+            data.pop(CONF_LOCATION_ENTITY, None)
+            data[CONF_CONFIG_TYPE] = CONFIG_TYPE_COORDINATES
 
-                # Preserve stored coordinates if the user clears them.
-                if data.get(CONF_LATITUDE) in (None, "") or data.get(
-                    CONF_LONGITUDE
-                ) in (None, ""):
-                    entry_lat = entry.data.get(CONF_LATITUDE)
-                    entry_lon = entry.data.get(CONF_LONGITUDE)
-                    if entry_lat is not None and entry_lon is not None:
-                        data[CONF_LATITUDE] = entry_lat
-                        data[CONF_LONGITUDE] = entry_lon
-                data = self._ensure_lat_lon(data)
-
-            data[CONF_CONFIG_TYPE] = config_type
             self.hass.config_entries.async_update_entry(entry, data=data)
-
             return self.async_abort(reason="reconfigure_successful")
 
         return self.async_show_form(
@@ -278,18 +236,6 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
             data_schema=_get_reconfigure_schema(entry),
             description_placeholders={"name": entry.title},
         )
-
-    def _get_reconfigure_entry(self) -> ConfigEntry:
-        """Return the entry that is being reconfigured."""
-        entry_id = self.context.get("entry_id")
-        if not entry_id:
-            raise ValueError("Missing entry_id in reconfigure context")
-
-        entry = self.hass.config_entries.async_get_entry(entry_id)
-        if entry is None:
-            raise ValueError(f"Unknown entry_id: {entry_id}")
-
-        return entry
 
     @staticmethod
     def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:

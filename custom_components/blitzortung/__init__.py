@@ -1,5 +1,6 @@
 """The blitzortung integration."""
 
+import asyncio
 import logging
 import math
 import time
@@ -33,7 +34,6 @@ from .const import (
     CONF_RADIUS,
     CONF_TIME_WINDOW,
     CONFIG_TYPE_COORDINATES,
-    CONFIG_TYPE_TRACKER,
     DEFAULT_IDLE_RESET_TIMEOUT,
     DEFAULT_MAX_TRACKED_LIGHTNINGS,
     DEFAULT_RADIUS,
@@ -71,9 +71,15 @@ async def async_setup_entry(
     """Set up blitzortung from a config entry."""
     config = hass.data[BLITZORTUNG_CONFIG]
 
-    latitude = config_entry.data.get(CONF_LATITUDE, hass.config.latitude)
-    longitude = config_entry.data.get(CONF_LONGITUDE, hass.config.longitude)
-    location_entity = config_entry.data.get(CONF_LOCATION_ENTITY)
+    config_type = config_entry.data.get(CONF_CONFIG_TYPE, CONFIG_TYPE_COORDINATES)
+    if config_type == CONFIG_TYPE_COORDINATES:
+        latitude = config_entry.data[CONF_LATITUDE]
+        longitude = config_entry.data[CONF_LONGITUDE]
+        location_entity = None
+    else:
+        latitude = None
+        longitude = None
+        location_entity = config_entry.data[CONF_LOCATION_ENTITY]
 
     radius = config_entry.options[CONF_RADIUS]
     max_tracked_lightnings = config_entry.options[CONF_MAX_TRACKED_LIGHTNINGS]
@@ -139,7 +145,7 @@ async def async_migrate_entry(
     if entry.version == 1:
         latitude = entry.data[CONF_LATITUDE]
         longitude = entry.data[CONF_LONGITUDE]
-        radius = entry.data.get(CONF_RADIUS, DEFAULT_RADIUS)
+        radius = entry.data[CONF_RADIUS]
         name = entry.data[CONF_NAME]
 
         new_unique_id = f"{latitude}-{longitude}-{name}-lightning"
@@ -194,23 +200,16 @@ async def async_migrate_entry(
     if entry.version == 5:  # noqa: PLR2004
         # Introduce config_type in entry data and avoid persisting irrelevant keys.
         old_data = dict(entry.data)
-        location_entity = old_data.get(CONF_LOCATION_ENTITY)
 
-        if location_entity:
-            config_type = CONFIG_TYPE_TRACKER
-            new_data = {
-                CONF_NAME: old_data.get(CONF_NAME, ""),
-                CONF_CONFIG_TYPE: config_type,
-                CONF_LOCATION_ENTITY: location_entity,
-            }
-        else:
-            config_type = CONFIG_TYPE_COORDINATES
-            new_data = {
-                CONF_NAME: old_data.get(CONF_NAME, ""),
-                CONF_CONFIG_TYPE: config_type,
-                CONF_LATITUDE: old_data.get(CONF_LATITUDE, hass.config.latitude),
-                CONF_LONGITUDE: old_data.get(CONF_LONGITUDE, hass.config.longitude),
-            }
+        # Version 5 entries never had CONF_LOCATION_ENTITY — they always used
+        # static lat/lon stored in entry.data after the v4→v5 migration.
+        config_type = CONFIG_TYPE_COORDINATES
+        new_data = {
+            CONF_NAME: old_data.get(CONF_NAME, ""),
+            CONF_CONFIG_TYPE: config_type,
+            CONF_LATITUDE: old_data.get(CONF_LATITUDE, hass.config.latitude),
+            CONF_LONGITUDE: old_data.get(CONF_LONGITUDE, hass.config.longitude),
+        }
 
         hass.config_entries.async_update_entry(entry, data=new_data, version=6)
 
@@ -223,19 +222,16 @@ class BlitzortungCoordinator:
     def __init__(
         self,
         hass: HomeAssistant,
-        *,
-        latitude: float,
-        longitude: float,
+        latitude: float | None,
+        longitude: float | None,
         location_entity: str | None,
         radius: int,
         max_tracked_lightnings: int,
         time_window_seconds: int,
-        server_stats: bool,
+        server_stats: bool = False,
     ) -> None:
         """Initialize."""
         self.hass = hass
-        self._static_latitude = latitude
-        self._static_longitude = longitude
         self.location_entity = location_entity
         self.latitude = latitude
         self.longitude = longitude
@@ -248,24 +244,28 @@ class BlitzortungCoordinator:
         self.callbacks = []
         self.lightning_callbacks = []
         self.on_tick_callbacks = []
-        if not self.location_entity:
+        if self.location_entity is None:
             self.geohash_overlap = geohash_overlap(
                 self.latitude, self.longitude, self.radius
-            )
+            ) if self.latitude is not None and self.longitude is not None else []
         self._disconnect_callbacks = []
         self.unloading = False
 
         self._geohash_unsubscribers: list[Callable[[], None]] = []
         self._location_unsubscribe: Callable[[], None] | None = None
+        self._pending_refresh_task: asyncio.Task[None] | None = None
 
         # If configured, initialize reference coordinates from the location entity.
-        if self.location_entity:
+        # If the tracker has no state yet, lat/lon remain None and geohash_overlap
+        # stays empty — subscriptions will be set up once the tracker reports.
+        if self.location_entity is not None:
             self._apply_location_entity_state(
                 self.hass.states.get(self.location_entity)
             )
-            self.geohash_overlap = geohash_overlap(
-                self.latitude, self.longitude, self.radius
-            )
+            if self.latitude is not None and self.longitude is not None:
+                self.geohash_overlap = geohash_overlap(
+                    self.latitude, self.longitude, self.radius
+                )
             self._location_unsubscribe = async_track_state_change_event(
                 self.hass, [self.location_entity], self._handle_location_entity_change
             )
@@ -310,7 +310,13 @@ class BlitzortungCoordinator:
             return
         new_state = event.data.get("new_state")
         if self._apply_location_entity_state(new_state):
-            self.hass.async_create_task(self._async_refresh_geohash_subscriptions())
+            # Cancel any pending refresh to avoid race conditions when coordinates
+            # change rapidly (e.g. a fast-moving vehicle).
+            if self._pending_refresh_task and not self._pending_refresh_task.done():
+                self._pending_refresh_task.cancel()
+            self._pending_refresh_task = self.hass.async_create_task(
+                self._async_refresh_geohash_subscriptions()
+            )
             for sensor in self.sensors:
                 sensor.async_write_ha_state()
 
@@ -345,6 +351,8 @@ class BlitzortungCoordinator:
 
     async def _async_refresh_geohash_subscriptions(self) -> None:
         """Recalculate geohash overlap and refresh MQTT subscriptions if needed."""
+        if self.latitude is None or self.longitude is None:
+            return
         new_geohash_overlap = geohash_overlap(
             self.latitude, self.longitude, self.radius
         )
@@ -388,10 +396,10 @@ class BlitzortungCoordinator:
             / 180
             * math.cos(self.latitude * math.pi / 180)
         )
-        distance = round(math.sqrt(dx * dx + dy * dy) * 6371, 1)
+        lightning_distance = round(math.sqrt(dx * dx + dy * dy) * 6371, 1)
         azimuth = round(math.atan2(dx, dy) * 180 / math.pi) % 360
 
-        lightning[ATTR_LIGHTNING_DISTANCE] = distance
+        lightning[ATTR_LIGHTNING_DISTANCE] = lightning_distance
         lightning[ATTR_LIGHTNING_AZIMUTH] = azimuth
 
     async def connect(self) -> None:
@@ -419,6 +427,11 @@ class BlitzortungCoordinator:
     async def disconnect(self) -> None:
         """Disconnect from MQTT broker."""
         self.unloading = True
+
+        if self._pending_refresh_task and not self._pending_refresh_task.done():
+            self._pending_refresh_task.cancel()
+        self._pending_refresh_task = None
+
         await self.mqtt_client.async_disconnect()
         for cb in self._disconnect_callbacks:
             cb()

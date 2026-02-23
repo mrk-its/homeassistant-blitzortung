@@ -3,11 +3,10 @@ repos:
     rev: v0.14.14
     hooks:
       - id: ruff
-        args: [--fix]
+        args:
+          - --fix
       - id: ruff-format
-
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+  - repo: builtin
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
@@ -16,6 +15,11 @@ repos:
       - id: check-toml
       - id: mixed-line-ending
       - id: no-commit-to-branch
-        args: [--branch=master]
+        args:
+          - --branch=master
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
       - id: pretty-format-json
-        args: [--no-sort-keys]
+        args:
+          - --no-sort-keys

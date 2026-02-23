@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-import os
-import shutil
-
 import setuptools
+import shutil
+import os
 
 cur_dir = os.path.dirname(__file__)
 

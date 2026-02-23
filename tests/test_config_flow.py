@@ -109,7 +109,7 @@ async def test_user_flow_already_configured(hass: HomeAssistant) -> None:
 @pytest.mark.asyncio
 async def test_user_flow_success_tracker(hass: HomeAssistant) -> None:
     """Test successful user flow (tracker)."""
-    # Make HA defaults deterministic for _ensure_lat_lon()
+    # Make HA defaults deterministic
     hass.config.latitude = 52.0
     hass.config.longitude = 4.0
 
@@ -159,7 +159,7 @@ async def test_user_flow_success_tracker(hass: HomeAssistant) -> None:
 async def test_reconfigure_flow_success(
     hass: HomeAssistant, mock_config_entry: MockConfigEntry
 ) -> None:
-    """Test successful reconfigure flow."""
+    """Test successful reconfigure flow (coordinates)."""
     mock_config_entry.add_to_hass(hass)
     result = await mock_config_entry.start_reconfigure_flow(hass)
     assert result["type"] is FlowResultType.FORM
@@ -180,13 +180,14 @@ async def test_reconfigure_flow_success(
 
 
 @pytest.mark.asyncio
-async def test_reconfigure_flow_success_tracker(hass: HomeAssistant) -> None:
-    """Test successful reconfigure flow (tracker preserves entity)."""
-    tracker_entity_id = "device_tracker.original_tracker"
-    new_tracker_entity_id = "device_tracker.new_tracker"
+async def test_reconfigure_flow_tracker_not_supported(hass: HomeAssistant) -> None:
+    """Test that reconfigure for a tracker entry aborts immediately.
 
+    Changing the tracker entity is not supported via reconfigure — the user
+    must remove and re-add the integration instead.
+    """
+    tracker_entity_id = "device_tracker.original_tracker"
     hass.states.async_set(tracker_entity_id, "home")
-    hass.states.async_set(new_tracker_entity_id, "home")
 
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -201,22 +202,10 @@ async def test_reconfigure_flow_success_tracker(hass: HomeAssistant) -> None:
     entry.add_to_hass(hass)
 
     result = await entry.start_reconfigure_flow(hass)
-    assert result["type"] is FlowResultType.FORM
-    assert result["step_id"] == "reconfigure"
-
-    result = await hass.config_entries.flow.async_configure(
-        result["flow_id"],
-        user_input={
-            # Attempt to switch to a different tracker and add coordinates.
-            CONF_LOCATION_ENTITY: new_tracker_entity_id,
-            CONF_LATITUDE: 51.0,
-            CONF_LONGITUDE: 11.0,
-        },
-    )
 
     assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "reconfigure_successful"
-    assert entry.data[CONF_CONFIG_TYPE] == CONFIG_TYPE_TRACKER
+    assert result["reason"] == "tracker_reconfigure_not_supported"
+    # Entry data must be unchanged.
     assert entry.data[CONF_LOCATION_ENTITY] == tracker_entity_id
     assert CONF_LATITUDE not in entry.data
     assert CONF_LONGITUDE not in entry.data

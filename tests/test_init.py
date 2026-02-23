@@ -13,9 +13,7 @@ from custom_components.blitzortung.const import (
     ATTR_LIGHTNING_AZIMUTH,
     ATTR_LIGHTNING_DISTANCE,
     CONF_CONFIG_TYPE,
-    CONF_LOCATION_ENTITY,
     CONFIG_TYPE_COORDINATES,
-    CONFIG_TYPE_TRACKER,
 )
 
 
@@ -64,32 +62,8 @@ def test_compute_polar_coords(
 
 
 @pytest.mark.asyncio
-async def test_migrate_entry_v5_to_v6_tracker(hass: HomeAssistant) -> None:
-    """Migrate v5 entry with location_entity to v6 tracker mode."""
-    entry = MockConfigEntry(
-        domain="blitzortung",
-        data={
-            CONF_NAME: "Test",
-            CONF_LOCATION_ENTITY: "device_tracker.boat",
-        },
-        version=5,
-        unique_id="50.0-10.0",
-    )
-    entry.add_to_hass(hass)
-
-    assert await async_migrate_entry(hass, entry)
-
-    assert entry.version == 6
-    assert entry.data == {
-        CONF_NAME: "Test",
-        CONF_CONFIG_TYPE: CONFIG_TYPE_TRACKER,
-        CONF_LOCATION_ENTITY: "device_tracker.boat",
-    }
-
-
-@pytest.mark.asyncio
 async def test_migrate_entry_v5_to_v6_coordinates(hass: HomeAssistant) -> None:
-    """Migrate v5 entry without location_entity to v6 coordinates mode."""
+    """Migrate v5 entry with lat/lon to v6 coordinates mode."""
     entry = MockConfigEntry(
         domain="blitzortung",
         data={
@@ -115,7 +89,7 @@ async def test_migrate_entry_v5_to_v6_coordinates(hass: HomeAssistant) -> None:
 
 @pytest.mark.asyncio
 async def test_migrate_entry_v5_to_v6_coordinates_defaults(hass: HomeAssistant) -> None:
-    """Migrate v5 entry without coords defaults to hass config values."""
+    """Migrate v5 entry without explicit coords — defaults to hass config values."""
     entry = MockConfigEntry(
         domain="blitzortung",
         data={CONF_NAME: "Test"},

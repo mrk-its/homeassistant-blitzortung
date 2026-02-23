@@ -10,6 +10,7 @@
       "tracker": {
         "description": "Use a tracker entity for the reference location.",
         "data": {
+          "name": "Name of the integration instance",
           "location_entity": "Tracker entity"
         }
       },
@@ -25,8 +26,7 @@
         "description": "Update configuration for {name}.",
         "data": {
           "latitude": "Latitude",
-          "longitude": "Longitude",
-          "location_entity": "Tracker entity"
+          "longitude": "Longitude"
         }
       }
     },
@@ -35,7 +35,8 @@
     },
     "abort": {
       "already_configured": "Service is already configured",
-      "reconfigure_successful": "Re-configuration was successful"
+      "reconfigure_successful": "Re-configuration was successful",
+      "tracker_reconfigure_not_supported": "To change the tracker entity, remove and re-add the integration."
     }
   },
   "entity": {

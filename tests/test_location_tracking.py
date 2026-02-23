@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -37,7 +36,7 @@ async def test_handle_location_entity_change_triggers_refresh(
         attributes={"latitude": 51.0, "longitude": 10.0},
     )
     coordinator._handle_location_entity_change(  # noqa: SLF001
-        SimpleNamespace(data={"new_state": new_state})
+        MagicMock(data={"new_state": new_state})
     )
     await hass.async_block_till_done()
 
@@ -114,7 +113,7 @@ async def test_refresh_geohash_subscriptions_when_moved(
     coordinator._geohash_unsubscribers = [unsub_1]  # noqa: SLF001
 
     async_subscribe = AsyncMock(return_value=MagicMock())
-    coordinator.mqtt_client = SimpleNamespace(
+    coordinator.mqtt_client = MagicMock(
         connected=True,
         async_subscribe=async_subscribe,
     )
