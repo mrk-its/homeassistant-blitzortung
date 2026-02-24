@@ -7,16 +7,14 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.blitzortung.config_flow import (
-    CONF_CONFIG_TYPE,
-    CONFIG_TYPE_COORDINATES,
-    CONFIG_TYPE_TRACKER,
-)
 from custom_components.blitzortung.const import (
+    CONF_CONFIG_TYPE,
     CONF_LOCATION_ENTITY,
     CONF_MAX_TRACKED_LIGHTNINGS,
     CONF_RADIUS,
     CONF_TIME_WINDOW,
+    CONFIG_TYPE_COORDINATES,
+    CONFIG_TYPE_TRACKER,
     DOMAIN,
 )
 
