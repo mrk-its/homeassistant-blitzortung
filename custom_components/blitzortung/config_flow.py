@@ -12,9 +12,6 @@ from homeassistant.config_entries import (
 )
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME
 from homeassistant.helpers import selector
-from homeassistant.helpers.schema_config_entry_flow import (
-    add_suggested_values_to_schema,
-)
 
 from .const import (
     CONF_CONFIG_TYPE,
@@ -50,23 +47,21 @@ CONFIG_TYPE_SELECTOR = selector.SelectSelector(
     )
 )
 
-RECONFIGURE_COORDINATES_SCHEMA = vol.Schema(
-    {
-        vol.Optional(CONF_LATITUDE): cv.latitude,
-        vol.Optional(CONF_LONGITUDE): cv.longitude,
-    }
-)
-
 
 def _get_reconfigure_schema(entry: ConfigEntry) -> vol.Schema:
     """Build the reconfigure schema with suggested values for coordinate entries."""
-    suggested: dict[str, object] = {}
-    if (lat := entry.data.get(CONF_LATITUDE)) is not None:
-        suggested[CONF_LATITUDE] = lat
-    if (lon := entry.data.get(CONF_LONGITUDE)) is not None:
-        suggested[CONF_LONGITUDE] = lon
-
-    return add_suggested_values_to_schema(RECONFIGURE_COORDINATES_SCHEMA, suggested)
+    return vol.Schema(
+        {
+            vol.Optional(
+                CONF_LATITUDE,
+                description={"suggested_value": entry.data.get(CONF_LATITUDE)},
+            ): cv.latitude,
+            vol.Optional(
+                CONF_LONGITUDE,
+                description={"suggested_value": entry.data.get(CONF_LONGITUDE)},
+            ): cv.longitude,
+        }
+    )
 
 
 class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
