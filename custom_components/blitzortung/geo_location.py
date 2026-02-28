@@ -16,6 +16,7 @@ from homeassistant.helpers.dispatcher import (
     async_dispatcher_send,
 )
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.util import slugify
 from homeassistant.util.dt import utc_from_timestamp
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 
@@ -51,6 +52,7 @@ async def async_setup_entry(
         async_add_entities,
         coordinator.max_tracked_lightnings,
         coordinator.time_window_seconds,
+        slugify(config_entry.data["name"]),
     )
 
     coordinator.register_lightning_receiver(manager.lightning_cb)
@@ -64,7 +66,6 @@ class BlitzortungEvent(GeolocationEvent):
     _attr_icon = "mdi:flash"
     _attr_name = "Lightning Strike"
     _attr_should_poll = False
-    _attr_source = DOMAIN
 
     def __init__(
         self,
@@ -75,6 +76,7 @@ class BlitzortungEvent(GeolocationEvent):
         time: int,
         status: int,
         region: int,
+        source: str,
     ) -> None:
         """Initialize entity with data provided."""
         self._time = time
@@ -92,6 +94,7 @@ class BlitzortungEvent(GeolocationEvent):
             ATTR_PUBLICATION_DATE: utc_from_timestamp(self._publication_date),
         }
         self._attr_unit_of_measurement = unit
+        self._attr_source = f"{DOMAIN}_{source}"
 
     @callback
     def _delete_callback(self) -> None:
@@ -162,12 +165,14 @@ class BlitzortungEventManager:
         async_add_entities: AddConfigEntryEntitiesCallback,
         max_tracked_lightnings: int,
         window_seconds: int,
+        source: str,
     ) -> None:
         """Initialize."""
         self._async_add_entities = async_add_entities
         self._hass = hass
         self._strikes = Strikes(max_tracked_lightnings)
         self._window_seconds = window_seconds
+        self._source = source
 
         if hass.config.units == IMPERIAL_SYSTEM:
             self._unit = UnitOfLength.MILES
@@ -185,6 +190,7 @@ class BlitzortungEventManager:
             lightning["time"],
             lightning["status"],
             lightning["region"],
+            self._source,
         )
         to_delete = self._strikes.insort(event)
         self._async_add_entities([event])
