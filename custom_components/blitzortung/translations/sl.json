@@ -4,24 +4,60 @@
       "user": {
         "description": "Postavke zaznavanja strel Blitzortung",
         "data": {
-          "name": "Ime integracije"
+          "config_type": "Vrsta konfiguracije"
+        }
+      },
+      "tracker": {
+        "description": "Za referenčno lokacijo uporabite entiteto sledilnika.",
+        "data": {
+          "location_entity": "Sledilnik lokacije"
+        }
+      },
+      "coordinates": {
+        "description": "Vnesite referenčne koordinate.",
+        "data": {
+          "name": "Ime instance integracije",
+          "latitude": "Zemljepisna širina",
+          "longitude": "Zemljepisna dolžina"
+        }
+      },
+      "reconfigure": {
+        "description": "Posodobi konfiguracijo za {name}.",
+        "data": {
+          "latitude": "Zemljepisna širina središča zaznavanja",
+          "longitude": "Zemljepisna dolžina središča zaznavanja",
+          "location_entity": "Sledilnik lokacije"
         }
       }
     },
-    "error": {},
-    "abort": {}
+    "error": {
+      "lat_lon_required": "Vnesite zemljepisno širino in dolžino skupaj ali izberite sledilnik lokacije"
+    },
+    "abort": {
+      "already_configured": "Storitev je že konfigurirana",
+      "reconfigure_successful": "Ponovna konfiguracija je bila uspešna"
+    }
   },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Možnosti Blitzortung",
-        "description": "Nastavite možnosti zaznavanja strel Blitzortung",
-        "data": {
-          "radius": "Doseg zaznavanja strel (km / mi)",
-          "time_window": "Časovni okvir (v minutah, 0 - disabled)",
-          "max_tracked_lightnings": "Maksimalno število zaznanih strel",
-          "latitude": "Zemljepisna širina središča zaznavanja",
-          "longitude": "Zemljepisna dolžina središča zaznavanja"
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "state_attributes": {
+          "lat": {
+            "name": "Zemljepisna širina"
+          },
+          "lon": {
+            "name": "Zemljepisna dolžina"
+          }
+        }
+      },
+      "distance": {
+        "state_attributes": {
+          "lat": {
+            "name": "Zemljepisna širina"
+          },
+          "lon": {
+            "name": "Zemljepisna dolžina"
+          }
         }
       }
     }

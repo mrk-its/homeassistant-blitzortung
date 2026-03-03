@@ -4,24 +4,60 @@
       "user": {
         "description": "Sett opp lynregistrering av Blitzortung",
         "data": {
-          "name": "Navnet på integrasjonsforekomsten"
+          "config_type": "Konfigurasjonstype"
+        }
+      },
+      "tracker": {
+        "description": "Bruk en sporingsenhet som referanselokasjon.",
+        "data": {
+          "location_entity": "Posisjonssporer"
+        }
+      },
+      "coordinates": {
+        "description": "Angi referansekoordinatene.",
+        "data": {
+          "name": "Navn på integrasjonsinstansen",
+          "latitude": "Breddegrad",
+          "longitude": "Lengdegrad"
+        }
+      },
+      "reconfigure": {
+        "description": "Oppdater konfigurasjonen for {name}.",
+        "data": {
+          "latitude": "Breddegrad",
+          "longitude": "Lengdegrad",
+          "location_entity": "Posisjonssporer"
         }
       }
     },
-    "error": {},
-    "abort": {}
+    "error": {
+      "lat_lon_required": "Oppgi breddegrad og lengdegrad sammen, eller velg en posisjonssporing"
+    },
+    "abort": {
+      "already_configured": "Tjenesten er allerede konfigurert",
+      "reconfigure_successful": "Omkonfigurering var vellykket"
+    }
   },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Blitzortung-alternativer",
-        "description": "Sett opp Blitzortung lyndeteksjonsalternativer",
-        "data": {
-          "radius": "Lyndeteksjonsradius (km / mi)",
-          "time_window": "Tidsvindu (minutter, 0 - deaktivert)",
-          "max_tracked_lightnings": "Maks antall sporede lyn",
-          "latitude": "Breddegrad",
-          "longitude": "Lengdegrad"
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "state_attributes": {
+          "lat": {
+            "name": "Breddegrad"
+          },
+          "lon": {
+            "name": "Lengdegrad"
+          }
+        }
+      },
+      "distance": {
+        "state_attributes": {
+          "lat": {
+            "name": "Breddegrad"
+          },
+          "lon": {
+            "name": "Lengdegrad"
+          }
         }
       }
     }
