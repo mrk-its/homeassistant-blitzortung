@@ -84,7 +84,6 @@ class BlitzortungEvent(GeolocationEvent):
         self._remove_signal_delete = None
         self._strike_id = str(uuid.uuid4()).replace("-", "")
         self._attr_name = f"Lightning strike ({self._strike_id})"
-        self._attr_unique_id = f"{self._strike_id}_{latitude}_{longitude}"
         self._attr_distance = distance
         self._attr_latitude = latitude
         self._attr_longitude = longitude
@@ -107,14 +106,6 @@ class BlitzortungEvent(GeolocationEvent):
             SIGNAL_DELETE_ENTITY.format(self._strike_id),
             self._delete_callback,
         )
-
-    async def async_will_remove_from_hass(self) -> None:
-        """Call when entity will be removed from hass."""
-        self._remove_signal_delete()
-        # Remove from entity registry.
-        entity_registry = er.async_get(self.hass)
-        if self.entity_id in entity_registry.entities:
-            entity_registry.async_remove(self.entity_id)
 
 
 class Strikes(list):
