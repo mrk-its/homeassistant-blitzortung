@@ -89,10 +89,6 @@ class BlitzortungSensor(BlitzortungEntity, SensorEntity):
         """Connect to dispatcher listening for entity data notifications."""
         self.coordinator.register_sensor(self)
 
-    async def async_update(self) -> None:
-        """Update the sensor data."""
-        await self.coordinator.async_request_refresh()
-
 
 class LightningSensor(BlitzortungSensor):
     """Define a Blitzortung lightning sensor."""
