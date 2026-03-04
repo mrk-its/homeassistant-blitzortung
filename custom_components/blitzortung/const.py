@@ -28,10 +28,6 @@ ATTR_LIGHTNING_DISTANCE = "distance"
 
 SERVER_STATS = "server_stats"
 
-BASE_URL_TEMPLATE = (
-    "http://data{data_host_nr}.blitzortung.org/Data/Protected/last_strikes.php"
-)
-
 CONF_RADIUS = "radius"
 CONF_IDLE_RESET_TIMEOUT = "idle_reset_timeout"
 CONF_TIME_WINDOW = "time_window"
