@@ -7,6 +7,9 @@ from collections.abc import Callable
 from typing import Any
 
 import voluptuous as vol
+from homeassistant.components.persistent_notification import (
+    async_create as async_create_notification,
+)
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME, UnitOfLength
@@ -304,7 +307,7 @@ class BlitzortungCoordinator:
             current_version = parse_version(__version__)
             if latest_version > current_version:
                 _LOGGER.info("new version is available: %s", latest_version_str)
-                self.hass.components.persistent_notification.async_create(
+                async_create_notification(
                     title=latest_version_title,
                     message=latest_version_message,
                     notification_id="blitzortung_new_version_available",
