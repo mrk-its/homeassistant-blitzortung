@@ -131,24 +131,34 @@ async def async_migrate_entry(
         radius = entry.data[CONF_RADIUS]
         name = entry.data[CONF_NAME]
 
-        entry.unique_id = f"{latitude}-{longitude}-{name}-lightning"
-        entry.data = {CONF_NAME: name}
-        entry.options = {
+        new_unique_id = f"{latitude}-{longitude}-{name}-lightning"
+        new_data = {CONF_NAME: name}
+        new_options = {
             CONF_LATITUDE: latitude,
             CONF_LONGITUDE: longitude,
             CONF_RADIUS: radius,
         }
-        entry.version = 2
-    if entry.version == 2:  # noqa: PLR2004
-        entry.options = dict(entry.options)
-        entry.options[CONF_IDLE_RESET_TIMEOUT] = DEFAULT_IDLE_RESET_TIMEOUT
-        entry.version = 3
-    if entry.version == 3:  # noqa: PLR2004
-        entry.options = dict(entry.options)
-        entry.options[CONF_TIME_WINDOW] = entry.options.pop(
-            CONF_IDLE_RESET_TIMEOUT, DEFAULT_TIME_WINDOW
+
+        hass.config_entries.async_update_entry(
+            entry,
+            unique_id=new_unique_id,
+            data=new_data,
+            options=new_options,
+            version=2,
         )
-        entry.version = 4
+    if entry.version == 2:  # noqa: PLR2004
+        new_options = entry.options.copy()
+        new_options[CONF_IDLE_RESET_TIMEOUT] = DEFAULT_IDLE_RESET_TIMEOUT
+
+        hass.config_entries.async_update_entry(entry, options=new_options, version=3)
+    if entry.version == 3:  # noqa: PLR2004
+        new_options = entry.options.copy()
+
+        new_options[CONF_TIME_WINDOW] = new_options.pop(
+            CONF_IDLE_RESET_TIMEOUT, DEFAULT_IDLE_RESET_TIMEOUT
+        )
+
+        hass.config_entries.async_update_entry(entry, options=new_options, version=4)
     if entry.version == 4:  # noqa: PLR2004
         new_data = entry.data.copy()
 
