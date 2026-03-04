@@ -30,7 +30,7 @@ RECONFIGURE_SCHEMA = vol.Schema(
 )
 
 
-class BlitortungConfigFlow(ConfigFlow, domain=DOMAIN):
+class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for blitzortung."""
 
     VERSION = 5
