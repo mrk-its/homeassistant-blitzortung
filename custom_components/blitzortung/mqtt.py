@@ -36,18 +36,6 @@ def _raise_on_error(result_code: int) -> None:
         )
 
 
-def _match_topic(subscription: str, topic: str) -> bool:
-    """Test if topic matches subscription."""
-    matcher = MQTTMatcher()
-    matcher[subscription] = True
-    try:
-        next(matcher.iter_match(topic))
-    except StopIteration:
-        return False
-    else:
-        return True
-
-
 PublishPayloadType = str | bytes | int | float | None
 
 
@@ -98,6 +86,7 @@ class MQTT:
         self.connected = False
         self._mqttc: mqtt.Client = None
         self._paho_lock = asyncio.Lock()
+        self._matcher = MQTTMatcher()
 
         self.init_client()
 
@@ -166,6 +155,7 @@ class MQTT:
 
         subscription = Subscription(topic, msg_callback, qos, encoding)
         self.subscriptions.append(subscription)
+        self._update_matcher()
 
         # Only subscribe if currently connected.
         if self.connected:
@@ -177,6 +167,7 @@ class MQTT:
             if subscription not in self.subscriptions:
                 raise HomeAssistantError("Can't remove subscription twice")
             self.subscriptions.remove(subscription)
+            self._update_matcher()
 
             if any(other.topic == topic for other in self.subscriptions):
                 # Other subscriptions on topic remaining - don't unsubscribe.
@@ -200,6 +191,12 @@ class MQTT:
                 self._mqttc.unsubscribe, topic
             )
             _raise_on_error(result)
+
+    def _update_matcher(self) -> None:
+        """Rebuild the topic matcher from current subscriptions."""
+        self._matcher = MQTTMatcher()
+        for subscription in self.subscriptions:
+            self._matcher[subscription.topic] = subscription
 
     async def _async_perform_subscription(self, topic: str, qos: int) -> None:
         """Perform a paho-mqtt subscription."""
@@ -257,10 +254,12 @@ class MQTT:
         )
         timestamp = dt_util.utcnow()
 
-        for subscription in self.subscriptions:
-            if not _match_topic(subscription.topic, msg.topic):
-                continue
+        try:
+            matched = list(self._matcher.iter_match(msg.topic))
+        except (StopIteration, ValueError):
+            matched = []
 
+        for subscription in matched:
             payload: SubscribePayloadType = msg.payload
             if subscription.encoding is not None:
                 try:
