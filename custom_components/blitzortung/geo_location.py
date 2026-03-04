@@ -8,8 +8,8 @@ from typing import Any
 
 from homeassistant.components.geo_location import DOMAIN as GEO_LOCATION_PLATFORM
 from homeassistant.components.geo_location import GeolocationEvent
-from homeassistant.const import UnitOfLength
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.const import EVENT_HOMEASSISTANT_STOP, UnitOfLength
+from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
@@ -152,6 +152,13 @@ class Strikes(list):
         self[0:i] = []
         return to_delete
 
+    def remove_all(self) -> tuple[BlitzortungEvent]:
+        """Remove and return all strikes."""
+        to_delete = tuple(self)
+        self._keys.clear()
+        self.clear()
+        return to_delete
+
 
 class BlitzortungEventManager:
     """Define a class to handle Blitzortung events."""
@@ -168,6 +175,9 @@ class BlitzortungEventManager:
         self._hass = hass
         self._strikes = Strikes(max_tracked_lightnings)
         self._window_seconds = window_seconds
+        self._unsub_stop = hass.bus.async_listen_once(
+            EVENT_HOMEASSISTANT_STOP, self._on_hass_stop
+        )
 
         if hass.config.units == IMPERIAL_SYSTEM:
             self._unit = UnitOfLength.MILES
@@ -191,6 +201,13 @@ class BlitzortungEventManager:
         if to_delete:
             self._remove_events(to_delete)
         _LOGGER.debug("tracked lightnings: %s", len(self._strikes))
+
+    @callback
+    def _on_hass_stop(self, _event: Event) -> None:
+        """Remove all geo location entities on HA shutdown."""
+        to_delete = self._strikes.remove_all()
+        if to_delete:
+            self._remove_events(to_delete)
 
     @callback
     def _remove_events(self, events: tuple[BlitzortungEvent]) -> None:
