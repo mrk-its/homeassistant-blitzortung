@@ -155,7 +155,7 @@ async def async_migrate_entry(
         new_options = entry.options.copy()
 
         new_options[CONF_TIME_WINDOW] = new_options.pop(
-            CONF_IDLE_RESET_TIMEOUT, DEFAULT_IDLE_RESET_TIMEOUT
+            CONF_IDLE_RESET_TIMEOUT, DEFAULT_TIME_WINDOW
         )
 
         hass.config_entries.async_update_entry(entry, options=new_options, version=4)
