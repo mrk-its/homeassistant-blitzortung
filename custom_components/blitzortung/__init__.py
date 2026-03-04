@@ -177,9 +177,14 @@ async def async_migrate_entry(
             CONF_TIME_WINDOW: time_window,
             CONF_MAX_TRACKED_LIGHTNINGS: max_tracked_lightnings,
         }
+        new_unique_id = f"{latitude}-{longitude}"
 
         hass.config_entries.async_update_entry(
-            entry, data=new_data, options=new_options, version=5
+            entry,
+            unique_id=new_unique_id,
+            data=new_data,
+            options=new_options,
+            version=5,
         )
 
     return True
