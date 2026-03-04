@@ -110,7 +110,8 @@ async def test_migrate_entry_v2_adds_idle_reset_timeout(
     assert config_entry.unique_id == "50.0-10.0"
     assert config_entry.version == 5
 
-    # idle_reset_timeout should have been converted to time_window
+    # v2->v3 adds idle_reset_timeout with the default; later migrations rename it,
+    # so by v5 the default value is exposed as time_window
     assert config_entry.options[CONF_TIME_WINDOW] == DEFAULT_IDLE_RESET_TIMEOUT
     assert (
         config_entry.options[CONF_MAX_TRACKED_LIGHTNINGS]
