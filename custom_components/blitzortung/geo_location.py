@@ -83,7 +83,7 @@ class BlitzortungEvent(GeolocationEvent):
         self._publication_date = time / 1e9
         self._remove_signal_delete = None
         self._strike_id = str(uuid.uuid4()).replace("-", "")
-        self._attr_name = f"Lightning strike ({self._strike_id})"
+        self._attr_name = f"Lightning strike {self._strike_id}"
         self._attr_distance = distance
         self._attr_latitude = latitude
         self._attr_longitude = longitude
