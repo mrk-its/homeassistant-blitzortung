@@ -1,3 +1,3 @@
-"""Contains the version of the Blitzortung integration."""
+"""Version module for the Blitzortung integration."""
 
-__version__ = "1.3.11"
+__version__ = "1.4.0-b1"
