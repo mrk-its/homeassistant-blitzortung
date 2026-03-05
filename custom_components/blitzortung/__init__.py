@@ -300,6 +300,11 @@ class BlitzortungCoordinator:
         await self.mqtt_client.async_disconnect()
         for cb in self._disconnect_callbacks:
             cb()
+        self._disconnect_callbacks.clear()
+        self.sensors.clear()
+        self.callbacks.clear()
+        self.lightning_callbacks.clear()
+        self.on_tick_callbacks.clear()
 
     def on_hello_message(self, message: Message, *args: Any) -> None:  # noqa: ARG002
         """Handle incoming hello message."""
