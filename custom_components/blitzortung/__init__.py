@@ -13,6 +13,7 @@ from homeassistant.components.persistent_notification import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME, UnitOfLength
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.typing import ConfigType
@@ -96,7 +97,13 @@ async def async_setup_entry(
     )
 
     await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
-    await config_entry.runtime_data.connect()
+
+    try:
+        await config_entry.runtime_data.connect()
+    except Exception as err:
+        raise ConfigEntryNotReady(
+            f"Failed to connect to Blitzortung MQTT server: {err}"
+        ) from err
 
     if not config_entry.update_listeners:
         config_entry.add_update_listener(async_update_options)

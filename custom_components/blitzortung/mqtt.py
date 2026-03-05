@@ -131,11 +131,13 @@ class MQTT:
                 self.keepalive,
             )
         except OSError as err:
-            _LOGGER.error("Failed to connect to MQTT server due to exception: %s", err)
+            raise HomeAssistantError(
+                f"Failed to connect to MQTT server due to exception: {err}"
+            ) from err
 
         if result is not None and result != 0:
-            _LOGGER.error(
-                "Failed to connect to MQTT server: %s", mqtt.error_string(result)
+            raise HomeAssistantError(
+                f"Failed to connect to MQTT server: {mqtt.error_string(result)}"
             )
 
         self._mqttc.loop_start()
