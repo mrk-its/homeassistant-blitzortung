@@ -102,7 +102,9 @@ async def async_setup_entry(
         await config_entry.runtime_data.connect()
     except Exception as err:
         raise ConfigEntryNotReady(
-            f"Failed to connect to Blitzortung MQTT server: {err}"
+            translation_domain=DOMAIN,
+            translation_key="mqtt_connect_not_ready",
+            translation_placeholders={"error": str(err)},
         ) from err
 
     if not config_entry.update_listeners:

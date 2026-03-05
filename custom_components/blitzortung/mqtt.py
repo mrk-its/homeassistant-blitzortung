@@ -15,6 +15,8 @@ from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.util import dt as dt_util
 from paho.mqtt.matcher import MQTTMatcher
 
+from .const import DOMAIN
+
 _LOGGER = logging.getLogger(__name__)
 
 DEFAULT_PORT = 1883
@@ -132,12 +134,18 @@ class MQTT:
             )
         except OSError as err:
             raise HomeAssistantError(
-                f"Failed to connect to MQTT server due to exception: {err}"
+                translation_domain=DOMAIN,
+                translation_key="mqtt_connection_error",
+                translation_placeholders={"error": str(err)},
             ) from err
 
         if result is not None and result != 0:
             raise HomeAssistantError(
-                f"Failed to connect to MQTT server: {mqtt.error_string(result)}"
+                translation_domain=DOMAIN,
+                translation_key="mqtt_connection_error",
+                translation_placeholders={
+                    "error": mqtt.error_string(result),
+                },
             )
 
         self._mqttc.loop_start()
