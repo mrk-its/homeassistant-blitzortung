@@ -25,7 +25,6 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
-from homeassistant.helpers.typing import UNDEFINED
 
 from . import BlitzortungConfigEntry, BlitzortungCoordinator
 from .const import (
@@ -66,7 +65,7 @@ class BlitzortungSensor(BlitzortungEntity, SensorEntity):
         """Initialize."""
         self.coordinator = coordinator
         self._attr_unique_id = f"{unique_prefix}-{description.key}"
-        if description.name is UNDEFINED:
+        if description.translation_key == "server_stats":
             self._attr_name = f"Server {description.key.replace('_', ' ').lower()}"
         self._attr_device_info = DeviceInfo(
             name=integration_name,
@@ -200,7 +199,6 @@ class ServerStatSensor(BlitzortungSensor):
 SENSORS: tuple[BlitzortungSensorEntityDescription, ...] = (
     BlitzortungSensorEntityDescription(
         key=ATTR_LIGHTNING_AZIMUTH,
-        name="Lightning azimuth",
         translation_key=ATTR_LIGHTNING_AZIMUTH,
         has_entity_name=True,
         native_unit_of_measurement=DEGREE,
@@ -208,7 +206,6 @@ SENSORS: tuple[BlitzortungSensorEntityDescription, ...] = (
     ),
     BlitzortungSensorEntityDescription(
         key=ATTR_LIGHTNING_COUNTER,
-        name="Lightning counter",
         translation_key=ATTR_LIGHTNING_COUNTER,
         has_entity_name=True,
         native_unit_of_measurement="↯",
@@ -217,7 +214,6 @@ SENSORS: tuple[BlitzortungSensorEntityDescription, ...] = (
     ),
     BlitzortungSensorEntityDescription(
         key=ATTR_LIGHTNING_DISTANCE,
-        name="Lightning distance",
         translation_key=ATTR_LIGHTNING_DISTANCE,
         has_entity_name=True,
         native_unit_of_measurement=UnitOfLength.KILOMETERS,
