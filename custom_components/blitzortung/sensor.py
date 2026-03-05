@@ -286,7 +286,6 @@ async def async_setup_entry(
         "publish_bytes_sent",
         "publish_messages_received",
         "publish_messages_sent",
-        "publish_messages_sent",
         "retained messages_count",
         "store_messages_bytes",
         "store_messages_count",

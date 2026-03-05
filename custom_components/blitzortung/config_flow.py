@@ -77,7 +77,6 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle a reconfiguration flow initialized by the user."""
-        errors = {}
         reconfigure_entry = self._get_reconfigure_entry()
 
         if user_input is not None:
@@ -93,7 +92,7 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
                 suggested_values=reconfigure_entry.data | (user_input or {}),
             ),
             description_placeholders={"name": reconfigure_entry.title},
-            errors=errors,
+            errors={},
         )
 
     @staticmethod
