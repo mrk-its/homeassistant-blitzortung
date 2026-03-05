@@ -15,8 +15,6 @@ from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.util import dt as dt_util
 from paho.mqtt.matcher import MQTTMatcher
 
-from .const import DOMAIN
-
 _LOGGER = logging.getLogger(__name__)
 
 DEFAULT_PORT = 1883
@@ -125,28 +123,16 @@ class MQTT:
     async def async_connect(self) -> None:
         """Connect to the host. Does not process messages yet."""
         result: int | None = None
-        try:
-            result = await self.hass.async_add_executor_job(
-                self._mqttc.connect,
-                self.host,
-                self.port,
-                self.keepalive,
-            )
-        except OSError as err:
-            raise HomeAssistantError(
-                translation_domain=DOMAIN,
-                translation_key="mqtt_connection_error",
-                translation_placeholders={"error": str(err)},
-            ) from err
+
+        result = await self.hass.async_add_executor_job(
+            self._mqttc.connect,
+            self.host,
+            self.port,
+            self.keepalive,
+        )
 
         if result is not None and result != 0:
-            raise HomeAssistantError(
-                translation_domain=DOMAIN,
-                translation_key="mqtt_connection_error",
-                translation_placeholders={
-                    "error": mqtt.error_string(result),
-                },
-            )
+            raise HomeAssistantError(mqtt.error_string(result))
 
         self._mqttc.loop_start()
 

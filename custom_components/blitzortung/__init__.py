@@ -98,6 +98,12 @@ async def async_setup_entry(
 
     try:
         await config_entry.runtime_data.connect()
+    except OSError as err:
+        raise ConfigEntryNotReady(
+            translation_domain=DOMAIN,
+            translation_key="mqtt_connection_error",
+            translation_placeholders={"error": str(err)},
+        ) from err
     except Exception as err:
         raise ConfigEntryNotReady(
             translation_domain=DOMAIN,
