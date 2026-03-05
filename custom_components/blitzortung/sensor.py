@@ -182,9 +182,9 @@ class ServerStatSensor(BlitzortungSensor):
             return "clients" if self.kind == "clients_connected" else " "
         return None
 
-    def on_message(self, message: Message) -> None:
+    def on_message(self, topic: str, message: Message) -> None:
         """Handle incoming MQTT messages."""
-        if message.topic == self._topic:
+        if topic == self._topic:
             payload = message.payload.decode("utf-8")
             if self.kind == "uptime":
                 payload = payload.split(" ")[0]

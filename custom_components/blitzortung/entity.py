@@ -15,7 +15,7 @@ class BlitzortungEntity:
     def update_lightning(self, lightning: dict[str, Any]) -> None:
         """Update the sensor data."""
 
-    def on_message(self, message: Message) -> None:
+    def on_message(self, topic: str, message: Message) -> None:
         """Handle incoming MQTT messages."""
 
     def tick(self) -> None:
