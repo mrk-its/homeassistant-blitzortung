@@ -106,7 +106,7 @@ async def async_setup_entry(
 
 async def async_update_options(
     hass: HomeAssistant, config_entry: BlitzortungConfigEntry
-) -> bool:
+) -> None:
     """Update options."""
     _LOGGER.info("async_update_options")
     await hass.config_entries.async_reload(config_entry.entry_id)
