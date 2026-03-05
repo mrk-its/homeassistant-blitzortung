@@ -96,8 +96,6 @@ async def async_setup_entry(
         server_stats=config.get(SERVER_STATS),
     )
 
-    await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
-
     try:
         await config_entry.runtime_data.connect()
     except Exception as err:
@@ -106,6 +104,8 @@ async def async_setup_entry(
             translation_key="mqtt_connect_not_ready",
             translation_placeholders={"error": str(err)},
         ) from err
+
+    await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
 
     if not config_entry.update_listeners:
         config_entry.add_update_listener(async_update_options)
