@@ -1,3 +1,4 @@
 prek==0.3.4
 pytest-homeassistant-custom-component==0.13.316
+python-geohash==0.8.5
 ruff==0.15.4
