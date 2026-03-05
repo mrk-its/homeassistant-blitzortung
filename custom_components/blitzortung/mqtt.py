@@ -195,8 +195,11 @@ class MQTT:
     def _update_matcher(self) -> None:
         """Rebuild the topic matcher from current subscriptions."""
         self._matcher = MQTTMatcher()
+        topics: dict[str, list[Subscription]] = {}
         for subscription in self.subscriptions:
-            self._matcher[subscription.topic] = subscription
+            topics.setdefault(subscription.topic, []).append(subscription)
+        for topic, subscriptions in topics.items():
+            self._matcher[topic] = subscriptions
 
     async def _async_perform_subscription(self, topic: str, qos: int) -> None:
         """Perform a paho-mqtt subscription."""
@@ -255,11 +258,11 @@ class MQTT:
         timestamp = dt_util.utcnow()
 
         try:
-            matched = list(self._matcher.iter_match(msg.topic))
+            matched_groups = list(self._matcher.iter_match(msg.topic))
         except (StopIteration, ValueError):
-            matched = []
+            matched_groups = []
 
-        for subscription in matched:
+        for subscription in [sub for group in matched_groups for sub in group]:
             payload: SubscribePayloadType = msg.payload
             if subscription.encoding is not None:
                 try:
