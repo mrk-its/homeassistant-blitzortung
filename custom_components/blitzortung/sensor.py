@@ -182,9 +182,9 @@ class ServerStatSensor(BlitzortungSensor):
             return "clients" if self.kind == "clients_connected" else " "
         return None
 
-    def on_message(self, topic: str, message: Message) -> None:
+    def on_message(self, message: Message) -> None:
         """Handle incoming MQTT messages."""
-        if topic == self._topic:
+        if message.topic == self._topic:
             payload = message.payload.decode("utf-8")
             if self.kind == "uptime":
                 payload = payload.split(" ")[0]
@@ -285,7 +285,6 @@ async def async_setup_entry(
         "publish_bytes_received",
         "publish_bytes_sent",
         "publish_messages_received",
-        "publish_messages_sent",
         "publish_messages_sent",
         "retained messages_count",
         "store_messages_bytes",

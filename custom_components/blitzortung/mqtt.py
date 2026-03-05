@@ -96,7 +96,7 @@ class MQTT:
         self.keepalive = keepalive
         self.subscriptions: list[Subscription] = []
         self.connected = False
-        self._mqttc: mqtt.Client = None
+        self._mqttc: mqtt.Client
         self._paho_lock = asyncio.Lock()
 
         self.init_client()

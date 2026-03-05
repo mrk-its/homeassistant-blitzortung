@@ -10,7 +10,6 @@ import voluptuous as vol
 from homeassistant.components.persistent_notification import (
     async_create as async_create_notification,
 )
-from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME, UnitOfLength
 from homeassistant.core import HomeAssistant, callback
@@ -335,7 +334,7 @@ class BlitzortungCoordinator:
         if message.topic.startswith("blitzortung/1.1"):
             lightning = json_loads_object(message.payload)
             self.compute_polar_coords(lightning)
-            if lightning[SensorDeviceClass.DISTANCE] < self.radius:
+            if lightning[ATTR_LIGHTNING_DISTANCE] < self.radius:
                 _LOGGER.debug("lightning data: %s", lightning)
                 self.last_time = time.time()
                 for cb in self.lightning_callbacks:
