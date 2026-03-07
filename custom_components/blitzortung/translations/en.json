@@ -36,6 +36,11 @@
       }
     }
   },
+  "exceptions": {
+    "mqtt_connect_not_ready": {
+      "message": "Failed to connect to Blitzortung MQTT server: {error}"
+    }
+  },
   "entity": {
     "sensor": {
       "azimuth": {

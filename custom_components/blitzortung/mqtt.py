@@ -123,20 +123,16 @@ class MQTT:
     async def async_connect(self) -> None:
         """Connect to the host. Does not process messages yet."""
         result: int | None = None
-        try:
-            result = await self.hass.async_add_executor_job(
-                self._mqttc.connect,
-                self.host,
-                self.port,
-                self.keepalive,
-            )
-        except OSError as err:
-            _LOGGER.error("Failed to connect to MQTT server due to exception: %s", err)
+
+        result = await self.hass.async_add_executor_job(
+            self._mqttc.connect,
+            self.host,
+            self.port,
+            self.keepalive,
+        )
 
         if result is not None and result != 0:
-            _LOGGER.error(
-                "Failed to connect to MQTT server: %s", mqtt.error_string(result)
-            )
+            _raise_on_error(result)
 
         self._mqttc.loop_start()
 
