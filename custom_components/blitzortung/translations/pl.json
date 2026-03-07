@@ -8,13 +8,11 @@
         }
       },
       "tracker": {
-        "description": "U\u017cyj encji trackera jako lokalizacji referencyjnej.",
         "data": {
           "location_entity": "\u015aledzenie lokalizacji"
         }
       },
       "coordinates": {
-        "description": "Wprowad\u017a wsp\u00f3\u0142rz\u0119dne referencyjne.",
         "data": {
           "name": "Nazwa instancji integracji",
           "latitude": "Szeroko\u015b\u0107 geograficzna",

@@ -39,7 +39,7 @@ CONFIG_TYPE_SELECTOR = selector.SelectSelector(
                 value=CONFIG_TYPE_TRACKER, label="Tracker entity"
             ),
             selector.SelectOptionDict(
-                value=CONFIG_TYPE_COORDINATES, label="Latitude/Longitude"
+                value=CONFIG_TYPE_COORDINATES, label="Coordinates"
             ),
         ],
         mode=selector.SelectSelectorMode.DROPDOWN,
