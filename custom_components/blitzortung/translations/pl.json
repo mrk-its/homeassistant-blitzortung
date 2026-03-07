@@ -9,7 +9,7 @@
       },
       "tracker": {
         "data": {
-          "location_entity": "\u015aledzenie lokalizacji"
+          "location_entity": "Encja \u015bledzenia lokalizacji"
         }
       },
       "coordinates": {
@@ -24,7 +24,7 @@
         "data": {
           "latitude": "Szeroko\u015b\u0107 geograficzna",
           "longitude": "D\u0142ugo\u015b\u0107 geograficzna",
-          "location_entity": "\u015aledzenie lokalizacji"
+          "location_entity": "Encja \u015bledzenia lokalizacji"
         }
       }
     },
@@ -52,6 +52,14 @@
   "exceptions": {
     "mqtt_connect_not_ready": {
       "message": "Nie uda\u0142o si\u0119 po\u0142\u0105czy\u0107 z serwerem MQTT Blitzortung: {error}"
+    }
+  },
+  "selector": {
+    "config_type": {
+      "options": {
+        "tracker": "Encja \u015bledzenia lokalizacji",
+        "coordinates": "Wsp\u00f3\u0142rz\u0119dne"
+      }
     }
   },
   "entity": {

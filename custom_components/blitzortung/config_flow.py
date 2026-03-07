@@ -35,12 +35,8 @@ LOCATION_ENTITY_SELECTOR = selector.EntitySelector(
 CONFIG_TYPE_SELECTOR = selector.SelectSelector(
     selector.SelectSelectorConfig(
         options=[
-            selector.SelectOptionDict(
-                value=CONFIG_TYPE_TRACKER, label="Tracker entity"
-            ),
-            selector.SelectOptionDict(
-                value=CONFIG_TYPE_COORDINATES, label="Coordinates"
-            ),
+            CONFIG_TYPE_TRACKER,
+            CONFIG_TYPE_COORDINATES,
         ],
         mode=selector.SelectSelectorMode.DROPDOWN,
         translation_key=CONF_CONFIG_TYPE,

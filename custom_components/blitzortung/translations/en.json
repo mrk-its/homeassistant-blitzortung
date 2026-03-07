@@ -54,6 +54,14 @@
       "message": "Failed to connect to Blitzortung MQTT server: {error}"
     }
   },
+  "selector": {
+    "config_type": {
+      "options": {
+        "tracker": "Tracker entity",
+        "coordinates": "Coordinates"
+      }
+    }
+  },
   "entity": {
     "sensor": {
       "azimuth": {
