@@ -2,69 +2,84 @@
   "config": {
     "step": {
       "user": {
-        "description": "Konfiguracja wykrywania błyskawic Blitzortung",
+        "description": "Konfiguracja wykrywania b\u0142yskawic Blitzortung",
         "data": {
-          "name": "Nazwa instancji integracji",
-          "latitude": "Szerokość geograficzna",
-          "longitude": "Długość geograficzna"
+          "config_type": "Typ konfiguracji"
         }
       },
-      "reconfigure_confirm": {
-        "description": "Zaktualizuj konfigurację dla {name}.",
+      "tracker": {
+        "description": "U\u017cyj encji trackera jako lokalizacji referencyjnej.",
         "data": {
-          "latitude": "Szerokość geograficzna",
-          "longitude": "Długość geograficzna"
+          "location_entity": "\u015aledzenie lokalizacji"
+        }
+      },
+      "coordinates": {
+        "description": "Wprowad\u017a wsp\u00f3\u0142rz\u0119dne referencyjne.",
+        "data": {
+          "name": "Nazwa instancji integracji",
+          "latitude": "Szeroko\u015b\u0107 geograficzna",
+          "longitude": "D\u0142ugo\u015b\u0107 geograficzna"
+        }
+      },
+      "reconfigure": {
+        "description": "Zaktualizuj konfiguracj\u0119 dla {name}.",
+        "data": {
+          "latitude": "Szeroko\u015b\u0107 geograficzna",
+          "longitude": "D\u0142ugo\u015b\u0107 geograficzna",
+          "location_entity": "\u015aledzenie lokalizacji"
         }
       }
     },
-    "error": {},
+    "error": {
+      "lat_lon_required": "Podaj szeroko\u015b\u0107 i d\u0142ugo\u015b\u0107 geograficzn\u0105 razem lub wybierz lokalizator urz\u0105dzenia"
+    },
     "abort": {
-      "already_configured": "Usługa jest już skonfigurowana",
-      "reconfigure_successful": "Ponowna konfiguracja powiodła się"
+      "already_configured": "Us\u0142uga jest ju\u017c skonfigurowana",
+      "reconfigure_successful": "Ponowna konfiguracja powiod\u0142a si\u0119"
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "Opcje Blitzortung",
-        "description": "Konfiguracja wykrywania błyskawic Blitzortung",
+        "description": "Konfiguracja wykrywania b\u0142yskawic Blitzortung",
         "data": {
-          "radius": "Promień wykrywania błyskawic (km / mi)",
-          "time_window": "Okno czasowe (minuty, 0 - wyłączony)",
-          "max_tracked_lightnings": "Maksymalna ilość śledzonych błyskawic"
+          "radius": "Promie\u0144 wykrywania b\u0142yskawic (km / mi)",
+          "time_window": "Okno czasowe (minuty, 0 - wy\u0142\u0105czony)",
+          "max_tracked_lightnings": "Maksymalna ilo\u015b\u0107 \u015bledzonych b\u0142yskawic"
         }
       }
     }
   },
   "exceptions": {
     "mqtt_connect_not_ready": {
-      "message": "Nie udało się połączyć z serwerem MQTT Blitzortung: {error}"
+      "message": "Nie uda\u0142o si\u0119 po\u0142\u0105czy\u0107 z serwerem MQTT Blitzortung: {error}"
     }
   },
   "entity": {
     "sensor": {
       "azimuth": {
-        "name": "Azymut błyskawicy",
+        "name": "Azymut b\u0142yskawicy",
         "state_attributes": {
           "lat": {
-            "name": "Szerokość geograficzna"
+            "name": "Szeroko\u015b\u0107 geograficzna"
           },
           "lon": {
-            "name": "Długość geograficzna"
+            "name": "D\u0142ugo\u015b\u0107 geograficzna"
           }
         }
       },
       "counter": {
-        "name": "Licznik błyskawic"
+        "name": "Licznik b\u0142yskawic"
       },
       "distance": {
-        "name": "Odległość błyskawicy",
+        "name": "Odleg\u0142o\u015b\u0107 b\u0142yskawicy",
         "state_attributes": {
           "lat": {
-            "name": "Szerokość geograficzna"
+            "name": "Szeroko\u015b\u0107 geograficzna"
           },
           "lon": {
-            "name": "Długość geograficzna"
+            "name": "D\u0142ugo\u015b\u0107 geograficzna"
           }
         }
       }

@@ -23,3 +23,4 @@ repos:
       - id: pretty-format-json
         args:
           - --no-sort-keys
+          - --autofix
