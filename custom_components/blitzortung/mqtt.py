@@ -132,9 +132,7 @@ class MQTT:
         )
 
         if result is not None and result != 0:
-            raise HomeAssistantError(
-                f"Error talking to MQTT: {mqtt.error_string(result)}"
-            )
+            _raise_on_error(result)
 
         self._mqttc.loop_start()
 
