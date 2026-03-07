@@ -132,7 +132,7 @@ class MQTT:
         )
 
         if result is not None and result != 0:
-             raise HomeAssistantError(
+            raise HomeAssistantError(
                 f"Error talking to MQTT: {mqtt.error_string(result)}"
             )
 
