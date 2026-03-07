@@ -37,9 +37,6 @@
     }
   },
   "exceptions": {
-    "mqtt_connection_error": {
-      "message": "Failed to connect to MQTT server: {error}"
-    },
     "mqtt_connect_not_ready": {
       "message": "Failed to connect to Blitzortung MQTT server: {error}"
     }
