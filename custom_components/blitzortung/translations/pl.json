@@ -4,20 +4,35 @@
       "user": {
         "description": "Konfiguracja wykrywania b\u0142yskawic Blitzortung",
         "data": {
+          "config_type": "Typ konfiguracji"
+        }
+      },
+      "tracker": {
+        "description": "U\u017cyj encji trackera jako lokalizacji referencyjnej.",
+        "data": {
+          "location_entity": "\u015aledzenie lokalizacji"
+        }
+      },
+      "coordinates": {
+        "description": "Wprowad\u017a wsp\u00f3\u0142rz\u0119dne referencyjne.",
+        "data": {
           "name": "Nazwa instancji integracji",
           "latitude": "Szeroko\u015b\u0107 geograficzna",
           "longitude": "D\u0142ugo\u015b\u0107 geograficzna"
         }
       },
-      "reconfigure_confirm": {
+      "reconfigure": {
         "description": "Zaktualizuj konfiguracj\u0119 dla {name}.",
         "data": {
           "latitude": "Szeroko\u015b\u0107 geograficzna",
-          "longitude": "D\u0142ugo\u015b\u0107 geograficzna"
+          "longitude": "D\u0142ugo\u015b\u0107 geograficzna",
+          "location_entity": "\u015aledzenie lokalizacji"
         }
       }
     },
-    "error": {},
+    "error": {
+      "lat_lon_required": "Podaj szeroko\u015b\u0107 i d\u0142ugo\u015b\u0107 geograficzn\u0105 razem lub wybierz lokalizator urz\u0105dzenia"
+    },
     "abort": {
       "already_configured": "Us\u0142uga jest ju\u017c skonfigurowana",
       "reconfigure_successful": "Ponowna konfiguracja powiod\u0142a si\u0119"
@@ -25,7 +40,7 @@
   },
   "options": {
     "step": {
-      "init": {
+      "init":  {
         "title": "Opcje Blitzortung",
         "data": {
           "radius": "Promie\u0144 wykrywania b\u0142yskawic",
