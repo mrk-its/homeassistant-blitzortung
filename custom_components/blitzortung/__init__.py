@@ -13,7 +13,7 @@ from homeassistant.components.persistent_notification import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME, UnitOfLength
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.typing import ConfigType
@@ -98,13 +98,7 @@ async def async_setup_entry(
 
     try:
         await config_entry.runtime_data.connect()
-    except OSError as err:
-        raise ConfigEntryNotReady(
-            translation_domain=DOMAIN,
-            translation_key="mqtt_connection_error",
-            translation_placeholders={"error": str(err)},
-        ) from err
-    except Exception as err:
+    except (HomeAssistantError, OSError) as err:
         raise ConfigEntryNotReady(
             translation_domain=DOMAIN,
             translation_key="mqtt_connect_not_ready",

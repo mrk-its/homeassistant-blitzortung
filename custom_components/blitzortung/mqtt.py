@@ -132,7 +132,10 @@ class MQTT:
         )
 
         if result is not None and result != 0:
-            raise HomeAssistantError(mqtt.error_string(result))
+            raise HomeAssistantError(
+                f"Failed to connect to MQTT server {self.host}:{self.port}:"
+                f" {mqtt.error_string(result)} ({result})"
+            )
 
         self._mqttc.loop_start()
 
