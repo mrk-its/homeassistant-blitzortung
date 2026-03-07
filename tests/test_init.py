@@ -1,11 +1,12 @@
 """Tests for the Blitzortung __init__.py module."""
 
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.blitzortung import BlitzortungCoordinator
@@ -31,6 +32,25 @@ async def test_async_setup_entry(
     await hass.async_block_till_done()
 
     assert mock_config_entry.state is ConfigEntryState.LOADED
+
+
+@pytest.mark.parametrize(
+    "error",
+    [HomeAssistantError("test error"), OSError("connection refused")],
+)
+async def test_async_setup_entry_not_ready(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    mock_mqtt: MagicMock,
+    error: Exception,
+) -> None:
+    """Test ConfigEntryNotReady is raised when MQTT connection fails."""
+    mock_mqtt.return_value.async_connect = AsyncMock(side_effect=error)
+
+    await hass.config_entries.async_setup(mock_config_entry.entry_id)
+    await hass.async_block_till_done()
+
+    assert mock_config_entry.state is ConfigEntryState.SETUP_RETRY
 
 
 @pytest.mark.parametrize(
