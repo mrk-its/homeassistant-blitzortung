@@ -8,14 +8,12 @@
         }
       },
       "tracker": {
-        "description": "Use a tracker entity for the reference location.",
         "data": {
           "name": "Name of the integration instance",
           "location_entity": "Tracker entity"
         }
       },
       "coordinates": {
-        "description": "Enter the reference coordinates.",
         "data": {
           "name": "Name of the integration instance",
           "latitude": "Latitude",
