@@ -1,0 +1,27 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Create zipped release package
+        shell: bash
+        run: |
+          cd "${{ github.workspace }}/custom_components/blitzortung"
+          zip blitzortung.zip -r ./
+
+      - name: Upload zip to release
+        uses: softprops/action-gh-release@v2.5.0
+        with:
+          files: ${{ github.workspace }}/custom_components/blitzortung/blitzortung.zip
