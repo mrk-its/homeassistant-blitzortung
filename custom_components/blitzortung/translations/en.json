@@ -1,5 +1,8 @@
 {
   "config": {
+    "errors": {
+      "entity_without_unique_id": "The selected entity does not have a unique identifier, please use a different entity."
+    },
     "step": {
       "user": {
         "description": "Set up Blitzortung lightning detection",

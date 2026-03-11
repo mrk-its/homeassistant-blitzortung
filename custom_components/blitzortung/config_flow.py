@@ -1,9 +1,11 @@
 """Config flow for blitzortung integration."""
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
+from homeassistant.components.device_tracker import DOMAIN as DEVICE_TRACKER_DOMAIN
+from homeassistant.components.person import DOMAIN as PERSON_DOMAIN
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
@@ -11,6 +13,7 @@ from homeassistant.config_entries import (
     OptionsFlow,
 )
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import selector
 
 from .const import (
@@ -29,7 +32,7 @@ from .const import (
 
 # Only allow tracker-like entities
 LOCATION_ENTITY_SELECTOR = selector.EntitySelector(
-    selector.EntitySelectorConfig(domain=["device_tracker"])
+    selector.EntitySelectorConfig(domain=[DEVICE_TRACKER_DOMAIN, PERSON_DOMAIN])
 )
 
 CONFIG_TYPE_SELECTOR = selector.SelectSelector(
@@ -90,42 +93,50 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Configure the entry using a tracking entity."""
+        errors = {}
+
         if user_input is not None:
             location_entity = user_input[CONF_LOCATION_ENTITY]
 
-            unique_id = f"tracker-{location_entity.lower()}"
-            await self.async_set_unique_id(unique_id)
-            self._abort_if_unique_id_configured()
+            entity_registry = er.async_get(self.hass)
 
-            title = user_input[CONF_NAME]
+            if TYPE_CHECKING:
+                assert entity_registry is not None
 
-            data = {
-                CONF_NAME: title,
-                CONF_CONFIG_TYPE: CONFIG_TYPE_TRACKER,
-                CONF_LOCATION_ENTITY: location_entity,
-            }
+            registry_entry = entity_registry.async_get(location_entity)
 
-            return self.async_create_entry(
-                title=title,
-                data=data,
-                options={
-                    CONF_RADIUS: DEFAULT_RADIUS,
-                    CONF_MAX_TRACKED_LIGHTNINGS: DEFAULT_MAX_TRACKED_LIGHTNINGS,
-                    CONF_TIME_WINDOW: DEFAULT_TIME_WINDOW,
-                },
-            )
+            if registry_entry is None or registry_entry.unique_id is None:
+                errors[CONF_LOCATION_ENTITY] = "entity_without_unique_id"
+
+            if not errors:
+                unique_id = f"{registry_entry.platform}_{registry_entry.unique_id}"
+                await self.async_set_unique_id(unique_id)
+                self._abort_if_unique_id_configured()
+
+                title = registry_entry.original_name or registry_entry.name
+
+                data = {
+                    CONF_NAME: title,
+                    CONF_CONFIG_TYPE: CONFIG_TYPE_TRACKER,
+                    CONF_LOCATION_ENTITY: location_entity,
+                }
+
+                return self.async_create_entry(
+                    title=title,
+                    data=data,
+                    options={
+                        CONF_RADIUS: DEFAULT_RADIUS,
+                        CONF_MAX_TRACKED_LIGHTNINGS: DEFAULT_MAX_TRACKED_LIGHTNINGS,
+                        CONF_TIME_WINDOW: DEFAULT_TIME_WINDOW,
+                    },
+                )
 
         return self.async_show_form(
             step_id="tracker",
             data_schema=vol.Schema(
-                {
-                    vol.Required(
-                        CONF_NAME,
-                        default=self.hass.config.location_name,
-                    ): str,
-                    vol.Required(CONF_LOCATION_ENTITY): LOCATION_ENTITY_SELECTOR,
-                }
+                {vol.Required(CONF_LOCATION_ENTITY): LOCATION_ENTITY_SELECTOR}
             ),
+            errors=errors,
         )
 
     async def async_step_coordinates(

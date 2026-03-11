@@ -1,5 +1,8 @@
 {
   "config": {
+    "errors": {
+      "entity_without_unique_id": "Wybrana encja nie ma unikalnego identyfikatora, u\u017cyj innej encji."
+    },
     "step": {
       "user": {
         "description": "Konfiguracja wykrywania b\u0142yskawic Blitzortung",
