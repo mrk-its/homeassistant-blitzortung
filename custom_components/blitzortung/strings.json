@@ -36,7 +36,8 @@
     },
     "abort": {
       "already_configured": "Service is already configured",
-      "reconfigure_successful": "Re-configuration was successful"
+      "reconfigure_successful": "Re-configuration was successful",
+      "reconfigure_not_supported": "For tracker entity based configuration re-configuration is not supported."
     }
   },
   "options": {

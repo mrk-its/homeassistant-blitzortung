@@ -36,7 +36,8 @@
     },
     "abort": {
       "already_configured": "Us\u0142uga jest ju\u017c skonfigurowana",
-      "reconfigure_successful": "Ponowna konfiguracja powiod\u0142a si\u0119"
+      "reconfigure_successful": "Ponowna konfiguracja powiod\u0142a si\u0119",
+      "reconfigure_not_supported": "W przypadku konfiguracji opartej na encji \u015bledzenia lokalizacji rekonfiguracja nie jest obs\u0142ugiwana."
     }
   },
   "options": {

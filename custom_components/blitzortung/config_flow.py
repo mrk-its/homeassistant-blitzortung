@@ -203,7 +203,7 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
         # Tracker entries show a read-only notice and abort immediately.
         config_type = entry.data.get(CONF_CONFIG_TYPE)
         if config_type == CONFIG_TYPE_TRACKER:
-            return self.async_abort(reason="tracker_reconfigure_not_supported")
+            return self.async_abort(reason="reconfigure_not_supported")
 
         if user_input is not None:
             data: dict[str, Any] = dict(entry.data)
