@@ -18,10 +18,10 @@ from homeassistant.helpers import selector
 
 from .const import (
     CONF_CONFIG_TYPE,
-    CONF_LOCATION_ENTITY,
     CONF_MAX_TRACKED_LIGHTNINGS,
     CONF_RADIUS,
     CONF_TIME_WINDOW,
+    CONF_TRACKER_ENTITY,
     CONFIG_TYPE_COORDINATES,
     CONFIG_TYPE_TRACKER,
     DEFAULT_MAX_TRACKED_LIGHTNINGS,
@@ -31,7 +31,7 @@ from .const import (
 )
 
 # Only allow tracker-like entities
-LOCATION_ENTITY_SELECTOR = selector.EntitySelector(
+TRACKER_ENTITY_SELECTOR = selector.EntitySelector(
     selector.EntitySelectorConfig(domain=[DEVICE_TRACKER_DOMAIN, PERSON_DOMAIN])
 )
 
@@ -96,17 +96,17 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
         errors = {}
 
         if user_input is not None:
-            location_entity = user_input[CONF_LOCATION_ENTITY]
+            tracker_entity = user_input[CONF_TRACKER_ENTITY]
 
             entity_registry = er.async_get(self.hass)
 
             if TYPE_CHECKING:
                 assert entity_registry is not None
 
-            registry_entry = entity_registry.async_get(location_entity)
+            registry_entry = entity_registry.async_get(tracker_entity)
 
             if registry_entry is None or registry_entry.unique_id is None:
-                errors[CONF_LOCATION_ENTITY] = "entity_without_unique_id"
+                errors[CONF_TRACKER_ENTITY] = "entity_without_unique_id"
 
             if not errors:
                 unique_id = f"{registry_entry.platform}_{registry_entry.unique_id}"
@@ -118,7 +118,7 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
                 data = {
                     CONF_NAME: title,
                     CONF_CONFIG_TYPE: CONFIG_TYPE_TRACKER,
-                    CONF_LOCATION_ENTITY: location_entity,
+                    CONF_TRACKER_ENTITY: tracker_entity,
                 }
 
                 return self.async_create_entry(
@@ -134,7 +134,7 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="tracker",
             data_schema=vol.Schema(
-                {vol.Required(CONF_LOCATION_ENTITY): LOCATION_ENTITY_SELECTOR}
+                {vol.Required(CONF_TRACKER_ENTITY): TRACKER_ENTITY_SELECTOR}
             ),
             errors=errors,
         )
@@ -193,7 +193,7 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Handle reconfiguration of an existing entry (coordinates only).
 
-        Changing the location entity type is not supported via reconfigure.
+        Changing the tracker entity type is not supported via reconfigure.
         To change from tracker to coordinates or vice versa, remove and re-add
         the integration.
         """
@@ -228,7 +228,7 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
             )
 
             # Never store a tracker entity in a coordinates entry.
-            data.pop(CONF_LOCATION_ENTITY, None)
+            data.pop(CONF_TRACKER_ENTITY, None)
             data[CONF_CONFIG_TYPE] = CONFIG_TYPE_COORDINATES
 
             self.hass.config_entries.async_update_entry(entry, data=data)

@@ -12,7 +12,7 @@
       },
       "tracker": {
         "data": {
-          "location_entity": "Encja \u015bledzenia lokalizacji"
+          "tracker_entity": "Encja \u015bledzenia lokalizacji"
         }
       },
       "coordinates": {
@@ -27,7 +27,7 @@
         "data": {
           "latitude": "Szeroko\u015b\u0107 geograficzna",
           "longitude": "D\u0142ugo\u015b\u0107 geograficzna",
-          "location_entity": "Encja \u015bledzenia lokalizacji"
+          "tracker_entity": "Encja \u015bledzenia lokalizacji"
         }
       }
     },

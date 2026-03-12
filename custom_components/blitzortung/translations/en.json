@@ -13,7 +13,7 @@
       "tracker": {
         "data": {
           "name": "Name of the integration instance",
-          "location_entity": "Tracker entity"
+          "tracker_entity": "Tracker entity"
         }
       },
       "coordinates": {

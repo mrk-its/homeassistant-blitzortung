@@ -32,10 +32,10 @@ from .const import (
     BLITZORTUNG_CONFIG,
     CONF_CONFIG_TYPE,
     CONF_IDLE_RESET_TIMEOUT,
-    CONF_LOCATION_ENTITY,
     CONF_MAX_TRACKED_LIGHTNINGS,
     CONF_RADIUS,
     CONF_TIME_WINDOW,
+    CONF_TRACKER_ENTITY,
     CONFIG_TYPE_COORDINATES,
     DEFAULT_IDLE_RESET_TIMEOUT,
     DEFAULT_MAX_TRACKED_LIGHTNINGS,
@@ -78,11 +78,11 @@ async def async_setup_entry(
     if config_type == CONFIG_TYPE_COORDINATES:
         latitude = config_entry.data[CONF_LATITUDE]
         longitude = config_entry.data[CONF_LONGITUDE]
-        location_entity = None
+        tracker_entity = None
     else:
         latitude = None
         longitude = None
-        location_entity = config_entry.data[CONF_LOCATION_ENTITY]
+        tracker_entity = config_entry.data[CONF_TRACKER_ENTITY]
 
     radius = config_entry.options[CONF_RADIUS]
     max_tracked_lightnings = config_entry.options[CONF_MAX_TRACKED_LIGHTNINGS]
@@ -106,7 +106,7 @@ async def async_setup_entry(
         hass,
         latitude=latitude,
         longitude=longitude,
-        location_entity=location_entity,
+        tracker_entity=tracker_entity,
         radius=radius,
         max_tracked_lightnings=max_tracked_lightnings,
         time_window_seconds=time_window_seconds,
@@ -232,7 +232,7 @@ class BlitzortungCoordinator:
         hass: HomeAssistant,
         latitude: float | None,
         longitude: float | None,
-        location_entity: str | None,
+        tracker_entity: str | None,
         radius: int,
         max_tracked_lightnings: int,
         time_window_seconds: int,
@@ -240,7 +240,7 @@ class BlitzortungCoordinator:
     ) -> None:
         """Initialize."""
         self.hass = hass
-        self.location_entity = location_entity
+        self.tracker_entity = tracker_entity
         self.latitude = latitude
         self.longitude = longitude
         self.radius = radius
@@ -260,7 +260,7 @@ class BlitzortungCoordinator:
         self._location_unsubscribe: Callable[[], None] | None = None
         self._pending_refresh_task: asyncio.Task[None] | None = None
 
-        if self.location_entity is None:
+        if self.tracker_entity is None:
             if TYPE_CHECKING:
                 assert self.latitude is not None
                 assert self.longitude is not None
@@ -268,18 +268,16 @@ class BlitzortungCoordinator:
             self.geohash_overlap = geohash_overlap(
                 self.latitude, self.longitude, self.radius
             )
-        # If configured, initialize reference coordinates from the location entity.
+        # If configured, initialize reference coordinates from the tracker entity.
         # If the tracker has no state yet, lat/lon remain None and geohash_overlap
         # stays empty — subscriptions will be set up once the tracker reports.
         else:
-            self._apply_location_entity_state(
-                self.hass.states.get(self.location_entity)
-            )
+            self._apply_tracker_entity_state(self.hass.states.get(self.tracker_entity))
             self.geohash_overlap = geohash_overlap(
                 self.latitude, self.longitude, self.radius
             )
-            self._location_unsubscribe = async_track_state_change_event(
-                self.hass, [self.location_entity], self._handle_location_entity_change
+            self._tracker_unsubscribe = async_track_state_change_event(
+                self.hass, [self.tracker_entity], self._handle_tracker_entity_change
             )
 
         _LOGGER.info(
@@ -316,12 +314,12 @@ class BlitzortungCoordinator:
             sensor.async_write_ha_state()
 
     @callback
-    def _handle_location_entity_change(self, event: Any) -> None:
-        """Handle updates from the configured location entity."""
+    def _handle_tracker_entity_change(self, event: Any) -> None:
+        """Handle updates from the configured tracker entity."""
         if self.unloading:
             return
         new_state = event.data.get("new_state")
-        if self._apply_location_entity_state(new_state):
+        if self._apply_tracker_entity_state(new_state):
             # Cancel any pending refresh to avoid race conditions when coordinates
             # change rapidly (e.g. a fast-moving vehicle).
             if self._pending_refresh_task and not self._pending_refresh_task.done():
@@ -332,12 +330,12 @@ class BlitzortungCoordinator:
             for sensor in self.sensors:
                 sensor.async_write_ha_state()
 
-    def _apply_location_entity_state(self, state: Any) -> bool:
+    def _apply_tracker_entity_state(self, state: Any) -> bool:
         """Apply coordinates from a state object. Returns True if changed."""
         if state is None:
             _LOGGER.warning(
-                "Configured location entity '%s' not found.",
-                self.location_entity,
+                "Configured tracker entity '%s' not found.",
+                self.tracker_entity,
             )
             return False
 
@@ -346,8 +344,8 @@ class BlitzortungCoordinator:
 
         if lat is None or lon is None:
             _LOGGER.warning(
-                "Location entity '%s' has no latitude/longitude attributes.",
-                self.location_entity,
+                "Tracker entity '%s' has no latitude/longitude attributes.",
+                self.tracker_entity,
             )
             return False
 
