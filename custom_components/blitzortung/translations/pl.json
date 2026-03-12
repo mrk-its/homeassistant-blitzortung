@@ -1,8 +1,5 @@
 {
   "config": {
-    "errors": {
-      "entity_without_unique_id": "Wybrana encja nie ma unikalnego identyfikatora, u\u017cyj innej encji."
-    },
     "step": {
       "user": {
         "description": "Konfiguracja wykrywania b\u0142yskawic Blitzortung",
@@ -32,7 +29,8 @@
       }
     },
     "error": {
-      "lat_lon_required": "Podaj szeroko\u015b\u0107 i d\u0142ugo\u015b\u0107 geograficzn\u0105 razem lub wybierz lokalizator urz\u0105dzenia"
+      "entity_without_unique_id": "Wybrana encja nie ma unikalnego identyfikatora, u\u017cyj innej encji.",
+      "entity_without_coordinates": "Wybrana encja nie dostarcza wsp\u00f3\u0142rz\u0119dnych."
     },
     "abort": {
       "already_configured": "Us\u0142uga jest ju\u017c skonfigurowana",
@@ -60,6 +58,9 @@
   "exceptions": {
     "mqtt_connect_not_ready": {
       "message": "Nie uda\u0142o si\u0119 po\u0142\u0105czy\u0107 z serwerem MQTT Blitzortung: {error}"
+    },
+    "no_coordinates_from_tracker": {
+      "message": "Encja \u015bledzenia lokalizacji {tracker_entity} nie dostarcza wsp\u00f3\u0142rz\u0119dnych."
     }
   },
   "selector": {

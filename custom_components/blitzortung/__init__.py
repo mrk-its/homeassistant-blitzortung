@@ -50,6 +50,7 @@ from .const import (
 from .entity import BlitzortungEntity
 from .geohash_utils import geohash_overlap
 from .mqtt import MQTT, MQTT_CONNECTED, MQTT_DISCONNECTED, Message
+from .utils import get_coordinates_from_tracker_entity
 from .version import __version__
 
 _LOGGER = logging.getLogger(__name__)
@@ -93,6 +94,19 @@ async def async_setup_entry(
             "Large number of tracked lightnings: %s, it may lead to"
             "bigger memory usage / unstable frontend",
             max_tracked_lightnings,
+        )
+
+    if tracker_entity is not None:
+        coordinates = get_coordinates_from_tracker_entity(hass, tracker_entity)
+        if coordinates is None:
+            raise ConfigEntryNotReady(
+                translation_domain=DOMAIN,
+                translation_key="no_coordinates_from_tracker",
+                translation_placeholders={"tracker_entity": tracker_entity},
+            )
+
+        _LOGGER.info(
+            "Got coordinates %s from tracker entity '%s'", coordinates, tracker_entity
         )
 
     if hass.config.units == IMPERIAL_SYSTEM:

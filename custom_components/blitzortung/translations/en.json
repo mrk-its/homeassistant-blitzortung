@@ -1,8 +1,5 @@
 {
   "config": {
-    "errors": {
-      "entity_without_unique_id": "The selected entity does not have a unique identifier, please use a different entity."
-    },
     "step": {
       "user": {
         "description": "Set up Blitzortung lightning detection",
@@ -32,7 +29,8 @@
       }
     },
     "error": {
-      "lat_lon_required": "Provide latitude and longitude together."
+      "entity_without_unique_id": "The selected entity does not have a unique identifier, please use a different entity.",
+      "entity_without_coordinates": "The selected tracker entity does not provide coordinates."
     },
     "abort": {
       "already_configured": "Service is already configured",
@@ -60,6 +58,9 @@
   "exceptions": {
     "mqtt_connect_not_ready": {
       "message": "Failed to connect to Blitzortung MQTT server: {error}"
+    },
+    "no_coordinates_from_tracker": {
+      "message": "Tracker entity {tracker_entity} does not provide coordinates."
     }
   },
   "selector": {
