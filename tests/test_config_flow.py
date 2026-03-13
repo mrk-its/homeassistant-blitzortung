@@ -61,8 +61,8 @@ async def test_user_flow_success_coordinates(hass: HomeAssistant) -> None:
 
 
 @pytest.mark.asyncio
-async def test_user_flow_already_configured(hass: HomeAssistant) -> None:
-    """Test user flow when already configured."""
+async def test_user_flow_already_configured_coordinates(hass: HomeAssistant) -> None:
+    """Test user flow when already configured for coordinates."""
     mock_entry = MockConfigEntry(
         domain=DOMAIN,
         data={
@@ -75,9 +75,23 @@ async def test_user_flow_already_configured(hass: HomeAssistant) -> None:
     mock_entry.add_to_hass(hass)
 
     result = await hass.config_entries.flow.async_init(
-        DOMAIN,
-        context={"source": SOURCE_USER},
-        data={
+        DOMAIN, context={"source": SOURCE_USER}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "user"
+
+    # Step 1: choose config type
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        user_input={CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES},
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "coordinates"
+
+    # Step 2: same coords -> should abort
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        user_input={
             CONF_NAME: "Test Location",
             CONF_LATITUDE: 50.0,
             CONF_LONGITUDE: 10.0,
