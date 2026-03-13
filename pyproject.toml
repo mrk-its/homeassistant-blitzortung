@@ -31,6 +31,7 @@ exclude = [
     "ARG001",    # Unused function argument
     "PLR2004",   # Magic value used in comparison
     "S101",      # Use of `assert` detected
+    "SLF001",    # Private member accessed
 ]
 
 [tool.ruff.lint.mccabe]
