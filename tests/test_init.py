@@ -13,10 +13,12 @@ from custom_components.blitzortung import BlitzortungCoordinator
 from custom_components.blitzortung.const import (
     ATTR_LIGHTNING_AZIMUTH,
     ATTR_LIGHTNING_DISTANCE,
+    CONF_CONFIG_TYPE,
     CONF_IDLE_RESET_TIMEOUT,
     CONF_MAX_TRACKED_LIGHTNINGS,
     CONF_RADIUS,
     CONF_TIME_WINDOW,
+    CONFIG_TYPE_COORDINATES,
     DEFAULT_IDLE_RESET_TIMEOUT,
     DEFAULT_MAX_TRACKED_LIGHTNINGS,
     DEFAULT_TIME_WINDOW,
@@ -71,7 +73,7 @@ def test_compute_polar_coords(
 ) -> None:
     """Test compute_polar_coords with various lightning locations."""
     hass = MagicMock()
-    coordinator = BlitzortungCoordinator(hass, 0.0, 0.0, 100, 500, 600, 60, False)
+    coordinator = BlitzortungCoordinator(hass, 0.0, 0.0, None, 100, 500, 600, False)
     lightning = {"lat": lightning_lat, "lon": lightning_lon}
     coordinator.compute_polar_coords(lightning)
     assert lightning[ATTR_LIGHTNING_DISTANCE] == expected_distance
@@ -102,7 +104,8 @@ async def test_migrate_entry_v1_unique_id(
 
     assert config_entry.state is ConfigEntryState.LOADED
     assert config_entry.unique_id == "50.0-10.0"
-    assert config_entry.version == 5
+    assert config_entry.version == 6
+    assert config_entry.data[CONF_CONFIG_TYPE] == CONFIG_TYPE_COORDINATES
 
 
 async def test_migrate_entry_v2_adds_idle_reset_timeout(
@@ -128,7 +131,8 @@ async def test_migrate_entry_v2_adds_idle_reset_timeout(
 
     assert config_entry.state is ConfigEntryState.LOADED
     assert config_entry.unique_id == "50.0-10.0"
-    assert config_entry.version == 5
+    assert config_entry.version == 6
+    assert config_entry.data[CONF_CONFIG_TYPE] == CONFIG_TYPE_COORDINATES
 
     # v2->v3 adds idle_reset_timeout with the default; later migrations rename it,
     # so by v5 the default value is exposed as time_window
@@ -163,7 +167,8 @@ async def test_migrate_entry_v3_renames_idle_reset_to_time_window(
 
     assert config_entry.state is ConfigEntryState.LOADED
     assert config_entry.unique_id == "50.0-10.0"
-    assert config_entry.version == 5
+    assert config_entry.version == 6
+    assert config_entry.data[CONF_CONFIG_TYPE] == CONFIG_TYPE_COORDINATES
 
     # idle_reset_timeout value should have been moved to time_window
     assert config_entry.options[CONF_TIME_WINDOW] == 45
@@ -192,7 +197,8 @@ async def test_migrate_entry_v4_uses_defaults_when_missing(
 
     assert config_entry.state is ConfigEntryState.LOADED
     assert config_entry.unique_id == "50.0-10.0"
-    assert config_entry.version == 5
+    assert config_entry.version == 6
+    assert config_entry.data[CONF_CONFIG_TYPE] == CONFIG_TYPE_COORDINATES
 
     # Should fall back to hass.config values
     assert config_entry.data[CONF_LATITUDE] == 50.0

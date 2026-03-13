@@ -9,9 +9,11 @@ from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.blitzortung.const import (
+    CONF_CONFIG_TYPE,
     CONF_MAX_TRACKED_LIGHTNINGS,
     CONF_RADIUS,
     CONF_TIME_WINDOW,
+    CONFIG_TYPE_COORDINATES,
     DOMAIN,
 )
 
@@ -25,6 +27,7 @@ def mock_config_entry(hass: HomeAssistant) -> MockConfigEntry:
             CONF_NAME: "Test Location",
             CONF_LATITUDE: 50.0,
             CONF_LONGITUDE: 10.0,
+            CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
         },
         unique_id="50.0-10.0",
         version=5,
