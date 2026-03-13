@@ -2,7 +2,11 @@
 
 import pytest
 from homeassistant.config_entries import SOURCE_USER
-from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME
+from homeassistant.const import (
+    CONF_LATITUDE,
+    CONF_LONGITUDE,
+    CONF_NAME,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -12,7 +16,9 @@ from custom_components.blitzortung.const import (
     CONF_MAX_TRACKED_LIGHTNINGS,
     CONF_RADIUS,
     CONF_TIME_WINDOW,
+    CONF_TRACKER_ENTITY,
     CONFIG_TYPE_COORDINATES,
+    CONFIG_TYPE_TRACKER,
     DOMAIN,
 )
 
@@ -153,3 +159,27 @@ async def test_options_flow_success(
         CONF_TIME_WINDOW: 300,
         CONF_MAX_TRACKED_LIGHTNINGS: 150,
     }
+
+
+@pytest.mark.asyncio
+async def test_reconfigure_flow_not_supported(hass: HomeAssistant) -> None:
+    """Test that reconfigure for a tracker entry aborts immediately."""
+    entity_id = "device_tracker.original_tracker"
+    hass.states.async_set(entity_id, "home")
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            CONF_NAME: "Tracked Location",
+            CONF_CONFIG_TYPE: CONFIG_TYPE_TRACKER,
+            CONF_TRACKER_ENTITY: entity_id,
+        },
+        unique_id="device_tracker_unique_id",
+        version=6,
+    )
+    entry.add_to_hass(hass)
+
+    result = await entry.start_reconfigure_flow(hass)
+
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_not_supported"
