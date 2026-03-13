@@ -169,8 +169,8 @@ async def test_options_flow_success(
 async def test_user_flow_success_tracker(hass: HomeAssistant, platform: str) -> None:
     """Test successful user flow for tracker entity."""
     entity_id = f"{platform}.test_phone"
-    registry = er.async_get(hass)
-    registry.async_get_or_create(
+    entity_registry = er.async_get(hass)
+    entity_registry.async_get_or_create(
         platform,
         platform,
         "unique_1234",
@@ -194,7 +194,7 @@ async def test_user_flow_success_tracker(hass: HomeAssistant, platform: str) -> 
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "tracker"
 
-    # Step 2: provide name + entity
+    # Step 2: provide entity
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"],
         user_input={CONF_TRACKER_ENTITY: entity_id},
@@ -236,13 +236,50 @@ async def test_tracker_entity_without_unique_id(hass: HomeAssistant) -> None:
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "tracker"
 
-    # Step 2: provide name + entity
+    # Step 2: provide entity
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"],
         user_input={CONF_TRACKER_ENTITY: entity_id},
     )
 
     assert result["errors"] == {"base": "entity_without_unique_id"}
+
+
+@pytest.mark.asyncio
+async def test_tracker_entity_without_coordinates(hass: HomeAssistant) -> None:
+    """Test the flow for tracker entity without coordinates."""
+    entity_id = "device_tracker.test_phone"
+    entity_registry = er.async_get(hass)
+    entity_registry.async_get_or_create(
+        "device_tracker",
+        "device_tracker",
+        "unique_1234",
+        suggested_object_id="test_phone",
+        original_name="Test phone",
+    )
+    hass.states.async_set(entity_id, "home")
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": SOURCE_USER}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "user"
+
+    # Step 1: choose tracker config type
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        user_input={CONF_CONFIG_TYPE: CONFIG_TYPE_TRACKER},
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "tracker"
+
+    # Step 2: provide entity
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        user_input={CONF_TRACKER_ENTITY: entity_id},
+    )
+
+    assert result["errors"] == {"base": "entity_without_coordinates"}
 
 
 @pytest.mark.asyncio
