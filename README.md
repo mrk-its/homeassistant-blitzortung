@@ -20,7 +20,9 @@ Place `custom_components/blitzortung` directory inside custom_components dir and
 This component is available on HACS default
 
 # Configuration
-Search for Blitzortung on `Configuration/Integrations` page. After adding integration, you can optionally configure the location and radius with Blitzortung/Options (by default your home location is used with 100km radius).
+To configute the integration go to **Settings** >> **Devices & services** >> **Add integration** and search for **Blitzortung**. During configuration there are two ways of providing the location:
+- By providing latitude and longitude. Blitzortung integration defaults to the `home` location of your Home Assistant instance but you can override that.
+- By providing a tracker entity (`device_tracker` or `person`). Blitzortung integration will then follow the coordinates provided by the selected entity.
 
 You can change the coordinates for an existing Blitzortung configuration using the reconfigure flow, go to **Settings** >> **Devices & services** >> **Blitzortung** >> **3 dot menu** >> **Reconfigure**.
 
