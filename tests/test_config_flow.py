@@ -8,22 +8,33 @@ from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.blitzortung.const import (
+    CONF_CONFIG_TYPE,
     CONF_MAX_TRACKED_LIGHTNINGS,
     CONF_RADIUS,
     CONF_TIME_WINDOW,
+    CONFIG_TYPE_COORDINATES,
     DOMAIN,
 )
 
 
 @pytest.mark.asyncio
-async def test_user_flow_success(hass: HomeAssistant) -> None:
-    """Test successful user flow."""
+async def test_user_flow_success_coordinates(hass: HomeAssistant) -> None:
+    """Test successful user flow for coordinates."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": SOURCE_USER}
     )
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "user"
 
+    # Step 1: choose config type
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        user_input={CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES},
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "coordinates"
+
+    # Step 2: provide coords + name
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"],
         user_input={
@@ -39,6 +50,7 @@ async def test_user_flow_success(hass: HomeAssistant) -> None:
         CONF_NAME: "Test Location",
         CONF_LATITUDE: 50.0,
         CONF_LONGITUDE: 10.0,
+        CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
     }
     assert result["options"] == {
         CONF_RADIUS: 100,
