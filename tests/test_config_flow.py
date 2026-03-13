@@ -113,11 +113,11 @@ async def test_user_flow_already_configured_coordinates(hass: HomeAssistant) -> 
 
 @pytest.mark.asyncio
 async def test_reconfigure_flow_success(
-    hass: HomeAssistant, mock_config_entry: MockConfigEntry
+    hass: HomeAssistant, mock_config_entry_coordinates: MockConfigEntry
 ) -> None:
     """Test successful reconfigure flow."""
-    mock_config_entry.add_to_hass(hass)
-    result = await mock_config_entry.start_reconfigure_flow(hass)
+    mock_config_entry_coordinates.add_to_hass(hass)
+    result = await mock_config_entry_coordinates.start_reconfigure_flow(hass)
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "reconfigure"
 
@@ -131,18 +131,17 @@ async def test_reconfigure_flow_success(
 
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "reconfigure_successful"
-    assert mock_config_entry.data[CONF_LATITUDE] == 51.0
-    assert mock_config_entry.data[CONF_LONGITUDE] == 11.0
+    assert mock_config_entry_coordinates.data[CONF_LATITUDE] == 51.0
+    assert mock_config_entry_coordinates.data[CONF_LONGITUDE] == 11.0
 
 
 @pytest.mark.asyncio
 async def test_options_flow_success(
-    hass: HomeAssistant, mock_config_entry: MockConfigEntry
+    hass: HomeAssistant, mock_config_entry_coordinates: MockConfigEntry
 ) -> None:
     """Test successful options flow."""
-    mock_config_entry.add_to_hass(hass)
     result = await hass.config_entries.options.async_init(
-        mock_config_entry.entry_id, context={"source": "user"}
+        mock_config_entry_coordinates.entry_id, context={"source": "user"}
     )
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "init"
@@ -283,24 +282,14 @@ async def test_tracker_entity_without_coordinates(hass: HomeAssistant) -> None:
 
 
 @pytest.mark.asyncio
-async def test_reconfigure_flow_not_supported(hass: HomeAssistant) -> None:
+async def test_reconfigure_flow_not_supported(
+    hass: HomeAssistant, mock_config_entry_tracker: MockConfigEntry
+) -> None:
     """Test that reconfigure for a tracker entry aborts immediately."""
     entity_id = "device_tracker.original_tracker"
     hass.states.async_set(entity_id, "home")
 
-    entry = MockConfigEntry(
-        domain=DOMAIN,
-        data={
-            CONF_NAME: "Tracked Location",
-            CONF_CONFIG_TYPE: CONFIG_TYPE_TRACKER,
-            CONF_TRACKER_ENTITY: entity_id,
-        },
-        unique_id="device_tracker_unique_id",
-        version=6,
-    )
-    entry.add_to_hass(hass)
-
-    result = await entry.start_reconfigure_flow(hass)
+    result = await mock_config_entry_tracker.start_reconfigure_flow(hass)
 
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "reconfigure_not_supported"

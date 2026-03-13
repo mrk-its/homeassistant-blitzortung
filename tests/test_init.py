@@ -27,13 +27,15 @@ from custom_components.blitzortung.const import (
 
 
 async def test_async_setup_entry(
-    hass: HomeAssistant, mock_config_entry: MockConfigEntry, mock_mqtt: MagicMock
+    hass: HomeAssistant,
+    mock_config_entry_coordinates: MockConfigEntry,
+    mock_mqtt: MagicMock,
 ) -> None:
     """Test async_setup_entry."""
-    await hass.config_entries.async_setup(mock_config_entry.entry_id)
+    await hass.config_entries.async_setup(mock_config_entry_coordinates.entry_id)
     await hass.async_block_till_done()
 
-    assert mock_config_entry.state is ConfigEntryState.LOADED
+    assert mock_config_entry_coordinates.state is ConfigEntryState.LOADED
 
 
 @pytest.mark.parametrize(
@@ -42,17 +44,17 @@ async def test_async_setup_entry(
 )
 async def test_async_setup_entry_not_ready(
     hass: HomeAssistant,
-    mock_config_entry: MockConfigEntry,
+    mock_config_entry_coordinates: MockConfigEntry,
     mock_mqtt: MagicMock,
     error: Exception,
 ) -> None:
     """Test ConfigEntryNotReady is raised when MQTT connection fails."""
     mock_mqtt.return_value.async_connect.side_effect = error
 
-    await hass.config_entries.async_setup(mock_config_entry.entry_id)
+    await hass.config_entries.async_setup(mock_config_entry_coordinates.entry_id)
     await hass.async_block_till_done()
 
-    assert mock_config_entry.state is ConfigEntryState.SETUP_RETRY
+    assert mock_config_entry_coordinates.state is ConfigEntryState.SETUP_RETRY
 
 
 @pytest.mark.parametrize(
