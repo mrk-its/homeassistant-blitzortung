@@ -66,7 +66,7 @@ def _get_reconfigure_schema(entry: ConfigEntry) -> vol.Schema:
     )
 
 
-def _validate_tracker_input(
+def _validate_input_tracker(
     hass: HomeAssistant, user_input: dict[str, Any]
 ) -> tuple[str, str]:
     """Validate user input for tracker entity."""
@@ -124,7 +124,7 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             try:
-                unique_id, title = _validate_tracker_input(self.hass, user_input)
+                unique_id, title = _validate_input_tracker(self.hass, user_input)
             except BlitzortungNoUniqueIdError:
                 errors["base"] = "entity_without_unique_id"
             except BlitzortungNoCoordinatesError:

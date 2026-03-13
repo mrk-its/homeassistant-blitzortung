@@ -216,6 +216,36 @@ async def test_user_flow_success_tracker(hass: HomeAssistant, platform: str) -> 
 
 
 @pytest.mark.asyncio
+async def test_tracker_entity_without_unique_id(hass: HomeAssistant) -> None:
+    """Test the flow for tracker entity without unique ID."""
+    entity_id = "device_tracker.test_phone"
+    attrs = {ATTR_LATITUDE: 50.0, ATTR_LONGITUDE: 10.0}
+    hass.states.async_set(entity_id, "home", attrs)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": SOURCE_USER}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "user"
+
+    # Step 1: choose tracker config type
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        user_input={CONF_CONFIG_TYPE: CONFIG_TYPE_TRACKER},
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "tracker"
+
+    # Step 2: provide name + entity
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        user_input={CONF_TRACKER_ENTITY: entity_id},
+    )
+
+    assert result["errors"] == {"base": "entity_without_unique_id"}
+
+
+@pytest.mark.asyncio
 async def test_reconfigure_flow_not_supported(hass: HomeAssistant) -> None:
     """Test that reconfigure for a tracker entry aborts immediately."""
     entity_id = "device_tracker.original_tracker"
