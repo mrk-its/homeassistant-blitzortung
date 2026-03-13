@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from homeassistant.config_entries import ConfigEntryState
-from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME
+from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME, STATE_HOME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -60,7 +60,7 @@ async def test_async_setup_entry_not_ready_coordinates(
 async def test_async_setup_entry_tracker(
     hass: HomeAssistant,
     mock_config_entry_tracker: MockConfigEntry,
-    mock_tracker_entity: None,
+    mock_tracker_entity: str,
     mock_mqtt: MagicMock,
 ) -> None:
     """Test async_setup_entry for tracker entry."""
@@ -68,6 +68,20 @@ async def test_async_setup_entry_tracker(
     await hass.async_block_till_done()
 
     assert mock_config_entry_tracker.state is ConfigEntryState.LOADED
+
+
+async def test_async_setup_entry_not_ready_tracker(
+    hass: HomeAssistant,
+    mock_config_entry_tracker: MockConfigEntry,
+    mock_tracker_entity: str,
+    mock_mqtt: MagicMock,
+) -> None:
+    """Test ConfigEntryNotReady is raised when MQTT connection fails."""
+    hass.states.async_set(mock_tracker_entity, STATE_HOME)
+    await hass.config_entries.async_setup(mock_config_entry_tracker.entry_id)
+    await hass.async_block_till_done()
+
+    assert mock_config_entry_tracker.state is ConfigEntryState.SETUP_RETRY
 
 
 @pytest.mark.parametrize(
