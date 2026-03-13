@@ -4,8 +4,17 @@ from collections.abc import Generator
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME
+from homeassistant.components.device_tracker import DOMAIN as DEVICE_TRACKER_DOMAIN
+from homeassistant.const import (
+    ATTR_LATITUDE,
+    ATTR_LONGITUDE,
+    CONF_LATITUDE,
+    CONF_LONGITUDE,
+    CONF_NAME,
+    STATE_HOME,
+)
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.blitzortung.const import (
@@ -79,6 +88,26 @@ def mock_mqtt() -> Generator[MagicMock]:
         mock_mqtt.connected = True
 
         yield mock_mqtt_class
+
+
+@pytest.fixture
+def mock_tracker_entity(hass: HomeAssistant) -> str:
+    """Mock a tracker entity."""
+    entity_id = f"{DEVICE_TRACKER_DOMAIN}.test_phone"
+
+    entity_registry = er.async_get(hass)
+    entity_registry.async_get_or_create(
+        DEVICE_TRACKER_DOMAIN,
+        DEVICE_TRACKER_DOMAIN,
+        "unique_1234",
+        suggested_object_id="test_phone",
+        original_name="Test phone",
+    )
+
+    attrs = {ATTR_LATITUDE: 50.0, ATTR_LONGITUDE: 10.0}
+    hass.states.async_set(entity_id, STATE_HOME, attrs)
+
+    return entity_id
 
 
 @pytest.fixture(autouse=True)

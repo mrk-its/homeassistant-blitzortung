@@ -1,6 +1,8 @@
 """Tests for the Blitzortung config flow."""
 
 import pytest
+from homeassistant.components.device_tracker import DOMAIN as DEVICE_TRACKER_DOMAIN
+from homeassistant.components.person import DOMAIN as PERSON_DOMAIN
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.const import (
     ATTR_LATITUDE,
@@ -8,6 +10,7 @@ from homeassistant.const import (
     CONF_LATITUDE,
     CONF_LONGITUDE,
     CONF_NAME,
+    STATE_HOME,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
@@ -163,7 +166,7 @@ async def test_options_flow_success(
     }
 
 
-@pytest.mark.parametrize("platform", ["device_tracker", "person"])
+@pytest.mark.parametrize("platform", [DEVICE_TRACKER_DOMAIN, PERSON_DOMAIN])
 @pytest.mark.asyncio
 async def test_user_flow_success_tracker(hass: HomeAssistant, platform: str) -> None:
     """Test successful user flow for tracker entity."""
@@ -177,7 +180,7 @@ async def test_user_flow_success_tracker(hass: HomeAssistant, platform: str) -> 
         original_name="Test phone",
     )
     attrs = {ATTR_LATITUDE: 50.0, ATTR_LONGITUDE: 10.0}
-    hass.states.async_set(entity_id, "home", attrs)
+    hass.states.async_set(entity_id, STATE_HOME, attrs)
 
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": SOURCE_USER}
@@ -219,7 +222,7 @@ async def test_tracker_entity_without_unique_id(hass: HomeAssistant) -> None:
     """Test the flow for tracker entity without unique ID."""
     entity_id = "device_tracker.test_phone"
     attrs = {ATTR_LATITUDE: 50.0, ATTR_LONGITUDE: 10.0}
-    hass.states.async_set(entity_id, "home", attrs)
+    hass.states.async_set(entity_id, STATE_HOME, attrs)
 
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": SOURCE_USER}
@@ -256,7 +259,7 @@ async def test_tracker_entity_without_coordinates(hass: HomeAssistant) -> None:
         suggested_object_id="test_phone",
         original_name="Test phone",
     )
-    hass.states.async_set(entity_id, "home")
+    hass.states.async_set(entity_id, STATE_HOME)
 
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": SOURCE_USER}
@@ -287,7 +290,7 @@ async def test_reconfigure_flow_not_supported(
 ) -> None:
     """Test that reconfigure for a tracker entry aborts immediately."""
     entity_id = "device_tracker.original_tracker"
-    hass.states.async_set(entity_id, "home")
+    hass.states.async_set(entity_id, STATE_HOME)
 
     result = await mock_config_entry_tracker.start_reconfigure_flow(hass)
 

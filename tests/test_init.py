@@ -26,12 +26,12 @@ from custom_components.blitzortung.const import (
 )
 
 
-async def test_async_setup_entry(
+async def test_async_setup_entry_coordinates(
     hass: HomeAssistant,
     mock_config_entry_coordinates: MockConfigEntry,
     mock_mqtt: MagicMock,
 ) -> None:
-    """Test async_setup_entry."""
+    """Test async_setup_entry for corrdinates entry."""
     await hass.config_entries.async_setup(mock_config_entry_coordinates.entry_id)
     await hass.async_block_till_done()
 
@@ -42,7 +42,7 @@ async def test_async_setup_entry(
     "error",
     [HomeAssistantError("test error"), OSError("connection refused")],
 )
-async def test_async_setup_entry_not_ready(
+async def test_async_setup_entry_not_ready_coordinates(
     hass: HomeAssistant,
     mock_config_entry_coordinates: MockConfigEntry,
     mock_mqtt: MagicMock,
@@ -55,6 +55,19 @@ async def test_async_setup_entry_not_ready(
     await hass.async_block_till_done()
 
     assert mock_config_entry_coordinates.state is ConfigEntryState.SETUP_RETRY
+
+
+async def test_async_setup_entry_tracker(
+    hass: HomeAssistant,
+    mock_config_entry_tracker: MockConfigEntry,
+    mock_tracker_entity: None,
+    mock_mqtt: MagicMock,
+) -> None:
+    """Test async_setup_entry for tracker entry."""
+    await hass.config_entries.async_setup(mock_config_entry_tracker.entry_id)
+    await hass.async_block_till_done()
+
+    assert mock_config_entry_tracker.state is ConfigEntryState.LOADED
 
 
 @pytest.mark.parametrize(
