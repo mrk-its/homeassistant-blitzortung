@@ -3,12 +3,15 @@
 import pytest
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.const import (
+    ATTR_LATITUDE,
+    ATTR_LONGITUDE,
     CONF_LATITUDE,
     CONF_LONGITUDE,
     CONF_NAME,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
+from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.blitzortung.const import (
@@ -159,6 +162,57 @@ async def test_options_flow_success(
         CONF_TIME_WINDOW: 300,
         CONF_MAX_TRACKED_LIGHTNINGS: 150,
     }
+
+
+@pytest.mark.parametrize("platform", ["device_tracker", "person"])
+@pytest.mark.asyncio
+async def test_user_flow_success_tracker(hass: HomeAssistant, platform: str) -> None:
+    """Test successful user flow for tracker entity."""
+    entity_id = f"{platform}.test_phone"
+    registry = er.async_get(hass)
+    registry.async_get_or_create(
+        platform,
+        platform,
+        "unique_1234",
+        suggested_object_id="test_phone",
+        original_name="Test phone",
+    )
+    attrs = {ATTR_LATITUDE: 50.0, ATTR_LONGITUDE: 10.0}
+    hass.states.async_set(entity_id, "home", attrs)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": SOURCE_USER}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "user"
+
+    # Step 1: choose tracker config type
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        user_input={CONF_CONFIG_TYPE: CONFIG_TYPE_TRACKER},
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "tracker"
+
+    # Step 2: provide name + entity
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        user_input={CONF_TRACKER_ENTITY: entity_id},
+    )
+
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["title"] == "Test phone"
+    assert result["data"] == {
+        CONF_NAME: "Test phone",
+        CONF_TRACKER_ENTITY: entity_id,
+        CONF_CONFIG_TYPE: CONFIG_TYPE_TRACKER,
+    }
+    assert result["options"] == {
+        CONF_RADIUS: 100,
+        CONF_MAX_TRACKED_LIGHTNINGS: 100,
+        CONF_TIME_WINDOW: 120,
+    }
+    assert result["result"].unique_id == f"{platform}_unique_1234"
 
 
 @pytest.mark.asyncio
