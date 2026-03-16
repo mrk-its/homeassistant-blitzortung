@@ -12,7 +12,14 @@ from homeassistant.components.persistent_notification import (
     async_create as async_create_notification,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME, UnitOfLength
+from homeassistant.const import (
+    ATTR_LATITUDE,
+    ATTR_LONGITUDE,
+    CONF_LATITUDE,
+    CONF_LONGITUDE,
+    CONF_NAME,
+    UnitOfLength,
+)
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
@@ -357,8 +364,8 @@ class BlitzortungCoordinator:
             )
             return False
 
-        lat = state.attributes.get("latitude")
-        lon = state.attributes.get("longitude")
+        lat = state.attributes.get(ATTR_LATITUDE)
+        lon = state.attributes.get(ATTR_LONGITUDE)
 
         if lat is None or lon is None:
             _LOGGER.warning(
@@ -375,6 +382,7 @@ class BlitzortungCoordinator:
 
         self.latitude = lat
         self.longitude = lon
+
         return True
 
     async def _async_refresh_geohash_subscriptions(self) -> None:
