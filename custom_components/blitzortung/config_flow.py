@@ -50,22 +50,6 @@ CONFIG_TYPE_SELECTOR = selector.SelectSelector(
 )
 
 
-def _get_reconfigure_schema(entry: ConfigEntry) -> vol.Schema:
-    """Build the reconfigure schema with suggested values for coordinate entries."""
-    return vol.Schema(
-        {
-            vol.Optional(
-                CONF_LATITUDE,
-                description={"suggested_value": entry.data.get(CONF_LATITUDE)},
-            ): cv.latitude,
-            vol.Optional(
-                CONF_LONGITUDE,
-                description={"suggested_value": entry.data.get(CONF_LONGITUDE)},
-            ): cv.longitude,
-        }
-    )
-
-
 def _validate_input_tracker(
     hass: HomeAssistant, user_input: dict[str, Any]
 ) -> tuple[str, str]:
@@ -209,52 +193,38 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_reconfigure(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle reconfiguration of an existing entry (coordinates only).
-
-        Changing the tracker entity type is not supported via reconfigure.
-        To change from tracker to coordinates or vice versa, remove and re-add
-        the integration.
-        """
+        """Handle reconfiguration of an existing entry (coordinates only)."""
         entry = self._get_reconfigure_entry()
 
         # Only coordinate entries can be reconfigured this way.
         # Tracker entries show a read-only notice and abort immediately.
-        config_type = entry.data.get(CONF_CONFIG_TYPE)
+        config_type = entry.data[CONF_CONFIG_TYPE]
         if config_type == CONFIG_TYPE_TRACKER:
             return self.async_abort(reason="reconfigure_not_supported")
 
         if user_input is not None:
-            data: dict[str, Any] = dict(entry.data)
-
-            # Preserve stored coordinates if the user clears them.
-            lat = user_input.get(CONF_LATITUDE)
-            lon = user_input.get(CONF_LONGITUDE)
-            if lat in (None, ""):
-                lat = entry.data.get(CONF_LATITUDE)
-            if lon in (None, ""):
-                lon = entry.data.get(CONF_LONGITUDE)
-
-            data[CONF_LATITUDE] = (
-                lat
-                if lat is not None
-                else entry.data.get(CONF_LATITUDE, self.hass.config.latitude)
+            return self.async_update_reload_and_abort(
+                entry,
+                data_updates=user_input,
             )
-            data[CONF_LONGITUDE] = (
-                lon
-                if lon is not None
-                else entry.data.get(CONF_LONGITUDE, self.hass.config.longitude)
-            )
-
-            # Never store a tracker entity in a coordinates entry.
-            data.pop(CONF_TRACKER_ENTITY, None)
-            data[CONF_CONFIG_TYPE] = CONFIG_TYPE_COORDINATES
-
-            self.hass.config_entries.async_update_entry(entry, data=data)
-            return self.async_abort(reason="reconfigure_successful")
 
         return self.async_show_form(
             step_id="reconfigure",
-            data_schema=_get_reconfigure_schema(entry),
+            data_schema=self.add_suggested_values_to_schema(
+                data_schema=vol.Schema(
+                    {
+                        vol.Required(
+                            CONF_LATITUDE,
+                            default=self.hass.config.latitude,
+                        ): cv.latitude,
+                        vol.Required(
+                            CONF_LONGITUDE,
+                            default=self.hass.config.longitude,
+                        ): cv.longitude,
+                    }
+                ),
+                suggested_values=entry.data | (user_input or {}),
+            ),
             description_placeholders={"name": entry.title},
         )
 
