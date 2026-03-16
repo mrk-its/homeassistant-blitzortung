@@ -15,7 +15,7 @@
           "tracker_entity": "Tracker entity"
         },
         "data_description": {
-          "name": "The `device_tracker` or `person` entity whose location will be used by the integration."
+          "tracker_entity": "The `device_tracker` or `person` entity whose location will be used by the integration."
         }
       },
       "coordinates": {

@@ -15,7 +15,7 @@
           "tracker_entity": "Encja \u015bledzenia lokalizacji"
         },
         "data_description": {
-          "name": "Encja `device_tracker` lub `person`, kt\u00f3rej lokalizacja b\u0119dzie u\u017cywana przez integracj\u0119."
+          "tracker_entity": "Encja `device_tracker` lub `person`, kt\u00f3rej lokalizacja b\u0119dzie u\u017cywana przez integracj\u0119."
         }
       },
       "coordinates": {
