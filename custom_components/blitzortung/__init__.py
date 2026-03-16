@@ -287,9 +287,13 @@ class BlitzortungCoordinator:
         # stays empty — subscriptions will be set up once the tracker reports.
         else:
             self._apply_tracker_entity_state(self.hass.states.get(self.tracker_entity))
-            self.geohash_overlap = geohash_overlap(
-                self.latitude, self.longitude, self.radius
-            )
+            if self.latitude is not None and self.longitude is not None:
+                self.geohash_overlap = geohash_overlap(
+                    self.latitude, self.longitude, self.radius
+                )
+            else:
+                # No valid coordinates from tracker yet; defer geohash setup.
+                self.geohash_overlap = set()
             self._tracker_unsubscribe = async_track_state_change_event(
                 self.hass, [self.tracker_entity], self._handle_tracker_entity_change
             )
