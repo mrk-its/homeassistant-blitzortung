@@ -294,7 +294,7 @@ class BlitzortungCoordinator:
             else:
                 # No valid coordinates from tracker yet; defer geohash setup.
                 self.geohash_overlap = set()
-            self._tracker_unsubscribe = async_track_state_change_event(
+            self._location_unsubscribe = async_track_state_change_event(
                 self.hass, [self.tracker_entity], self._handle_tracker_entity_change
             )
 
