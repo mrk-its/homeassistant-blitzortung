@@ -33,7 +33,6 @@ from custom_components.blitzortung.const import (
     DEFAULT_MAX_TRACKED_LIGHTNINGS,
     DEFAULT_TIME_WINDOW,
     DOMAIN,
-    MIN_LOCATION_CHANGE_METERS,
 )
 from custom_components.blitzortung.mqtt import Message
 
@@ -301,7 +300,7 @@ async def test_handle_tracker_entity_change_triggers_refresh(
 async def test_apply_tracker_entity_state_ignores_jitter(
     hass: HomeAssistant, mock_tracker_entity: str
 ) -> None:
-    """Movement below MIN_LOCATION_CHANGE_METERS should be ignored."""
+    """Movement below the minimum location change should be ignored."""
     coordinator = BlitzortungCoordinator(
         hass,
         latitude=None,
@@ -319,7 +318,7 @@ async def test_apply_tracker_entity_state_ignores_jitter(
         STATE_HOME,
         attributes={
             ATTR_LATITUDE: 50.0,
-            ATTR_LONGITUDE: 10.0 + (MIN_LOCATION_CHANGE_METERS / 1_000_000),
+            ATTR_LONGITUDE: 10.0 + (coordinator.min_location_change / 1_000_000),
         },
     )
     await hass.async_block_till_done()

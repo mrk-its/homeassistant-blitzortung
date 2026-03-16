@@ -50,7 +50,7 @@ from .const import (
     DEFAULT_TIME_WINDOW,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
-    MIN_LOCATION_CHANGE_METERS,
+    MIN_LOCATION_CHANGE_MULTIPLIER,
     PLATFORMS,
     SERVER_STATS,
 )
@@ -265,6 +265,7 @@ class BlitzortungCoordinator:
         self.latitude = latitude
         self.longitude = longitude
         self.radius = radius
+        self.min_location_change = radius * MIN_LOCATION_CHANGE_MULTIPLIER * 1000
         self.max_tracked_lightnings = max_tracked_lightnings
         self.time_window_seconds = time_window_seconds
         self.server_stats = server_stats
@@ -377,7 +378,7 @@ class BlitzortungCoordinator:
         # Ignore insignificant GPS jitter
         if self.latitude is not None and self.longitude is not None:
             moved = distance(self.latitude, self.longitude, lat, lon)
-            if moved < MIN_LOCATION_CHANGE_METERS:
+            if moved < self.min_location_change:
                 return False
 
         self.latitude = lat
