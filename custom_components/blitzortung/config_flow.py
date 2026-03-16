@@ -146,18 +146,14 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Configure the entry using fixed coordinates."""
         if user_input is not None:
-            lat = user_input[CONF_LATITUDE]
-            lon = user_input[CONF_LONGITUDE]
-
-            unique_id = f"{lat}-{lon}"
-            await self.async_set_unique_id(unique_id)
+            await self.async_set_unique_id(
+                f"{user_input[CONF_LATITUDE]}-{user_input[CONF_LONGITUDE]}"
+            )
             self._abort_if_unique_id_configured()
 
             data = {
-                CONF_NAME: user_input[CONF_NAME],
                 CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
-                CONF_LATITUDE: lat,
-                CONF_LONGITUDE: lon,
+                **user_input,
             }
 
             return self.async_create_entry(
@@ -203,8 +199,12 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
             return self.async_abort(reason="reconfigure_not_supported")
 
         if user_input is not None:
+            unique_id = f"{user_input[CONF_LATITUDE]}-{user_input[CONF_LONGITUDE]}"
+            await self.async_set_unique_id(unique_id)
+            self._abort_if_unique_id_configured()
             return self.async_update_reload_and_abort(
                 entry,
+                unique_id=unique_id,
                 data_updates=user_input,
             )
 
