@@ -70,14 +70,28 @@ async def test_async_setup_entry_tracker(
     assert mock_config_entry_tracker.state is ConfigEntryState.LOADED
 
 
-async def test_async_setup_entry_not_ready_tracker(
+async def test_async_setup_entry_not_ready_tracker_no_coordinates(
+    hass: HomeAssistant,
+    mock_config_entry_tracker: MockConfigEntry,
+    mock_tracker_entity: str,
+    mock_mqtt: MagicMock,
+) -> None:
+    """Test ConfigEntryNotReady is raised when tracker entity has no coordinates."""
+    hass.states.async_set(mock_tracker_entity, STATE_HOME)
+    await hass.config_entries.async_setup(mock_config_entry_tracker.entry_id)
+    await hass.async_block_till_done()
+
+    assert mock_config_entry_tracker.state is ConfigEntryState.SETUP_RETRY
+
+
+async def test_async_setup_entry_not_ready_tracker_mqtt_fails(
     hass: HomeAssistant,
     mock_config_entry_tracker: MockConfigEntry,
     mock_tracker_entity: str,
     mock_mqtt: MagicMock,
 ) -> None:
     """Test ConfigEntryNotReady is raised when MQTT connection fails."""
-    hass.states.async_set(mock_tracker_entity, STATE_HOME)
+    mock_mqtt.return_value.async_connect.side_effect = HomeAssistantError("test error")
     await hass.config_entries.async_setup(mock_config_entry_tracker.entry_id)
     await hass.async_block_till_done()
 
