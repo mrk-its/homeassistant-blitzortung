@@ -31,7 +31,7 @@ async def test_async_setup_entry_coordinates(
     mock_config_entry_coordinates: MockConfigEntry,
     mock_mqtt: MagicMock,
 ) -> None:
-    """Test async_setup_entry for corrdinates entry."""
+    """Test async_setup_entry for coordinates entry."""
     await hass.config_entries.async_setup(mock_config_entry_coordinates.entry_id)
     await hass.async_block_till_done()
 
