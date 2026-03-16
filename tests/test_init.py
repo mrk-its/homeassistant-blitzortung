@@ -344,3 +344,36 @@ async def test_apply_tracker_entity_state_handles_missing_state(
 
     assert coordinator.latitude == 50.0
     assert coordinator.longitude == 10.0
+
+
+@pytest.mark.asyncio
+async def test_refresh_geohash_subscriptions_when_moved(
+    hass: HomeAssistant,
+) -> None:
+    """When overlap changes and connected, MQTT subscriptions are refreshed."""
+    coordinator = BlitzortungCoordinator(
+        hass,
+        latitude=50.0,
+        longitude=10.0,
+        tracker_entity=None,
+        radius=100,
+        max_tracked_lightnings=100,
+        time_window_seconds=600,
+        server_stats=False,
+    )
+
+    unsub_1 = MagicMock()
+    coordinator._geohash_unsubscribers = [unsub_1]
+
+    async_subscribe = AsyncMock(return_value=MagicMock())
+    coordinator.mqtt_client = MagicMock(
+        connected=True,
+        async_subscribe=async_subscribe,
+    )
+
+    # Move far enough to almost certainly change geohash overlap.
+    coordinator.latitude = 52.0
+    await coordinator._async_refresh_geohash_subscriptions()
+
+    unsub_1.assert_called_once()
+    assert async_subscribe.await_count > 0
