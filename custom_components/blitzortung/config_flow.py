@@ -41,8 +41,8 @@ TRACKER_ENTITY_SELECTOR = selector.EntitySelector(
 CONFIG_TYPE_SELECTOR = selector.SelectSelector(
     selector.SelectSelectorConfig(
         options=[
-            CONFIG_TYPE_TRACKER,
             CONFIG_TYPE_COORDINATES,
+            CONFIG_TYPE_TRACKER,
         ],
         mode=selector.SelectSelectorMode.DROPDOWN,
         translation_key=CONF_CONFIG_TYPE,
@@ -110,7 +110,7 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema(
                 {
                     vol.Required(
-                        CONF_CONFIG_TYPE, default=CONFIG_TYPE_TRACKER
+                        CONF_CONFIG_TYPE, default=CONFIG_TYPE_COORDINATES
                     ): CONFIG_TYPE_SELECTOR,
                 }
             ),
