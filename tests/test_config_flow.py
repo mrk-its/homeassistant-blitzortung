@@ -119,7 +119,6 @@ async def test_reconfigure_flow_success(
     hass: HomeAssistant, mock_config_entry_coordinates: MockConfigEntry
 ) -> None:
     """Test successful reconfigure flow."""
-    mock_config_entry_coordinates.add_to_hass(hass)
     result = await mock_config_entry_coordinates.start_reconfigure_flow(hass)
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "reconfigure"
