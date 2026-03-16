@@ -2,14 +2,20 @@
   "config": {
     "step": {
       "user": {
-        "description": "Konfiguracja wykrywania b\u0142yskawic Blitzortung",
+        "description": "Wybierz typ konfiguracji dla integracji Blitzortung",
         "data": {
           "config_type": "Typ konfiguracji"
+        },
+        "data_description": {
+          "config_type": "Integracja mo\u017ce korzysta\u0107 ze statycznych wsp\u00f3\u0142rz\u0119dnych lub \u015bledzi\u0107 lokalizacj\u0119 encji."
         }
       },
       "tracker": {
         "data": {
           "tracker_entity": "Encja \u015bledzenia lokalizacji"
+        },
+        "data_description": {
+          "name": "Encja `device_tracker` lub `person`, kt\u00f3rej lokalizacja b\u0119dzie u\u017cywana przez integracj\u0119."
         }
       },
       "coordinates": {
@@ -17,14 +23,22 @@
           "name": "Nazwa instancji integracji",
           "latitude": "Szeroko\u015b\u0107 geograficzna",
           "longitude": "D\u0142ugo\u015b\u0107 geograficzna"
+        },
+        "data_description": {
+          "name": "Nazwa, kt\u00f3rej integracja b\u0119dzie u\u017cywa\u0107 dla tej konfiguracji.",
+          "latitude": "Liczba dziesi\u0119tna reprezentuj\u0105ca szeroko\u015b\u0107 geograficzn\u0105.",
+          "longitude": "Liczba dziesi\u0119tna reprezentuj\u0105ca d\u0142ugo\u015b\u0107 geograficzn\u0105."
         }
       },
       "reconfigure": {
         "description": "Zaktualizuj konfiguracj\u0119 dla {name}.",
         "data": {
           "latitude": "Szeroko\u015b\u0107 geograficzna",
-          "longitude": "D\u0142ugo\u015b\u0107 geograficzna",
-          "tracker_entity": "Encja \u015bledzenia lokalizacji"
+          "longitude": "D\u0142ugo\u015b\u0107 geograficzna"
+        },
+        "data_description": {
+          "latitude": "Liczba dziesi\u0119tna reprezentuj\u0105ca szeroko\u015b\u0107 geograficzn\u0105.",
+          "longitude": "Liczba dziesi\u0119tna reprezentuj\u0105ca d\u0142ugo\u015b\u0107 geograficzn\u0105."
         }
       }
     },

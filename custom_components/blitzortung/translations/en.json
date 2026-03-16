@@ -2,15 +2,20 @@
   "config": {
     "step": {
       "user": {
-        "description": "Set up Blitzortung lightning detection",
+        "description": "Select the configuration type for Blitzortung integration",
         "data": {
           "config_type": "Configuration type"
+        },
+        "data_description": {
+          "config_type": "The integration can be configured for static coordinates or follow the location of a tracking entity."
         }
       },
       "tracker": {
         "data": {
-          "name": "Name of the integration instance",
           "tracker_entity": "Tracker entity"
+        },
+        "data_description": {
+          "name": "The `device_tracker` or `person` entity whose location will be used by the integration."
         }
       },
       "coordinates": {
@@ -18,6 +23,11 @@
           "name": "Name of the integration instance",
           "latitude": "Latitude",
           "longitude": "Longitude"
+        },
+        "data_description": {
+          "name": "The name the integration will use for this configuration.",
+          "latitude": "A decimal number representing latitude.",
+          "longitude": "A decimal number representing longitude."
         }
       },
       "reconfigure": {
@@ -25,6 +35,10 @@
         "data": {
           "latitude": "Latitude",
           "longitude": "Longitude"
+        },
+        "data_description": {
+          "latitude": "A decimal number representing latitude.",
+          "longitude": "A decimal number representing longitude."
         }
       }
     },
