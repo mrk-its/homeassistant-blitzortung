@@ -22,14 +22,14 @@ This component is available on HACS default
 # Configuration
 To configure the integration go to **Settings** >> **Devices & services** >> **Add integration** and search for **Blitzortung**. During configuration there are two ways of providing the location:
 - By providing latitude and longitude. Blitzortung integration defaults to the `home` location of your Home Assistant instance but you can override that.
-- By providing a tracker entity (`device_tracker` or `person`). Blitzortung integration will then follow the coordinates provided by the selected entity.
+- By providing a location entity (`device_tracker`, `person` or `zone`). Blitzortung integration will then follow the coordinates provided by the selected entity.
 
 You can change the coordinates for an existing Blitzortung configuration using the reconfigure flow, go to **Settings** >> **Devices & services** >> **Blitzortung** >> **3 dot menu** >> **Reconfigure**.
 
 To change the detection radius, time window, and max tracked lightnings, go to **Settings** >> **Devices & services** >> **Blitzortung** >> **Configure**.
 
 > [!IMPORTANT]
-> If you are using the tracker entity as a coordinate source, the integration will use new coordinates if your location changes by more than 25% of the radius length.
+> If you use a location entity as the coordinate source, the integration will use new coordinates if the location changes by more than 25% of the radius length.
 
 # Reviews and How-Tos
 You can read and see (YouTube) how this component was used in the following community video.
