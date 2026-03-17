@@ -19,12 +19,12 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.blitzortung.const import (
     CONF_CONFIG_TYPE,
+    CONF_LOCATION_ENTITY,
     CONF_MAX_TRACKED_LIGHTNINGS,
     CONF_RADIUS,
     CONF_TIME_WINDOW,
-    CONF_TRACKER_ENTITY,
     CONFIG_TYPE_COORDINATES,
-    CONFIG_TYPE_TRACKER,
+    CONFIG_TYPE_ENTITY,
     DOMAIN,
 )
 
@@ -54,14 +54,14 @@ def mock_config_entry_coordinates(hass: HomeAssistant) -> MockConfigEntry:
 
 
 @pytest.fixture
-def mock_config_entry_tracker(hass: HomeAssistant) -> MockConfigEntry:
-    """Mock config entry for tracker entity."""
+def mock_config_entry_location_entity(hass: HomeAssistant) -> MockConfigEntry:
+    """Mock config entry for location entity."""
     entry = MockConfigEntry(
         domain=DOMAIN,
         data={
             CONF_NAME: "Test phone",
-            CONF_CONFIG_TYPE: CONFIG_TYPE_TRACKER,
-            CONF_TRACKER_ENTITY: "device_tracker.test_phone",
+            CONF_CONFIG_TYPE: CONFIG_TYPE_ENTITY,
+            CONF_LOCATION_ENTITY: "device_tracker.test_phone",
         },
         unique_id="device_tracker_unique_1234",
         version=6,
@@ -91,8 +91,8 @@ def mock_mqtt() -> Generator[MagicMock]:
 
 
 @pytest.fixture
-def mock_tracker_entity(hass: HomeAssistant) -> str:
-    """Mock a tracker entity."""
+def mock_location_entity(hass: HomeAssistant) -> str:
+    """Mock a location entity."""
     entity_id = f"{DEVICE_TRACKER_DOMAIN}.test_phone"
 
     entity_registry = er.async_get(hass)

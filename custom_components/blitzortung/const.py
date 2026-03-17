@@ -33,9 +33,9 @@ CONF_IDLE_RESET_TIMEOUT = "idle_reset_timeout"
 CONF_TIME_WINDOW = "time_window"
 CONF_MAX_TRACKED_LIGHTNINGS = "max_tracked_lightnings"
 
-CONF_TRACKER_ENTITY = "tracker_entity"
+CONF_LOCATION_ENTITY = "location_entity"
 CONF_CONFIG_TYPE = "config_type"
-CONFIG_TYPE_TRACKER = "tracker"
+CONFIG_TYPE_ENTITY = "entity"
 CONFIG_TYPE_COORDINATES = "coordinates"
 
 DEFAULT_IDLE_RESET_TIMEOUT = 120

@@ -10,12 +10,12 @@
           "config_type": "The integration can be configured for static coordinates or follow the location of a tracking entity."
         }
       },
-      "tracker": {
+      "entity": {
         "data": {
-          "tracker_entity": "Tracker entity"
+          "location_entity": "Location entity"
         },
         "data_description": {
-          "tracker_entity": "The `device_tracker` or `person` entity whose location will be used by the integration."
+          "location_entity": "The `device_tracker`, `person` or `zone` entity whose location will be used by the integration."
         }
       },
       "coordinates": {
@@ -44,12 +44,12 @@
     },
     "error": {
       "entity_without_unique_id": "The selected entity does not have a unique identifier, please use a different entity.",
-      "entity_without_coordinates": "The selected tracker entity does not provide coordinates."
+      "entity_without_coordinates": "The selected entity does not provide coordinates."
     },
     "abort": {
       "already_configured": "Service is already configured",
       "reconfigure_successful": "Re-configuration was successful",
-      "reconfigure_not_supported": "For tracker entity based config entry re-configuration is not supported."
+      "reconfigure_not_supported": "For entity based config entry re-configuration is not supported."
     }
   },
   "options": {
@@ -73,14 +73,14 @@
     "mqtt_connect_not_ready": {
       "message": "Failed to connect to Blitzortung MQTT server: {error}"
     },
-    "no_coordinates_from_tracker": {
-      "message": "Tracker entity {tracker_entity} does not provide coordinates."
+    "no_coordinates_from_entity": {
+      "message": "Entity {location_entity} does not provide coordinates."
     }
   },
   "selector": {
     "config_type": {
       "options": {
-        "tracker": "Tracker entity",
+        "entity": "Location entity",
         "coordinates": "Coordinates"
       }
     }

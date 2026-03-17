@@ -10,12 +10,12 @@
           "config_type": "Integracja mo\u017ce korzysta\u0107 ze statycznych wsp\u00f3\u0142rz\u0119dnych lub \u015bledzi\u0107 lokalizacj\u0119 encji."
         }
       },
-      "tracker": {
+      "entity": {
         "data": {
-          "tracker_entity": "Encja \u015bledzenia lokalizacji"
+          "location_entity": "Encja lokalizacji"
         },
         "data_description": {
-          "tracker_entity": "Encja `device_tracker` lub `person`, kt\u00f3rej lokalizacja b\u0119dzie u\u017cywana przez integracj\u0119."
+          "location_entity": "Encja `device_tracker`, `person` lub `zone`, kt\u00f3rej lokalizacja b\u0119dzie u\u017cywana przez integracj\u0119."
         }
       },
       "coordinates": {
@@ -49,7 +49,7 @@
     "abort": {
       "already_configured": "Us\u0142uga jest ju\u017c skonfigurowana",
       "reconfigure_successful": "Ponowna konfiguracja powiod\u0142a si\u0119",
-      "reconfigure_not_supported": "W przypadku konfiguracji opartej na encji \u015bledzenia lokalizacji rekonfiguracja nie jest obs\u0142ugiwana."
+      "reconfigure_not_supported": "W przypadku konfiguracji opartej na encji rekonfiguracja nie jest obs\u0142ugiwana."
     }
   },
   "options": {
@@ -73,14 +73,14 @@
     "mqtt_connect_not_ready": {
       "message": "Nie uda\u0142o si\u0119 po\u0142\u0105czy\u0107 z serwerem MQTT Blitzortung: {error}"
     },
-    "no_coordinates_from_tracker": {
-      "message": "Encja \u015bledzenia lokalizacji {tracker_entity} nie dostarcza wsp\u00f3\u0142rz\u0119dnych."
+    "no_coordinates_from_entity": {
+      "message": "Encja {location_entity} nie dostarcza wsp\u00f3\u0142rz\u0119dnych."
     }
   },
   "selector": {
     "config_type": {
       "options": {
-        "tracker": "Encja \u015bledzenia lokalizacji",
+        "entity": "Encja lokalizacji",
         "coordinates": "Wsp\u00f3\u0142rz\u0119dne"
       }
     }

@@ -4,10 +4,10 @@ from homeassistant.const import ATTR_LATITUDE, ATTR_LONGITUDE
 from homeassistant.core import HomeAssistant
 
 
-def get_coordinates_from_tracker_entity(
+def get_coordinates_from_entity(
     hass: HomeAssistant, entity_id: str
 ) -> tuple[float, float] | None:
-    """Get coordinates from a tracker entity."""
+    """Get coordinates from entity."""
     state = hass.states.get(entity_id)
     if state is None:
         return None

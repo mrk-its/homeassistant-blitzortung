@@ -68,45 +68,45 @@ async def test_async_setup_entry_not_ready_coordinates(
     assert mock_config_entry_coordinates.state is ConfigEntryState.SETUP_RETRY
 
 
-async def test_async_setup_entry_tracker(
+async def test_async_setup_entry_location_entity(
     hass: HomeAssistant,
-    mock_config_entry_tracker: MockConfigEntry,
-    mock_tracker_entity: str,
+    mock_config_entry_location_entity: MockConfigEntry,
+    mock_location_entity: str,
     mock_mqtt: MagicMock,
 ) -> None:
-    """Test async_setup_entry for tracker entry."""
-    await hass.config_entries.async_setup(mock_config_entry_tracker.entry_id)
+    """Test async_setup_entry for location entity entry."""
+    await hass.config_entries.async_setup(mock_config_entry_location_entity.entry_id)
     await hass.async_block_till_done()
 
-    assert mock_config_entry_tracker.state is ConfigEntryState.LOADED
+    assert mock_config_entry_location_entity.state is ConfigEntryState.LOADED
 
 
-async def test_async_setup_entry_not_ready_tracker_no_coordinates(
+async def test_async_setup_entry_not_ready_location_entity_no_coordinates(
     hass: HomeAssistant,
-    mock_config_entry_tracker: MockConfigEntry,
-    mock_tracker_entity: str,
+    mock_config_entry_location_entity: MockConfigEntry,
+    mock_location_entity: str,
     mock_mqtt: MagicMock,
 ) -> None:
-    """Test ConfigEntryNotReady is raised when tracker entity has no coordinates."""
-    hass.states.async_set(mock_tracker_entity, STATE_HOME)
-    await hass.config_entries.async_setup(mock_config_entry_tracker.entry_id)
+    """Test ConfigEntryNotReady is raised when location entity has no coordinates."""
+    hass.states.async_set(mock_location_entity, STATE_HOME)
+    await hass.config_entries.async_setup(mock_config_entry_location_entity.entry_id)
     await hass.async_block_till_done()
 
-    assert mock_config_entry_tracker.state is ConfigEntryState.SETUP_RETRY
+    assert mock_config_entry_location_entity.state is ConfigEntryState.SETUP_RETRY
 
 
-async def test_async_setup_entry_not_ready_tracker_mqtt_fails(
+async def test_async_setup_entry_not_ready_location_entity_mqtt_fails(
     hass: HomeAssistant,
-    mock_config_entry_tracker: MockConfigEntry,
-    mock_tracker_entity: str,
+    mock_config_entry_location_entity: MockConfigEntry,
+    mock_location_entity: str,
     mock_mqtt: MagicMock,
 ) -> None:
     """Test ConfigEntryNotReady is raised when MQTT connection fails."""
     mock_mqtt.return_value.async_connect.side_effect = HomeAssistantError("test error")
-    await hass.config_entries.async_setup(mock_config_entry_tracker.entry_id)
+    await hass.config_entries.async_setup(mock_config_entry_location_entity.entry_id)
     await hass.async_block_till_done()
 
-    assert mock_config_entry_tracker.state is ConfigEntryState.SETUP_RETRY
+    assert mock_config_entry_location_entity.state is ConfigEntryState.SETUP_RETRY
 
 
 @pytest.mark.parametrize(
@@ -268,15 +268,15 @@ async def test_migrate_entry_v4_uses_defaults_when_missing(
 
 
 @pytest.mark.asyncio
-async def test_handle_tracker_entity_change_triggers_refresh(
-    hass: HomeAssistant, mock_tracker_entity: str
+async def test_handle_location_entity_change_triggers_refresh(
+    hass: HomeAssistant, mock_location_entity: str
 ) -> None:
     """A significant tracker update should refresh geohash subscriptions."""
     coordinator = BlitzortungCoordinator(
         hass,
         latitude=None,
         longitude=None,
-        tracker_entity=mock_tracker_entity,
+        location_entity=mock_location_entity,
         radius=100,
         max_tracked_lightnings=100,
         time_window_seconds=600,
@@ -287,7 +287,7 @@ async def test_handle_tracker_entity_change_triggers_refresh(
     coordinator._async_refresh_geohash_subscriptions = AsyncMock()
 
     hass.states.async_set(
-        mock_tracker_entity,
+        mock_location_entity,
         STATE_HOME,
         attributes={ATTR_LATITUDE: 51.0, ATTR_LONGITUDE: 10.0},
     )
@@ -297,15 +297,15 @@ async def test_handle_tracker_entity_change_triggers_refresh(
     coordinator.sensors[0].async_write_ha_state.assert_called_once()
 
 
-async def test_apply_tracker_entity_state_ignores_jitter(
-    hass: HomeAssistant, mock_tracker_entity: str
+async def test_apply_location_entity_state_ignores_jitter(
+    hass: HomeAssistant, mock_location_entity: str
 ) -> None:
     """Movement below the minimum location change should be ignored."""
     coordinator = BlitzortungCoordinator(
         hass,
         latitude=None,
         longitude=None,
-        tracker_entity=mock_tracker_entity,
+        location_entity=mock_location_entity,
         radius=100,
         max_tracked_lightnings=100,
         time_window_seconds=600,
@@ -314,7 +314,7 @@ async def test_apply_tracker_entity_state_ignores_jitter(
 
     # Move by a tiny amount that is effectively "jitter".
     hass.states.async_set(
-        mock_tracker_entity,
+        mock_location_entity,
         STATE_HOME,
         attributes={
             ATTR_LATITUDE: 50.0,
@@ -327,22 +327,22 @@ async def test_apply_tracker_entity_state_ignores_jitter(
     assert coordinator.longitude == 10.0
 
 
-async def test_apply_tracker_entity_state_handles_missing_state(
-    hass: HomeAssistant, mock_tracker_entity: str
+async def test_apply_location_entity_state_handles_missing_state(
+    hass: HomeAssistant, mock_location_entity: str
 ) -> None:
     """Missing/invalid states should be handled gracefully."""
     coordinator = BlitzortungCoordinator(
         hass,
         latitude=None,
         longitude=None,
-        tracker_entity=mock_tracker_entity,
+        location_entity=mock_location_entity,
         radius=100,
         max_tracked_lightnings=100,
         time_window_seconds=600,
         server_stats=False,
     )
 
-    hass.states.async_set(mock_tracker_entity, STATE_HOME)
+    hass.states.async_set(mock_location_entity, STATE_HOME)
     await hass.async_block_till_done()
 
     assert coordinator.latitude == 50.0
@@ -358,7 +358,7 @@ async def test_refresh_geohash_subscriptions_when_moved(
         hass,
         latitude=50.0,
         longitude=10.0,
-        tracker_entity=None,
+        location_entity=None,
         radius=100,
         max_tracked_lightnings=100,
         time_window_seconds=600,
@@ -467,19 +467,19 @@ def test_on_connection_change_skipped_when_unloading(
     sensor.async_write_ha_state.assert_not_called()
 
 
-async def test_handle_tracker_entity_change_skipped_when_unloading(
+async def test_handle_location_entity_change_skipped_when_unloading(
     hass: HomeAssistant,
-    mock_tracker_entity: str,
+    mock_location_entity: str,
 ) -> None:
     """Test that tracker entity changes are ignored when unloading."""
     coordinator = BlitzortungCoordinator(
-        hass, None, None, mock_tracker_entity, 100, 100, 600, False
+        hass, None, None, mock_location_entity, 100, 100, 600, False
     )
     coordinator.unloading = True
     coordinator._async_refresh_geohash_subscriptions = AsyncMock()
 
     hass.states.async_set(
-        mock_tracker_entity,
+        mock_location_entity,
         STATE_HOME,
         attributes={ATTR_LATITUDE: 55.0, ATTR_LONGITUDE: 15.0},
     )
@@ -488,13 +488,13 @@ async def test_handle_tracker_entity_change_skipped_when_unloading(
     coordinator._async_refresh_geohash_subscriptions.assert_not_awaited()
 
 
-async def test_handle_tracker_entity_change_cancels_pending_refresh(
+async def test_handle_location_entity_change_cancels_pending_refresh(
     hass: HomeAssistant,
-    mock_tracker_entity: str,
+    mock_location_entity: str,
 ) -> None:
     """Test that a pending refresh task is cancelled on rapid location changes."""
     coordinator = BlitzortungCoordinator(
-        hass, None, None, mock_tracker_entity, 100, 100, 600, False
+        hass, None, None, mock_location_entity, 100, 100, 600, False
     )
     coordinator._async_refresh_geohash_subscriptions = AsyncMock()
 
@@ -504,7 +504,7 @@ async def test_handle_tracker_entity_change_cancels_pending_refresh(
     coordinator._pending_refresh_task = pending_task
 
     hass.states.async_set(
-        mock_tracker_entity,
+        mock_location_entity,
         STATE_HOME,
         attributes={ATTR_LATITUDE: 55.0, ATTR_LONGITUDE: 15.0},
     )
@@ -823,14 +823,14 @@ async def test_max_tracked_lightnings_warning(
     mock_logger.warning.assert_called()
 
 
-def test_apply_tracker_entity_state_with_none_state(
+def test_apply_location_entity_state_with_none_state(
     hass: HomeAssistant,
 ) -> None:
-    """Test _apply_tracker_entity_state returns False when state is None."""
+    """Test _apply_location_entity_state returns False when state is None."""
     coordinator = BlitzortungCoordinator(hass, 50.0, 10.0, None, 100, 100, 600, False)
-    coordinator.tracker_entity = "device_tracker.nonexistent"
+    coordinator.location_entity = "device_tracker.nonexistent"
 
-    result = coordinator._apply_tracker_entity_state(None)
+    result = coordinator._apply_location_entity_state(None)
 
     assert result is False
 
@@ -843,7 +843,7 @@ def test_coordinator_init_tracker_no_state(
         hass,
         latitude=None,
         longitude=None,
-        tracker_entity="device_tracker.missing",
+        location_entity="device_tracker.missing",
         radius=100,
         max_tracked_lightnings=100,
         time_window_seconds=600,

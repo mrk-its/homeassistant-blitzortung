@@ -21,22 +21,22 @@ from homeassistant.helpers import selector
 
 from .const import (
     CONF_CONFIG_TYPE,
+    CONF_LOCATION_ENTITY,
     CONF_MAX_TRACKED_LIGHTNINGS,
     CONF_RADIUS,
     CONF_TIME_WINDOW,
-    CONF_TRACKER_ENTITY,
     CONFIG_TYPE_COORDINATES,
-    CONFIG_TYPE_TRACKER,
+    CONFIG_TYPE_ENTITY,
     DEFAULT_MAX_TRACKED_LIGHTNINGS,
     DEFAULT_RADIUS,
     DEFAULT_TIME_WINDOW,
     DOMAIN,
     ZONE_HOME,
 )
-from .utils import get_coordinates_from_tracker_entity
+from .utils import get_coordinates_from_entity
 
-# Only allow tracker-like entities
-TRACKER_ENTITY_SELECTOR = selector.EntitySelector(
+# Only allow location entities
+LOCATION_ENTITY_SELECTOR = selector.EntitySelector(
     selector.EntitySelectorConfig(
         domain=[DEVICE_TRACKER_DOMAIN, PERSON_DOMAIN, ZONE_DOMAIN]
     )
@@ -46,7 +46,7 @@ CONFIG_TYPE_SELECTOR = selector.SelectSelector(
     selector.SelectSelectorConfig(
         options=[
             CONFIG_TYPE_COORDINATES,
-            CONFIG_TYPE_TRACKER,
+            CONFIG_TYPE_ENTITY,
         ],
         mode=selector.SelectSelectorMode.DROPDOWN,
         translation_key=CONF_CONFIG_TYPE,
@@ -54,31 +54,31 @@ CONFIG_TYPE_SELECTOR = selector.SelectSelector(
 )
 
 
-def _validate_input_tracker(
+def _validate_input_entity(
     hass: HomeAssistant, user_input: dict[str, Any]
 ) -> tuple[str, str]:
-    """Validate user input for tracker entity."""
-    tracker_entity = user_input[CONF_TRACKER_ENTITY]
+    """Validate user input for location entity."""
+    location_entity = user_input[CONF_LOCATION_ENTITY]
 
-    if tracker_entity == ZONE_HOME:
-        return ZONE_HOME, hass.states.get(tracker_entity).name
+    if location_entity == ZONE_HOME:
+        return ZONE_HOME, hass.states.get(location_entity).name
 
     entity_registry = er.async_get(hass)
 
     if TYPE_CHECKING:
         assert entity_registry is not None
 
-    registry_entry = entity_registry.async_get(tracker_entity)
+    registry_entry = entity_registry.async_get(location_entity)
 
     if registry_entry is None or registry_entry.unique_id is None:
         raise BlitzortungNoUniqueIdError
 
-    if get_coordinates_from_tracker_entity(hass, tracker_entity) is None:
+    if get_coordinates_from_entity(hass, location_entity) is None:
         raise BlitzortungNoCoordinatesError
 
     return (
         f"{registry_entry.platform}_{registry_entry.unique_id}",
-        registry_entry.original_name or registry_entry.name or tracker_entity,
+        registry_entry.original_name or registry_entry.name or location_entity,
     )
 
 
@@ -92,8 +92,8 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Select how the user wants to configure the entry."""
         if user_input is not None:
-            if user_input[CONF_CONFIG_TYPE] == CONFIG_TYPE_TRACKER:
-                return await self.async_step_tracker()
+            if user_input[CONF_CONFIG_TYPE] == CONFIG_TYPE_ENTITY:
+                return await self.async_step_entity()
             return await self.async_step_coordinates()
 
         return self.async_show_form(
@@ -107,15 +107,15 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
             ),
         )
 
-    async def async_step_tracker(
+    async def async_step_entity(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Configure the entry using a tracking entity."""
+        """Configure the entry using a location entity."""
         errors = {}
 
         if user_input is not None:
             try:
-                unique_id, title = _validate_input_tracker(self.hass, user_input)
+                unique_id, title = _validate_input_entity(self.hass, user_input)
             except BlitzortungNoUniqueIdError:
                 errors["base"] = "entity_without_unique_id"
             except BlitzortungNoCoordinatesError:
@@ -126,8 +126,8 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
 
                 data = {
                     CONF_NAME: title,
-                    CONF_CONFIG_TYPE: CONFIG_TYPE_TRACKER,
-                    CONF_TRACKER_ENTITY: user_input[CONF_TRACKER_ENTITY],
+                    CONF_CONFIG_TYPE: CONFIG_TYPE_ENTITY,
+                    CONF_LOCATION_ENTITY: user_input[CONF_LOCATION_ENTITY],
                 }
 
                 return self.async_create_entry(
@@ -141,9 +141,9 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
                 )
 
         return self.async_show_form(
-            step_id="tracker",
+            step_id="entity",
             data_schema=vol.Schema(
-                {vol.Required(CONF_TRACKER_ENTITY): TRACKER_ENTITY_SELECTOR}
+                {vol.Required(CONF_LOCATION_ENTITY): LOCATION_ENTITY_SELECTOR}
             ),
             errors=errors,
         )
@@ -200,9 +200,9 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
         entry = self._get_reconfigure_entry()
 
         # Only coordinate entries can be reconfigured this way.
-        # Tracker entries show a read-only notice and abort immediately.
+        # Entity entries show a read-only notice and abort immediately.
         config_type = entry.data[CONF_CONFIG_TYPE]
-        if config_type == CONFIG_TYPE_TRACKER:
+        if config_type == CONFIG_TYPE_ENTITY:
             return self.async_abort(reason="reconfigure_not_supported")
 
         if user_input is not None:
@@ -283,8 +283,8 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
 
 
 class BlitzortungNoUniqueIdError(HomeAssistantError):
-    """Raised when the selected tracker entity does not have a unique ID."""
+    """Raised when the selected entity does not have a unique ID."""
 
 
 class BlitzortungNoCoordinatesError(HomeAssistantError):
-    """Raised when the selected tracker entity does not have coordinates."""
+    """Raised when the selected entity does not have coordinates."""
