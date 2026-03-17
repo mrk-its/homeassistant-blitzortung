@@ -60,8 +60,13 @@ def _validate_input_entity(
     """Validate user input for location entity."""
     location_entity = user_input[CONF_LOCATION_ENTITY]
 
+    # Special handling for zone.home, which doesn't have a unique ID but its entity ID
+    # is unique and stable.
     if location_entity == ZONE_HOME:
-        return ZONE_HOME, hass.states.get(location_entity).name
+        if get_coordinates_from_entity(hass, location_entity) is None:
+            raise BlitzortungNoCoordinatesError
+
+        return location_entity, hass.states.get(location_entity).name
 
     entity_registry = er.async_get(hass)
 

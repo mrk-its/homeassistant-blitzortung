@@ -5,6 +5,7 @@ from homeassistant.components.device_tracker import DOMAIN as DEVICE_TRACKER_DOM
 from homeassistant.components.person import DOMAIN as PERSON_DOMAIN
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.const import (
+    ATTR_FRIENDLY_NAME,
     ATTR_LATITUDE,
     ATTR_LONGITUDE,
     CONF_LATITUDE,
@@ -26,6 +27,7 @@ from custom_components.blitzortung.const import (
     CONFIG_TYPE_COORDINATES,
     CONFIG_TYPE_ENTITY,
     DOMAIN,
+    ZONE_HOME,
 )
 
 
@@ -214,6 +216,75 @@ async def test_user_flow_success_entity(hass: HomeAssistant, platform: str) -> N
         CONF_TIME_WINDOW: 120,
     }
     assert result["result"].unique_id == f"{platform}_unique_1234"
+
+
+@pytest.mark.asyncio
+async def test_user_flow_success_zone_home(hass: HomeAssistant) -> None:
+    """Test successful user flow for location entity."""
+    attrs = {ATTR_LATITUDE: 50.0, ATTR_LONGITUDE: 10.0, ATTR_FRIENDLY_NAME: "Casa"}
+    hass.states.async_set(ZONE_HOME, "3", attrs)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": SOURCE_USER}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "user"
+
+    # Step 1: choose entity config type
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        user_input={CONF_CONFIG_TYPE: CONFIG_TYPE_ENTITY},
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "entity"
+
+    # Step 2: provide entity
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        user_input={CONF_LOCATION_ENTITY: ZONE_HOME},
+    )
+
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["title"] == "Casa"
+    assert result["data"] == {
+        CONF_NAME: "Casa",
+        CONF_LOCATION_ENTITY: ZONE_HOME,
+        CONF_CONFIG_TYPE: CONFIG_TYPE_ENTITY,
+    }
+    assert result["options"] == {
+        CONF_RADIUS: 100,
+        CONF_MAX_TRACKED_LIGHTNINGS: 100,
+        CONF_TIME_WINDOW: 120,
+    }
+    assert result["result"].unique_id == ZONE_HOME
+
+
+@pytest.mark.asyncio
+async def test_zone_home_without_coordinates(hass: HomeAssistant) -> None:
+    """Test the flow for zone.home entity without coordinates."""
+    hass.states.async_set(ZONE_HOME, None, {})
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": SOURCE_USER}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "user"
+
+    # Step 1: choose entity config type
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        user_input={CONF_CONFIG_TYPE: CONFIG_TYPE_ENTITY},
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "entity"
+
+    # Step 2: provide entity
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        user_input={CONF_LOCATION_ENTITY: ZONE_HOME},
+    )
+
+    assert result["errors"] == {"base": "entity_without_coordinates"}
 
 
 @pytest.mark.asyncio
