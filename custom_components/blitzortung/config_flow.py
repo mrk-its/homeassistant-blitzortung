@@ -6,6 +6,7 @@ import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant.components.device_tracker import DOMAIN as DEVICE_TRACKER_DOMAIN
 from homeassistant.components.person import DOMAIN as PERSON_DOMAIN
+from homeassistant.components.zone import DOMAIN as ZONE_DOMAIN
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
@@ -30,12 +31,15 @@ from .const import (
     DEFAULT_RADIUS,
     DEFAULT_TIME_WINDOW,
     DOMAIN,
+    ZONE_HOME,
 )
 from .utils import get_coordinates_from_tracker_entity
 
 # Only allow tracker-like entities
 TRACKER_ENTITY_SELECTOR = selector.EntitySelector(
-    selector.EntitySelectorConfig(domain=[DEVICE_TRACKER_DOMAIN, PERSON_DOMAIN])
+    selector.EntitySelectorConfig(
+        domain=[DEVICE_TRACKER_DOMAIN, PERSON_DOMAIN, ZONE_DOMAIN]
+    )
 )
 
 CONFIG_TYPE_SELECTOR = selector.SelectSelector(
@@ -55,6 +59,9 @@ def _validate_input_tracker(
 ) -> tuple[str, str]:
     """Validate user input for tracker entity."""
     tracker_entity = user_input[CONF_TRACKER_ENTITY]
+
+    if tracker_entity == ZONE_HOME:
+        return ZONE_HOME, hass.states.get(tracker_entity).name
 
     entity_registry = er.async_get(hass)
 
