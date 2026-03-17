@@ -375,10 +375,17 @@ class BlitzortungCoordinator:
             )
             return False
 
-        # Ignore insignificant GPS jitter
+        # Ignore small location changes to prevent excessive MQTT re-subscriptions
         if self.latitude is not None and self.longitude is not None:
             moved = distance(self.latitude, self.longitude, lat, lon)
             if moved < self.min_location_change:
+                _LOGGER.debug(
+                    "Tracker entity '%s' moved %s m, which is less than the minimum"
+                    "location change of %s m, ignoring",
+                    self.tracker_entity,
+                    round(moved),
+                    round(self.min_location_change),
+                )
                 return False
 
         self.latitude = lat
