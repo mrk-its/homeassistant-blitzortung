@@ -7,7 +7,7 @@
           "config_type": "Configuration type"
         },
         "data_description": {
-          "config_type": "The integration can be configured for static coordinates or follow the location of a tracking entity."
+          "config_type": "The integration can be configured for static coordinates or follow the location entity."
         }
       },
       "entity": {
