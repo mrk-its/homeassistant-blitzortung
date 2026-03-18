@@ -106,7 +106,7 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema(
                 {
                     vol.Required(
-                        CONF_CONFIG_TYPE, default=CONFIG_TYPE_COORDINATES
+                        CONF_CONFIG_TYPE, default=CONFIG_TYPE_ENTITY
                     ): CONFIG_TYPE_SELECTOR,
                 }
             ),
