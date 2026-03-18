@@ -22,6 +22,6 @@ jobs:
           zip blitzortung.zip -r ./
 
       - name: Upload zip to release
-        uses: softprops/action-gh-release@v2.6.1
+        uses: softprops/action-gh-release@v2
         with:
           files: ${{ github.workspace }}/custom_components/blitzortung/blitzortung.zip
