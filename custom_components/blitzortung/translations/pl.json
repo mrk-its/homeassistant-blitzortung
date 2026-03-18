@@ -2,69 +2,73 @@
   "config": {
     "step": {
       "user": {
-        "description": "Konfiguracja wykrywania błyskawic Blitzortung",
+        "description": "Konfiguracja wykrywania b\u0142yskawic Blitzortung",
         "data": {
           "name": "Nazwa instancji integracji",
-          "latitude": "Szerokość geograficzna",
-          "longitude": "Długość geograficzna"
+          "latitude": "Szeroko\u015b\u0107 geograficzna",
+          "longitude": "D\u0142ugo\u015b\u0107 geograficzna"
         }
       },
       "reconfigure_confirm": {
-        "description": "Zaktualizuj konfigurację dla {name}.",
+        "description": "Zaktualizuj konfiguracj\u0119 dla {name}.",
         "data": {
-          "latitude": "Szerokość geograficzna",
-          "longitude": "Długość geograficzna"
+          "latitude": "Szeroko\u015b\u0107 geograficzna",
+          "longitude": "D\u0142ugo\u015b\u0107 geograficzna"
         }
       }
     },
     "error": {},
     "abort": {
-      "already_configured": "Usługa jest już skonfigurowana",
-      "reconfigure_successful": "Ponowna konfiguracja powiodła się"
+      "already_configured": "Us\u0142uga jest ju\u017c skonfigurowana",
+      "reconfigure_successful": "Ponowna konfiguracja powiod\u0142a si\u0119"
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "Opcje Blitzortung",
-        "description": "Konfiguracja wykrywania błyskawic Blitzortung",
         "data": {
-          "radius": "Promień wykrywania błyskawic (km / mi)",
-          "time_window": "Okno czasowe (minuty, 0 - wyłączony)",
-          "max_tracked_lightnings": "Maksymalna ilość śledzonych błyskawic"
+          "radius": "Promie\u0144 wykrywania b\u0142yskawic",
+          "time_window": "Okno czasowe",
+          "max_tracked_lightnings": "Maksymalna ilo\u015b\u0107 b\u0142yskawic"
+        },
+        "data_description": {
+          "radius": "Promie\u0144 okr\u0119gu w `km` lub `mi`, dla kt\u00f3rego b\u0119d\u0105 wykrywane b\u0142yskawice.",
+          "time_window": "Czas \u017cycia \u015bledzonych b\u0142yskawic w minutach.",
+          "max_tracked_lightnings": "Maksymalna liczba \u015bledzonych b\u0142yskawic."
         }
       }
     }
   },
   "exceptions": {
     "mqtt_connect_not_ready": {
-      "message": "Nie udało się połączyć z serwerem MQTT Blitzortung: {error}"
+      "message": "Nie uda\u0142o si\u0119 po\u0142\u0105czy\u0107 z serwerem MQTT Blitzortung: {error}"
     }
   },
   "entity": {
     "sensor": {
       "azimuth": {
-        "name": "Azymut błyskawicy",
+        "name": "Azymut b\u0142yskawicy",
         "state_attributes": {
           "lat": {
-            "name": "Szerokość geograficzna"
+            "name": "Szeroko\u015b\u0107 geograficzna"
           },
           "lon": {
-            "name": "Długość geograficzna"
+            "name": "D\u0142ugo\u015b\u0107 geograficzna"
           }
         }
       },
       "counter": {
-        "name": "Licznik błyskawic"
+        "name": "Licznik b\u0142yskawic"
       },
       "distance": {
-        "name": "Odległość błyskawicy",
+        "name": "Odleg\u0142o\u015b\u0107 b\u0142yskawicy",
         "state_attributes": {
           "lat": {
-            "name": "Szerokość geograficzna"
+            "name": "Szeroko\u015b\u0107 geograficzna"
           },
           "lon": {
-            "name": "Długość geograficzna"
+            "name": "D\u0142ugo\u015b\u0107 geograficzna"
           }
         }
       }

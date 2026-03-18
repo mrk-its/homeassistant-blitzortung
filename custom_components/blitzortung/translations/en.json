@@ -27,11 +27,15 @@
     "step": {
       "init": {
         "title": "Blitzortung Options",
-        "description": "Set up Blitzortung lightning detection options",
         "data": {
-          "radius": "Lightning detection radius (km / mi)",
-          "time_window": "Time window (minutes, 0 - disabled)",
-          "max_tracked_lightnings": "Max number of tracked lightnings"
+          "radius": "Lightning detection radius",
+          "time_window": "Time window",
+          "max_tracked_lightnings": "Maximum number of lightnings"
+        },
+        "data_description": {
+          "radius": "Radius of the circle in `km` or `mi` for which lightnings will be detected.",
+          "time_window": "Lifetime of tracked lightnings in minutes.",
+          "max_tracked_lightnings": "Maximum number of tracked lightnings."
         }
       }
     }
