@@ -45,8 +45,8 @@ LOCATION_ENTITY_SELECTOR = selector.EntitySelector(
 CONFIG_TYPE_SELECTOR = selector.SelectSelector(
     selector.SelectSelectorConfig(
         options=[
-            CONFIG_TYPE_COORDINATES,
             CONFIG_TYPE_ENTITY,
+            CONFIG_TYPE_COORDINATES,
         ],
         mode=selector.SelectSelectorMode.LIST,
         translation_key=CONF_CONFIG_TYPE,
