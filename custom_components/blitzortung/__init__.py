@@ -382,8 +382,8 @@ class BlitzortungCoordinator:
             moved = distance(self.latitude, self.longitude, lat, lon)
             if moved < self.min_location_change:
                 _LOGGER.debug(
-                    "Configured entity '%s' moved %s m, which is less than the minimum"
-                    "location change of %s m, ignoring",
+                    "'%s' entity moved %s m, which is less than the minimum "
+                    "location change (%s m), ignoring",
                     self.location_entity,
                     round(moved),
                     round(self.min_location_change),
