@@ -48,7 +48,7 @@ CONFIG_TYPE_SELECTOR = selector.SelectSelector(
             CONFIG_TYPE_COORDINATES,
             CONFIG_TYPE_ENTITY,
         ],
-        mode=selector.SelectSelectorMode.DROPDOWN,
+        mode=selector.SelectSelectorMode.LIST,
         translation_key=CONF_CONFIG_TYPE,
     )
 )
