@@ -2,30 +2,59 @@
   "config": {
     "step": {
       "user": {
-        "description": "Konfiguracja wykrywania b\u0142yskawic Blitzortung",
+        "description": "Wybierz typ konfiguracji dla integracji Blitzortung",
+        "data": {
+          "config_type": "Typ konfiguracji"
+        },
+        "data_description": {
+          "config_type": "Integracja mo\u017ce korzysta\u0107 ze statycznych wsp\u00f3\u0142rz\u0119dnych lub \u015bledzi\u0107 lokalizacj\u0119 encji."
+        }
+      },
+      "entity": {
+        "data": {
+          "location_entity": "Encja lokalizacji"
+        },
+        "data_description": {
+          "location_entity": "Encja `device_tracker`, `person` lub `zone`, kt\u00f3rej lokalizacja b\u0119dzie u\u017cywana przez integracj\u0119."
+        }
+      },
+      "coordinates": {
         "data": {
           "name": "Nazwa instancji integracji",
           "latitude": "Szeroko\u015b\u0107 geograficzna",
           "longitude": "D\u0142ugo\u015b\u0107 geograficzna"
+        },
+        "data_description": {
+          "name": "Nazwa, kt\u00f3rej integracja b\u0119dzie u\u017cywa\u0107 dla tej konfiguracji.",
+          "latitude": "Liczba dziesi\u0119tna reprezentuj\u0105ca szeroko\u015b\u0107 geograficzn\u0105.",
+          "longitude": "Liczba dziesi\u0119tna reprezentuj\u0105ca d\u0142ugo\u015b\u0107 geograficzn\u0105."
         }
       },
-      "reconfigure_confirm": {
+      "reconfigure": {
         "description": "Zaktualizuj konfiguracj\u0119 dla {name}.",
         "data": {
           "latitude": "Szeroko\u015b\u0107 geograficzna",
           "longitude": "D\u0142ugo\u015b\u0107 geograficzna"
+        },
+        "data_description": {
+          "latitude": "Liczba dziesi\u0119tna reprezentuj\u0105ca szeroko\u015b\u0107 geograficzn\u0105.",
+          "longitude": "Liczba dziesi\u0119tna reprezentuj\u0105ca d\u0142ugo\u015b\u0107 geograficzn\u0105."
         }
       }
     },
-    "error": {},
+    "error": {
+      "entity_without_unique_id": "Wybrana encja nie ma unikalnego identyfikatora, u\u017cyj innej encji.",
+      "entity_without_coordinates": "Wybrana encja nie dostarcza wsp\u00f3\u0142rz\u0119dnych."
+    },
     "abort": {
       "already_configured": "Us\u0142uga jest ju\u017c skonfigurowana",
-      "reconfigure_successful": "Ponowna konfiguracja powiod\u0142a si\u0119"
+      "reconfigure_successful": "Ponowna konfiguracja powiod\u0142a si\u0119",
+      "reconfigure_not_supported": "W przypadku konfiguracji opartej na encji rekonfiguracja nie jest obs\u0142ugiwana."
     }
   },
   "options": {
     "step": {
-      "init": {
+      "init":  {
         "title": "Opcje Blitzortung",
         "data": {
           "radius": "Promie\u0144 wykrywania b\u0142yskawic",
@@ -43,6 +72,17 @@
   "exceptions": {
     "mqtt_connect_not_ready": {
       "message": "Nie uda\u0142o si\u0119 po\u0142\u0105czy\u0107 z serwerem MQTT Blitzortung: {error}"
+    },
+    "no_coordinates_from_entity": {
+      "message": "Encja {location_entity} nie dostarcza wsp\u00f3\u0142rz\u0119dnych."
+    }
+  },
+  "selector": {
+    "config_type": {
+      "options": {
+        "entity": "Encja lokalizacji",
+        "coordinates": "Wsp\u00f3\u0142rz\u0119dne"
+      }
     }
   },
   "entity": {

@@ -2,25 +2,54 @@
   "config": {
     "step": {
       "user": {
-        "description": "Set up Blitzortung lightning detection",
+        "description": "Select the configuration type for Blitzortung integration",
+        "data": {
+          "config_type": "Configuration type"
+        },
+        "data_description": {
+          "config_type": "The integration can be configured for static coordinates or follow the location entity."
+        }
+      },
+      "entity": {
+        "data": {
+          "location_entity": "Location entity"
+        },
+        "data_description": {
+          "location_entity": "The `device_tracker`, `person` or `zone` entity whose location will be used by the integration."
+        }
+      },
+      "coordinates": {
         "data": {
           "name": "Name of the integration instance",
           "latitude": "Latitude",
           "longitude": "Longitude"
+        },
+        "data_description": {
+          "name": "The name the integration will use for this configuration.",
+          "latitude": "A decimal number representing latitude.",
+          "longitude": "A decimal number representing longitude."
         }
       },
-      "reconfigure_confirm": {
+      "reconfigure": {
         "description": "Update configuration for {name}.",
         "data": {
           "latitude": "Latitude",
           "longitude": "Longitude"
+        },
+        "data_description": {
+          "latitude": "A decimal number representing latitude.",
+          "longitude": "A decimal number representing longitude."
         }
       }
     },
-    "error": {},
+    "error": {
+      "entity_without_unique_id": "The selected entity does not have a unique identifier, please use a different entity.",
+      "entity_without_coordinates": "The selected entity does not provide coordinates."
+    },
     "abort": {
       "already_configured": "Service is already configured",
-      "reconfigure_successful": "Re-configuration was successful"
+      "reconfigure_successful": "Re-configuration was successful",
+      "reconfigure_not_supported": "For entity based config entry re-configuration is not supported."
     }
   },
   "options": {
@@ -43,6 +72,17 @@
   "exceptions": {
     "mqtt_connect_not_ready": {
       "message": "Failed to connect to Blitzortung MQTT server: {error}"
+    },
+    "no_coordinates_from_entity": {
+      "message": "Entity {location_entity} does not provide coordinates."
+    }
+  },
+  "selector": {
+    "config_type": {
+      "options": {
+        "entity": "Location entity",
+        "coordinates": "Coordinates"
+      }
     }
   },
   "entity": {
