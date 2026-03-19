@@ -2,26 +2,114 @@
   "config": {
     "step": {
       "user": {
-        "description": "Blitzortung bliksemdetectie instellen",
+        "description": "Selecteer het configuratietype voor de Blitzortung-integratie",
         "data": {
-          "name": "Naam van de integratie-instantie"
+          "config_type": "Configuratietype"
+        },
+        "data_description": {
+          "config_type": "De integratie kan worden geconfigureerd voor statische co\u00f6rdinaten of het volgen van de locatie-entiteit."
+        }
+      },
+      "entity": {
+        "data": {
+          "location_entity": "Locatie-entiteit"
+        },
+        "data_description": {
+          "location_entity": "De `device_tracker`, `person` of `zone` entiteit waarvan de locatie door de integratie wordt gebruikt."
+        }
+      },
+      "coordinates": {
+        "data": {
+          "name": "Naam van de integratie-instantie",
+          "latitude": "Breedtegraad",
+          "longitude": "Lengtegraad"
+        },
+        "data_description": {
+          "name": "De naam die de integratie voor deze configuratie zal gebruiken.",
+          "latitude": "Een decimaal getal dat de breedtegraad vertegenwoordigt.",
+          "longitude": "Een decimaal getal dat de lengtegraad vertegenwoordigt."
+        }
+      },
+      "reconfigure": {
+        "description": "Configuratie bijwerken voor {name}.",
+        "data": {
+          "latitude": "Breedtegraad",
+          "longitude": "Lengtegraad"
+        },
+        "data_description": {
+          "latitude": "Een decimaal getal dat de breedtegraad vertegenwoordigt.",
+          "longitude": "Een decimaal getal dat de lengtegraad vertegenwoordigt."
         }
       }
     },
-    "error": {},
-    "abort": {}
+    "error": {
+      "entity_without_unique_id": "De geselecteerde entiteit heeft geen unieke identificatie, gebruik een andere entiteit.",
+      "entity_without_coordinates": "De geselecteerde entiteit biedt geen co\u00f6rdinaten."
+    },
+    "abort": {
+      "already_configured": "Service is al geconfigureerd",
+      "reconfigure_successful": "Herconfiguratie was succesvol",
+      "reconfigure_not_supported": "Voor een op entiteit gebaseerde configuratie wordt herconfiguratie niet ondersteund."
+    }
   },
   "options": {
     "step": {
       "init": {
         "title": "Blitzortung Opties",
-        "description": "Blitzortung bliksemdetectie opties instellen",
         "data": {
-          "radius": "Bliksemdetectie-radius (km / mi)",
-          "time_window": "Tijdvenster (minuten, 0 - uitgeschakeld)",
-          "max_tracked_lightnings": "Max aantal gevolgde bliksems",
-          "latitude": "Breedtegraad",
-          "longitude": "Lengtegraad"
+          "radius": "Bliksemdetectie-radius",
+          "time_window": "Tijdvenster",
+          "max_tracked_lightnings": "Maximum aantal gevolgde bliksems"
+        },
+        "data_description": {
+          "radius": "Straal van de cirkel in `km` of `mi` waarvoor bliksems worden gedetecteerd.",
+          "time_window": "Levensduur van gevolgde bliksems in minuten.",
+          "max_tracked_lightnings": "Maximum aantal gevolgde bliksems."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "mqtt_connect_not_ready": {
+      "message": "Verbinding met Blitzortung MQTT-server mislukt: {error}"
+    },
+    "no_coordinates_from_entity": {
+      "message": "Entiteit {location_entity} biedt geen co\u00f6rdinaten."
+    }
+  },
+  "selector": {
+    "config_type": {
+      "options": {
+        "entity": "Locatie-entiteit",
+        "coordinates": "Co\u00f6rdinaten"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "name": "Bliksem azimut",
+        "state_attributes": {
+          "lat": {
+            "name": "Breedtegraad"
+          },
+          "lon": {
+            "name": "Lengtegraad"
+          }
+        }
+      },
+      "counter": {
+        "name": "Bliksemteller"
+      },
+      "distance": {
+        "name": "Bliksemafstand",
+        "state_attributes": {
+          "lat": {
+            "name": "Breedtegraad"
+          },
+          "lon": {
+            "name": "Lengtegraad"
+          }
         }
       }
     }

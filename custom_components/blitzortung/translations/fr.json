@@ -2,43 +2,93 @@
   "config": {
     "step": {
       "user": {
-        "description": "Configurer Blitzortung détection de fourdre",
+        "description": "S\u00e9lectionnez le type de configuration pour l'int\u00e9gration Blitzortung",
         "data": {
-          "name": "Nom de l'instance de cette intégration",
-          "latitude": "Latitude",
-          "longitude": "Longitude"
+          "config_type": "Type de configuration"
+        },
+        "data_description": {
+          "config_type": "L'int\u00e9gration peut \u00eatre configur\u00e9e avec des coordonn\u00e9es statiques ou suivre l'entit\u00e9 de localisation."
         }
       },
-      "reconfigure_confirm": {
-        "description": "Mise à jour de la configuration pour {name}.",
+      "entity": {
+        "data": {
+          "location_entity": "Entit\u00e9 de localisation"
+        },
+        "data_description": {
+          "location_entity": "L'entit\u00e9 `device_tracker`, `person` ou `zone` dont la localisation sera utilis\u00e9e par l'int\u00e9gration."
+        }
+      },
+      "coordinates": {
+        "data": {
+          "name": "Nom de l'instance de cette int\u00e9gration",
+          "latitude": "Latitude",
+          "longitude": "Longitude"
+        },
+        "data_description": {
+          "name": "Le nom que l'int\u00e9gration utilisera pour cette configuration.",
+          "latitude": "Un nombre d\u00e9cimal repr\u00e9sentant la latitude.",
+          "longitude": "Un nombre d\u00e9cimal repr\u00e9sentant la longitude."
+        }
+      },
+      "reconfigure": {
+        "description": "Mettre \u00e0 jour la configuration pour {name}.",
         "data": {
           "latitude": "Latitude",
           "longitude": "Longitude"
+        },
+        "data_description": {
+          "latitude": "Un nombre d\u00e9cimal repr\u00e9sentant la latitude.",
+          "longitude": "Un nombre d\u00e9cimal repr\u00e9sentant la longitude."
         }
       }
     },
-    "error": {},
+    "error": {
+      "entity_without_unique_id": "L'entit\u00e9 s\u00e9lectionn\u00e9e n'a pas d'identifiant unique, veuillez utiliser une autre entit\u00e9.",
+      "entity_without_coordinates": "L'entit\u00e9 s\u00e9lectionn\u00e9e ne fournit pas de coordonn\u00e9es."
+    },
     "abort": {
-      "already_configured": "Le service est déjà configuré",
-      "reconfigure_successful": "La re-configuration a réussie"
+      "already_configured": "Le service est d\u00e9j\u00e0 configur\u00e9",
+      "reconfigure_successful": "La re-configuration a r\u00e9ussi",
+      "reconfigure_not_supported": "La re-configuration n'est pas prise en charge pour les entr\u00e9es de configuration bas\u00e9es sur une entit\u00e9."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Options Blitzortung ",
-        "description": "Configurer les options de Blitzortung détection de foudre",
+        "title": "Options Blitzortung",
         "data": {
-          "radius": "Rayon de detection de la foudre (km / mi)",
-          "time_window": "Fenêtre de temps (minutes, 0 - désactivé)",
-          "max_tracked_lightnings": "Nombre maximum d'éclairs suivis"
+          "radius": "Rayon de d\u00e9tection de la foudre",
+          "time_window": "Fen\u00eatre de temps",
+          "max_tracked_lightnings": "Nombre maximum d'\u00e9clairs suivis"
+        },
+        "data_description": {
+          "radius": "Rayon du cercle en `km` ou `mi` pour lequel les \u00e9clairs seront d\u00e9tect\u00e9s.",
+          "time_window": "Dur\u00e9e de vie des \u00e9clairs suivis en minutes.",
+          "max_tracked_lightnings": "Nombre maximum d'\u00e9clairs suivis."
         }
+      }
+    }
+  },
+  "exceptions": {
+    "mqtt_connect_not_ready": {
+      "message": "\u00c9chec de la connexion au serveur MQTT Blitzortung : {error}"
+    },
+    "no_coordinates_from_entity": {
+      "message": "L'entit\u00e9 {location_entity} ne fournit pas de coordonn\u00e9es."
+    }
+  },
+  "selector": {
+    "config_type": {
+      "options": {
+        "entity": "Entit\u00e9 de localisation",
+        "coordinates": "Coordonn\u00e9es"
       }
     }
   },
   "entity": {
     "sensor": {
       "azimuth": {
+        "name": "Azimut de foudre",
         "state_attributes": {
           "lat": {
             "name": "Latitude"
@@ -48,7 +98,11 @@
           }
         }
       },
+      "counter": {
+        "name": "Compteur de foudre"
+      },
       "distance": {
+        "name": "Distance de foudre",
         "state_attributes": {
           "lat": {
             "name": "Latitude"

@@ -54,12 +54,12 @@
   },
   "options": {
     "step": {
-      "init":  {
+      "init": {
         "title": "Opcje Blitzortung",
         "data": {
           "radius": "Promie\u0144 wykrywania b\u0142yskawic",
           "time_window": "Okno czasowe",
-          "max_tracked_lightnings": "Maksymalna ilo\u015b\u0107 b\u0142yskawic"
+          "max_tracked_lightnings": "Maksymalna liczba b\u0142yskawic"
         },
         "data_description": {
           "radius": "Promie\u0144 okr\u0119gu w `km` lub `mi`, dla kt\u00f3rego b\u0119d\u0105 wykrywane b\u0142yskawice.",

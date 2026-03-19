@@ -1,29 +1,117 @@
 {
-    "config": {
-      "step": {
-        "user": {
-          "description": "Postavke Blitzortung senzora groma",
-          "data": {
-            "name": "Naziv instance integracije"
+  "config": {
+    "step": {
+      "user": {
+        "description": "Odaberite vrstu konfiguracije za integraciju Blitzortung",
+        "data": {
+          "config_type": "Vrsta konfiguracije"
+        },
+        "data_description": {
+          "config_type": "Integracija se mo\u017ee konfigurirati za stati\u010dne koordinate ili pratiti entitet lokacije."
+        }
+      },
+      "entity": {
+        "data": {
+          "location_entity": "Entitet lokacije"
+        },
+        "data_description": {
+          "location_entity": "Entitet `device_tracker`, `person` ili `zone` \u010dija lokacija \u0107e biti kori\u0161tena od strane integracije."
+        }
+      },
+      "coordinates": {
+        "data": {
+          "name": "Naziv instance integracije",
+          "latitude": "Zemljopisna \u0161irina",
+          "longitude": "Zemljopisna du\u017eina"
+        },
+        "data_description": {
+          "name": "Ime koje \u0107e integracija koristiti za ovu konfiguraciju.",
+          "latitude": "Decimalni broj koji predstavlja zemljopisnu \u0161irinu.",
+          "longitude": "Decimalni broj koji predstavlja zemljopisnu du\u017einu."
+        }
+      },
+      "reconfigure": {
+        "description": "A\u017euriraj konfiguraciju za {name}.",
+        "data": {
+          "latitude": "Zemljopisna \u0161irina",
+          "longitude": "Zemljopisna du\u017eina"
+        },
+        "data_description": {
+          "latitude": "Decimalni broj koji predstavlja zemljopisnu \u0161irinu.",
+          "longitude": "Decimalni broj koji predstavlja zemljopisnu du\u017einu."
+        }
+      }
+    },
+    "error": {
+      "entity_without_unique_id": "Odabrani entitet nema jedinstveni identifikator, molimo koristite drugi entitet.",
+      "entity_without_coordinates": "Odabrani entitet ne pru\u017ea koordinate."
+    },
+    "abort": {
+      "already_configured": "Servis je ve\u0107 konfiguriran",
+      "reconfigure_successful": "Ponovna konfiguracija je uspjela",
+      "reconfigure_not_supported": "Za konfiguracijsku stavku temeljenu na entitetu ponovna konfiguracija nije podr\u017eana."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Blitzortung opcije",
+        "data": {
+          "radius": "Radijus otkrivanja groma",
+          "time_window": "Vremenski period",
+          "max_tracked_lightnings": "Maksimalan broj pra\u0107enih gromova"
+        },
+        "data_description": {
+          "radius": "Radijus kruga u `km` ili `mi` za koji \u0107e gromovi biti otkriveni.",
+          "time_window": "Vijek trajanja pra\u0107enih gromova u minutama.",
+          "max_tracked_lightnings": "Maksimalan broj pra\u0107enih gromova."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "mqtt_connect_not_ready": {
+      "message": "Nije uspjelo povezivanje s Blitzortung MQTT poslu\u017eiteljem: {error}"
+    },
+    "no_coordinates_from_entity": {
+      "message": "Entitet {location_entity} ne pru\u017ea koordinate."
+    }
+  },
+  "selector": {
+    "config_type": {
+      "options": {
+        "entity": "Entitet lokacije",
+        "coordinates": "Koordinate"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "name": "Azimut groma",
+        "state_attributes": {
+          "lat": {
+            "name": "Zemljopisna \u0161irina"
+          },
+          "lon": {
+            "name": "Zemljopisna du\u017eina"
           }
         }
       },
-      "error": {},
-      "abort": {}
-    },
-    "options": {
-      "step": {
-        "init": {
-          "title": "Blitzortung opcije",
-          "description": "Podesite Blitzortung opcije otkrivanja groma",
-          "data": {
-            "radius": "Radijus prepoznavanja groma (km / mi)",
-            "time_window": "Vremenski period (minuta, 0 - onemogućeno)",
-            "max_tracked_lightnings": "Maksimalan broj praćenih gromova",
-            "latitude": "Zemljopisna širina",
-            "longitude": "Zemljopisna dužina"
+      "counter": {
+        "name": "Broja\u010d gromova"
+      },
+      "distance": {
+        "name": "Udaljenost groma",
+        "state_attributes": {
+          "lat": {
+            "name": "Zemljopisna \u0161irina"
+          },
+          "lon": {
+            "name": "Zemljopisna du\u017eina"
           }
         }
       }
     }
   }
+}

@@ -2,26 +2,114 @@
   "config": {
     "step": {
       "user": {
-        "description": "Postavke zaznavanja strel Blitzortung",
+        "description": "Izberite vrsto konfiguracije za integracijo Blitzortung",
         "data": {
-          "name": "Ime integracije"
+          "config_type": "Vrsta konfiguracije"
+        },
+        "data_description": {
+          "config_type": "Integracijo je mogo\u010de konfigurirati za stati\u010dne koordinate ali slediti entiteti lokacije."
+        }
+      },
+      "entity": {
+        "data": {
+          "location_entity": "Entiteta lokacije"
+        },
+        "data_description": {
+          "location_entity": "Entiteta `device_tracker`, `person` ali `zone`, katere lokacija bo uporabljena s strani integracije."
+        }
+      },
+      "coordinates": {
+        "data": {
+          "name": "Ime integracije",
+          "latitude": "Zemljepisna \u0161irina",
+          "longitude": "Zemljepisna dol\u017eina"
+        },
+        "data_description": {
+          "name": "Ime, ki ga bo integracija uporabila za to konfiguracijo.",
+          "latitude": "Decimalno \u0161tevilo, ki predstavlja zemljepisno \u0161irino.",
+          "longitude": "Decimalno \u0161tevilo, ki predstavlja zemljepisno dol\u017eino."
+        }
+      },
+      "reconfigure": {
+        "description": "Posodobi konfiguracijo za {name}.",
+        "data": {
+          "latitude": "Zemljepisna \u0161irina",
+          "longitude": "Zemljepisna dol\u017eina"
+        },
+        "data_description": {
+          "latitude": "Decimalno \u0161tevilo, ki predstavlja zemljepisno \u0161irino.",
+          "longitude": "Decimalno \u0161tevilo, ki predstavlja zemljepisno dol\u017eino."
         }
       }
     },
-    "error": {},
-    "abort": {}
+    "error": {
+      "entity_without_unique_id": "Izbrana entiteta nima enoli\u010dnega identifikatorja, prosimo uporabite drugo entiteto.",
+      "entity_without_coordinates": "Izbrana entiteta ne zagotavlja koordinat."
+    },
+    "abort": {
+      "already_configured": "Storitev je \u017ee konfigurirana",
+      "reconfigure_successful": "Ponovna konfiguracija je bila uspe\u0161na",
+      "reconfigure_not_supported": "Za konfiguracijski vnos na osnovi entitete ponovna konfiguracija ni podprta."
+    }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Možnosti Blitzortung",
-        "description": "Nastavite možnosti zaznavanja strel Blitzortung",
+        "title": "Mo\u017enosti Blitzortung",
         "data": {
-          "radius": "Doseg zaznavanja strel (km / mi)",
-          "time_window": "Časovni okvir (v minutah, 0 - disabled)",
-          "max_tracked_lightnings": "Maksimalno število zaznanih strel",
-          "latitude": "Zemljepisna širina središča zaznavanja",
-          "longitude": "Zemljepisna dolžina središča zaznavanja"
+          "radius": "Doseg zaznavanja strel",
+          "time_window": "\u010casovni okvir",
+          "max_tracked_lightnings": "Najve\u010dje \u0161tevilo sledenih strel"
+        },
+        "data_description": {
+          "radius": "Polmer kroga v `km` ali `mi`, za katerega bodo zaznane strele.",
+          "time_window": "\u017divljenjska doba sledenih strel v minutah.",
+          "max_tracked_lightnings": "Najve\u010dje \u0161tevilo sledenih strel."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "mqtt_connect_not_ready": {
+      "message": "Vzpostavljanje povezave s stre\u017enikom Blitzortung MQTT ni uspelo: {error}"
+    },
+    "no_coordinates_from_entity": {
+      "message": "Entiteta {location_entity} ne zagotavlja koordinat."
+    }
+  },
+  "selector": {
+    "config_type": {
+      "options": {
+        "entity": "Entiteta lokacije",
+        "coordinates": "Koordinate"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "name": "Azimut strele",
+        "state_attributes": {
+          "lat": {
+            "name": "Zemljepisna \u0161irina"
+          },
+          "lon": {
+            "name": "Zemljepisna dol\u017eina"
+          }
+        }
+      },
+      "counter": {
+        "name": "\u0160tevec strel"
+      },
+      "distance": {
+        "name": "Razdalja strele",
+        "state_attributes": {
+          "lat": {
+            "name": "Zemljepisna \u0161irina"
+          },
+          "lon": {
+            "name": "Zemljepisna dol\u017eina"
+          }
         }
       }
     }
