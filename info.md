@@ -10,7 +10,7 @@ Blitzortung.org is a worldwide, real time, community collaborative lightning loc
 - Emits geo_location events for lightning strikes (visible on the map)
 - Data is realtime, with average delay of few seconds
 
-# Configuration
+## Configuration
 To configure the integration go to **Settings** >> **Devices & services** >> **Add integration** and search for **Blitzortung**. During configuration there are two ways of providing the location:
 - By providing latitude and longitude. Blitzortung integration defaults to the `home` location of your Home Assistant instance but you can override that.
 - By providing a location entity (`device_tracker`, `person` or `zone`). Blitzortung integration will then follow the coordinates provided by the selected entity.
