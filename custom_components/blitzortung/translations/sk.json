@@ -2,59 +2,113 @@
   "config": {
     "step": {
       "user": {
-        "description": "Nastavte detekciu bleskov Blitzortung",
+        "description": "Vyberte typ konfigur\u00e1cie pre integr\u00e1ciu Blitzortung",
         "data": {
-          "name": "Názov inštancie integrácie",
-          "latitude": "Zemepisná šírka",
-          "longitude": "Zemepisná dĺžka"
+          "config_type": "Typ konfigur\u00e1cie"
+        },
+        "data_description": {
+          "config_type": "Integr\u00e1cia m\u00f4\u017ee by\u0165 nakonfigurovan\u00e1 pre statick\u00e9 s\u00faradnice alebo sledova\u0165 entitu polohy."
         }
       },
-      "reconfigure_confirm": {
-        "description": "Aktualizovať konfiguráciu {name}.",
+      "entity": {
         "data": {
-          "latitude": "Zemepisná šírka",
-          "longitude": "Zemepisná dĺžka"
+          "location_entity": "Entita polohy"
+        },
+        "data_description": {
+          "location_entity": "Entita `device_tracker`, `person` alebo `zone`, ktorej poloha bude pou\u017eit\u00e1 integr\u00e1ciou."
+        }
+      },
+      "coordinates": {
+        "data": {
+          "name": "N\u00e1zov in\u0161tancie integr\u00e1cie",
+          "latitude": "Zemepisn\u00e1 \u0161\u00edrka",
+          "longitude": "Zemepisn\u00e1 d\u013a\u017eka"
+        },
+        "data_description": {
+          "name": "N\u00e1zov, ktor\u00fd integr\u00e1cia pou\u017eije pre t\u00fato konfigur\u00e1ciu.",
+          "latitude": "Desatinn\u00e9 \u010d\u00edslo reprezentuj\u00face zemepisn\u00fa \u0161\u00edrku.",
+          "longitude": "Desatinn\u00e9 \u010d\u00edslo reprezentuj\u00face zemepisn\u00fa d\u013a\u017eku."
+        }
+      },
+      "reconfigure": {
+        "description": "Aktualizova\u0165 konfigur\u00e1ciu pre {name}.",
+        "data": {
+          "latitude": "Zemepisn\u00e1 \u0161\u00edrka",
+          "longitude": "Zemepisn\u00e1 d\u013a\u017eka"
+        },
+        "data_description": {
+          "latitude": "Desatinn\u00e9 \u010d\u00edslo reprezentuj\u00face zemepisn\u00fa \u0161\u00edrku.",
+          "longitude": "Desatinn\u00e9 \u010d\u00edslo reprezentuj\u00face zemepisn\u00fa d\u013a\u017eku."
         }
       }
     },
-    "error": {},
+    "error": {
+      "entity_without_unique_id": "Vybran\u00e1 entita nem\u00e1 jedine\u010dn\u00fd identifik\u00e1tor, pros\u00edm pou\u017eite in\u00fa entitu.",
+      "entity_without_coordinates": "Vybran\u00e1 entita neposkytuje s\u00faradnice."
+    },
     "abort": {
-      "already_configured": "Služba už je nakonfigurovaná",
-      "reconfigure_successful": "Zmena konfigurácie bola úspešná"
+      "already_configured": "Slu\u017eba u\u017e je nakonfigurovan\u00e1",
+      "reconfigure_successful": "Zmena konfigur\u00e1cie bola \u00faspe\u0161n\u00e1",
+      "reconfigure_not_supported": "Pre konfigur\u00e1ciu na z\u00e1klade entity nie je zmena konfigur\u00e1cie podporovan\u00e1."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Možnosti Blitzortung",
-        "description": "Nastavte možnosti detekcie bleskov Blitzortung",
+        "title": "Mo\u017enosti Blitzortung",
         "data": {
-          "radius": "Polomer detekcie bleskov (km/míle)",
-          "time_window": "Časové okno (minúty, 0 = vypnuté)",
-          "max_tracked_lightnings": "Max. počet sledovaných bleskov"
+          "radius": "Polomer detekcie bleskov",
+          "time_window": "\u010casov\u00e9 okno",
+          "max_tracked_lightnings": "Max. po\u010det sledovan\u00fdch bleskov"
+        },
+        "data_description": {
+          "radius": "Polomer kruhu v `km` alebo `mi`, pre ktor\u00fd sa bud\u00fa detekova\u0165 blesky.",
+          "time_window": "\u017divotnos\u0165 sledovan\u00fdch bleskov v min\u00fatach.",
+          "max_tracked_lightnings": "Maxim\u00e1lny po\u010det sledovan\u00fdch bleskov."
         }
+      }
+    }
+  },
+  "exceptions": {
+    "mqtt_connect_not_ready": {
+      "message": "Pripojenie k serveru MQTT Blitzortung zlyhalo: {error}"
+    },
+    "no_coordinates_from_entity": {
+      "message": "Entita {location_entity} neposkytuje s\u00faradnice."
+    }
+  },
+  "selector": {
+    "config_type": {
+      "options": {
+        "entity": "Entita polohy",
+        "coordinates": "S\u00faradnice"
       }
     }
   },
   "entity": {
     "sensor": {
       "azimuth": {
+        "name": "Azimut blesku",
         "state_attributes": {
           "lat": {
-            "name": "Zemepisná šírka"
+            "name": "Zemepisn\u00e1 \u0161\u00edrka"
           },
           "lon": {
-            "name": "Zemepisná dĺžka"
+            "name": "Zemepisn\u00e1 d\u013a\u017eka"
           }
         }
       },
+      "counter": {
+        "name": "Po\u010d\u00edtadlo bleskov"
+      },
       "distance": {
+        "name": "Vzdialenos\u0165 blesku",
         "state_attributes": {
           "lat": {
-            "name": "Zemepisná šírka"
+            "name": "Zemepisn\u00e1 \u0161\u00edrka"
           },
           "lon": {
-            "name": "Zemepisná dĺžka"
+            "name": "Zemepisn\u00e1 d\u013a\u017eka"
           }
         }
       }

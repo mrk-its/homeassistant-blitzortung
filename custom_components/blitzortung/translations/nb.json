@@ -2,26 +2,114 @@
   "config": {
     "step": {
       "user": {
-        "description": "Sett opp lynregistrering av Blitzortung",
+        "description": "Velg konfigurasjonstype for Blitzortung-integrasjonen",
         "data": {
-          "name": "Navnet på integrasjonsforekomsten"
+          "config_type": "Konfigurasjonstype"
+        },
+        "data_description": {
+          "config_type": "Integrasjonen kan konfigureres for statiske koordinater eller f\u00f8lge stedsenheten."
+        }
+      },
+      "entity": {
+        "data": {
+          "location_entity": "Stedsenhet"
+        },
+        "data_description": {
+          "location_entity": "Enheten `device_tracker`, `person` eller `zone` hvis plassering vil bli brukt av integrasjonen."
+        }
+      },
+      "coordinates": {
+        "data": {
+          "name": "Navnet p\u00e5 integrasjonsforekomsten",
+          "latitude": "Breddegrad",
+          "longitude": "Lengdegrad"
+        },
+        "data_description": {
+          "name": "Navnet integrasjonen vil bruke for denne konfigurasjonen.",
+          "latitude": "Et desimaltall som representerer breddegraden.",
+          "longitude": "Et desimaltall som representerer lengdegraden."
+        }
+      },
+      "reconfigure": {
+        "description": "Oppdater konfigurasjonen for {name}.",
+        "data": {
+          "latitude": "Breddegrad",
+          "longitude": "Lengdegrad"
+        },
+        "data_description": {
+          "latitude": "Et desimaltall som representerer breddegraden.",
+          "longitude": "Et desimaltall som representerer lengdegraden."
         }
       }
     },
-    "error": {},
-    "abort": {}
+    "error": {
+      "entity_without_unique_id": "Den valgte enheten har ikke en unik identifikator, vennligst bruk en annen enhet.",
+      "entity_without_coordinates": "Den valgte enheten gir ikke koordinater."
+    },
+    "abort": {
+      "already_configured": "Tjenesten er allerede konfigurert",
+      "reconfigure_successful": "Rekonfigurasjon var vellykket",
+      "reconfigure_not_supported": "For entitetsbasert konfigurasjon st\u00f8ttes ikke rekonfigurasjon."
+    }
   },
   "options": {
     "step": {
       "init": {
         "title": "Blitzortung-alternativer",
-        "description": "Sett opp Blitzortung lyndeteksjonsalternativer",
         "data": {
-          "radius": "Lyndeteksjonsradius (km / mi)",
-          "time_window": "Tidsvindu (minutter, 0 - deaktivert)",
-          "max_tracked_lightnings": "Maks antall sporede lyn",
-          "latitude": "Breddegrad",
-          "longitude": "Lengdegrad"
+          "radius": "Lyndeteksjonsradius",
+          "time_window": "Tidsvindu",
+          "max_tracked_lightnings": "Maks antall sporede lyn"
+        },
+        "data_description": {
+          "radius": "Radius p\u00e5 sirkelen i `km` eller `mi` for hvilke lyn vil bli oppdaget.",
+          "time_window": "Levetid for sporede lyn i minutter.",
+          "max_tracked_lightnings": "Maksimalt antall sporede lyn."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "mqtt_connect_not_ready": {
+      "message": "Klarte ikke \u00e5 koble til Blitzortung MQTT-server: {error}"
+    },
+    "no_coordinates_from_entity": {
+      "message": "Enhet {location_entity} gir ikke koordinater."
+    }
+  },
+  "selector": {
+    "config_type": {
+      "options": {
+        "entity": "Stedsenhet",
+        "coordinates": "Koordinater"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "name": "Lynazimut",
+        "state_attributes": {
+          "lat": {
+            "name": "Breddegrad"
+          },
+          "lon": {
+            "name": "Lengdegrad"
+          }
+        }
+      },
+      "counter": {
+        "name": "Lynteller"
+      },
+      "distance": {
+        "name": "Lynavstand",
+        "state_attributes": {
+          "lat": {
+            "name": "Breddegrad"
+          },
+          "lon": {
+            "name": "Lengdegrad"
+          }
         }
       }
     }

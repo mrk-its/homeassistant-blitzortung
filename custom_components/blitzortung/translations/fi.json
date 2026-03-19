@@ -2,26 +2,114 @@
   "config": {
     "step": {
       "user": {
-        "description": "Määritä Blitzortung ukkostutka",
+        "description": "Valitse Blitzortung-integraation konfigurointityyppi",
         "data": {
-          "name": "Integraation instanssin nimi"
+          "config_type": "Konfigurointityyppi"
+        },
+        "data_description": {
+          "config_type": "Integraatio voidaan konfiguroida staattisilla koordinaateilla tai seurata sijaintientiteetti\u00e4."
+        }
+      },
+      "entity": {
+        "data": {
+          "location_entity": "Sijaintientiteetti"
+        },
+        "data_description": {
+          "location_entity": "Entiteetti `device_tracker`, `person` tai `zone`, jonka sijaintia integraatio k\u00e4ytt\u00e4\u00e4."
+        }
+      },
+      "coordinates": {
+        "data": {
+          "name": "Integraation instanssin nimi",
+          "latitude": "Leveysaste",
+          "longitude": "Pituusaste"
+        },
+        "data_description": {
+          "name": "Nimi, jota integraatio k\u00e4ytt\u00e4\u00e4 t\u00e4lle konfiguraatiolle.",
+          "latitude": "Desimaaliluku, joka edustaa leveysastetta.",
+          "longitude": "Desimaaliluku, joka edustaa pituusastetta."
+        }
+      },
+      "reconfigure": {
+        "description": "P\u00e4ivit\u00e4 konfiguraatio {name}:lle.",
+        "data": {
+          "latitude": "Leveysaste",
+          "longitude": "Pituusaste"
+        },
+        "data_description": {
+          "latitude": "Desimaaliluku, joka edustaa leveysastetta.",
+          "longitude": "Desimaaliluku, joka edustaa pituusastetta."
         }
       }
     },
-    "error": {},
-    "abort": {}
+    "error": {
+      "entity_without_unique_id": "Valitulla entiteetill\u00e4 ei ole yksil\u00f6llist\u00e4 tunnistetta, k\u00e4yt\u00e4 toista entiteetti\u00e4.",
+      "entity_without_coordinates": "Valittu entiteetti ei tarjoa koordinaatteja."
+    },
+    "abort": {
+      "already_configured": "Palvelu on jo konfiguroitu",
+      "reconfigure_successful": "Uudelleenkonfigurointi onnistui",
+      "reconfigure_not_supported": "Entiteettipohjaisen konfigurointikirjauksen uudelleenkonfigurointi ei ole tuettu."
+    }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Blitzortung Asetukset",
-        "description": "Määritä Blitzortung ukkostutkan asetukset",
+        "title": "Blitzortung-asetukset",
         "data": {
-          "radius": "Salamoiden seuranta-alue (km / mi)",
-          "time_window": "Aikaikkuna (minuuttia, 0 - ei käytössä)",
-          "max_tracked_lightnings": "Seurattavien salamoiden enimmäismäärä",
-          "latitude": "Leveysaste",
-          "longitude": "Pituusaste"
+          "radius": "Salamoiden havaintoalue",
+          "time_window": "Aikaikkuna",
+          "max_tracked_lightnings": "Seurattavien salamoiden enimm\u00e4ism\u00e4\u00e4r\u00e4"
+        },
+        "data_description": {
+          "radius": "Ympyr\u00e4n s\u00e4de `km` tai `mi`, jolla salamat havaitaan.",
+          "time_window": "Seurattujen salamoiden elinaika minuuteissa.",
+          "max_tracked_lightnings": "Seurattujen salamoiden enimm\u00e4ism\u00e4\u00e4r\u00e4."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "mqtt_connect_not_ready": {
+      "message": "Yhteys Blitzortung MQTT-palvelimeen ep\u00e4onnistui: {error}"
+    },
+    "no_coordinates_from_entity": {
+      "message": "Entiteetti {location_entity} ei tarjoa koordinaatteja."
+    }
+  },
+  "selector": {
+    "config_type": {
+      "options": {
+        "entity": "Sijaintientiteetti",
+        "coordinates": "Koordinaatit"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "azimuth": {
+        "name": "Salaman atsimuutti",
+        "state_attributes": {
+          "lat": {
+            "name": "Leveysaste"
+          },
+          "lon": {
+            "name": "Pituusaste"
+          }
+        }
+      },
+      "counter": {
+        "name": "Salamalaskuri"
+      },
+      "distance": {
+        "name": "Salaman et\u00e4isyys",
+        "state_attributes": {
+          "lat": {
+            "name": "Leveysaste"
+          },
+          "lon": {
+            "name": "Pituusaste"
+          }
         }
       }
     }
