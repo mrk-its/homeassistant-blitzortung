@@ -3,7 +3,7 @@
 import math
 from collections import namedtuple
 
-from . import geohash
+import geohash
 
 Box = namedtuple("Box", ["s", "w", "n", "e"])  # noqa: PYI024
 
