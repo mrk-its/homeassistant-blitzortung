@@ -113,7 +113,10 @@ async def async_setup_entry(
             )
 
         _LOGGER.info(
-            "Got coordinates %s from entity '%s'", coordinates, location_entity
+            "Got coordinates (lat: %s, lon: %s) from entity '%s'",
+            coordinates[0],
+            coordinates[1],
+            location_entity,
         )
 
     if hass.config.units == IMPERIAL_SYSTEM:
@@ -121,7 +124,7 @@ async def async_setup_entry(
         radius = DistanceConverter.convert(
             radius, UnitOfLength.MILES, UnitOfLength.KILOMETERS
         )
-        _LOGGER.info("imperial system, %s mi -> %s km", radius_mi, radius)
+        _LOGGER.info("Imperial system, %s mi -> %s km", radius_mi, radius)
 
     config_entry.runtime_data = BlitzortungCoordinator(
         hass,
@@ -155,7 +158,7 @@ async def async_update_options(
     hass: HomeAssistant, config_entry: BlitzortungConfigEntry
 ) -> None:
     """Update options."""
-    _LOGGER.info("async_update_options")
+    _LOGGER.debug("Reload config entry due to options update")
     await hass.config_entries.async_reload(config_entry.entry_id)
 
 
@@ -173,7 +176,7 @@ async def async_migrate_entry(
     hass: HomeAssistant, entry: BlitzortungConfigEntry
 ) -> bool:
     """Migrate old config entries to the new format."""
-    _LOGGER.debug("Migrating Blitzortung entry from Version %s", entry.version)
+    _LOGGER.debug("Migrating Blitzortung entry from version %s", entry.version)
     if entry.version == 1:
         latitude = entry.data[CONF_LATITUDE]
         longitude = entry.data[CONF_LONGITUDE]
@@ -362,7 +365,7 @@ class BlitzortungCoordinator:
         """Apply coordinates from a state object. Returns True if changed."""
         if state is None:
             _LOGGER.warning(
-                "Configured entity '%s' not found.",
+                "'%s' entity not found",
                 self.location_entity,
             )
             return False
@@ -372,7 +375,7 @@ class BlitzortungCoordinator:
 
         if lat is None or lon is None:
             _LOGGER.warning(
-                "Configured entity '%s' has no latitude/longitude attributes.",
+                "'%s' entity has no latitude/longitude attributes",
                 self.location_entity,
             )
             return False
@@ -382,8 +385,8 @@ class BlitzortungCoordinator:
             moved = distance(self.latitude, self.longitude, lat, lon)
             if moved < self.min_location_change:
                 _LOGGER.debug(
-                    "'%s' entity moved %s m, which is less than the minimum "
-                    "location change (%s m), ignoring",
+                    "'%s' entity moved %sm, which is less than the minimum "
+                    "location change (%sm), ignoring",
                     self.location_entity,
                     round(moved),
                     round(self.min_location_change),
@@ -408,7 +411,7 @@ class BlitzortungCoordinator:
 
         self.geohash_overlap = new_geohash_overlap
         _LOGGER.info(
-            "Updated location: lat=%s, lon=%s, radius=%skm, geohashes=%s",
+            "Updated location: lat: %s, lon: %s, radius: %skm, geohashes: %s",
             self.latitude,
             self.longitude,
             self.radius,
@@ -510,7 +513,7 @@ class BlitzortungCoordinator:
             latest_version = parse_version(latest_version_str)
             current_version = parse_version(__version__)
             if latest_version > current_version:
-                _LOGGER.info("new version is available: %s", latest_version_str)
+                _LOGGER.info("New version is available: %s", latest_version_str)
                 async_create_notification(
                     title=latest_version_title,
                     message=latest_version_message,
@@ -525,7 +528,7 @@ class BlitzortungCoordinator:
             lightning = json_loads_object(message.payload)
             self.compute_polar_coords(lightning)
             if lightning[ATTR_LIGHTNING_DISTANCE] < self.radius:
-                _LOGGER.debug("lightning data: %s", lightning)
+                _LOGGER.debug("Lightning data: %s", lightning)
                 self.last_time = time.time()
                 for cb in self.lightning_callbacks:
                     await cb(lightning)
