@@ -393,6 +393,8 @@ class BlitzortungCoordinator:
                 )
                 return False
 
+        _LOGGER.debug("'%s' entity moved %sm", self.location_entity, round(moved))
+
         self.latitude = lat
         self.longitude = lon
 
