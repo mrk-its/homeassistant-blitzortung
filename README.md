@@ -35,6 +35,13 @@ To change the detection radius, time window, and max tracked lightnings, go to *
 You can read and see (YouTube) how this component was used in the following community video.
 [How to Add a Lightning Sensor](https://www.vcloudinfo.com/2020/08/adding-a-lightning-sensor-to-home-assistant.html)
 
+# Dashboard Card
+
+You can use the [Weather Radar Card](https://github.com/makin-things/weather-radar-card) to show real time lightning strikes.
+
+https://github.com/user-attachments/assets/61980296-1bfb-4279-878d-96a6cba575a0
+
+
 # How to create dev environment
 ```
 git clone https://github.com/mrk-its/homeassistant-blitzortung.git
