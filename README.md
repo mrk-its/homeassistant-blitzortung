@@ -35,9 +35,9 @@ To change the detection radius, time window, and max tracked lightnings, go to *
 You can read and see (YouTube) how this component was used in the following community video.
 [How to Add a Lightning Sensor](https://www.vcloudinfo.com/2020/08/adding-a-lightning-sensor-to-home-assistant.html)
 
-# Lovelace Card
+# Dashboard Card
 
-The [Weather Radar Card](https://github.com/makin-things/weather-radar-card) added in version 3.6.0 a lightning overlay option that uses data from this integration to show real time strikes.
+You can use the [Weather Radar Card](https://github.com/makin-things/weather-radar-card) to show real time lightning strikes.
 
 https://github.com/user-attachments/assets/61980296-1bfb-4279-878d-96a6cba575a0
 
