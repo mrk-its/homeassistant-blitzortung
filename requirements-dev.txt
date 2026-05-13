@@ -1,3 +1,3 @@
-prek==0.3.12
+prek==0.3.13
 pytest-homeassistant-custom-component==0.13.320
 ruff==0.15.12
