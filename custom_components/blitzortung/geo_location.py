@@ -68,7 +68,18 @@ async def async_setup_entry(
     # Reconcile DB state with the empty in-memory cache: strikes still within
     # the time window come back to life on the map; strikes past their window
     # (orphaned by a previous HA reboot mid-storm) get precisely purged.
-    await _async_reconcile_strikes(hass, config_entry, manager)
+    #
+    # Run as a background task — on a production DB with tens of thousands of
+    # orphan rows, the bulk state-history fetch can easily take longer than
+    # HA's 60-second platform-setup deadline. Live strikes arriving from MQTT
+    # during the reconcile are safe: each one goes through Strikes.insort,
+    # which handles concurrent insertion correctly. The reconcile then skips
+    # whatever the live cache already contains.
+    config_entry.async_create_background_task(
+        hass,
+        _async_reconcile_strikes(hass, config_entry, manager),
+        name="blitzortung_reconcile_strikes_initial",
+    )
 
     # Daily backstop. Defensive against rare orphan accumulation during a
     # long-running HA process. Unregistered automatically on unload.
@@ -133,6 +144,14 @@ async def _async_reconcile_strikes(
     if not db_entity_ids:
         return
 
+    window_minutes = manager._window_seconds // 60  # noqa: SLF001
+    _LOGGER.info(
+        "Strike reconcile: found %d lightning_strike_* entries in recorder DB"
+        " (time window: %d min)",
+        len(db_entity_ids),
+        window_minutes,
+    )
+
     start_time = dt_util.utcnow() - timedelta(seconds=manager._window_seconds)  # noqa: SLF001
     states_dict = await _async_fetch_strike_states(
         hass, instance, db_entity_ids, start_time
@@ -142,9 +161,20 @@ async def _async_reconcile_strikes(
         db_entity_ids, states_dict, manager, start_time.timestamp()
     )
 
+    # Snapshot counts at the categorisation boundary so we can break them out
+    # in the final log line. After this point, _cap_rebuild_to_capacity may
+    # move overflow from rebuild → purge, which would otherwise hide the
+    # "how many were actually outside the window" signal.
+    live_skipped = (
+        len(db_entity_ids) - len(rebuild_candidates) - len(purge_ids)
+    )
+    outside_window = len(purge_ids)
+    within_window = len(rebuild_candidates)
+
     rebuild_candidates, purge_ids = _cap_rebuild_to_capacity(
         rebuild_candidates, purge_ids, manager
     )
+    overflow = within_window - len(rebuild_candidates)
 
     to_register: list[BlitzortungEvent] = []
     for event in rebuild_candidates:
@@ -162,10 +192,15 @@ async def _async_reconcile_strikes(
     if purge_ids:
         await _async_purge_entity_ids(hass, purge_ids)
 
-    _LOGGER.debug(
-        "Strike reconcile: rebuilt %d, purged %d",
+    _LOGGER.info(
+        "Strike reconcile complete: rebuilt %d (within window), "
+        "purged %d (outside window: %d, overflow past capacity: %d), "
+        "skipped %d already-live",
         len(to_register),
         len(purge_ids),
+        outside_window,
+        overflow,
+        live_skipped,
     )
 
 
