@@ -32,6 +32,7 @@ from custom_components.blitzortung.const import (
 )
 from custom_components.blitzortung.geo_location import (
     RECONCILE_INTERVAL,
+    RECONCILE_REBUILD_THRESHOLD,
     STRIKE_ENTITY_ID_PREFIX,
     BlitzortungEvent,
     BlitzortungEventManager,
@@ -502,6 +503,57 @@ async def test_reconcile_rebuilds_within_window_strikes(
     assert any(ev.entity_id == fresh_id for ev in registered)
     # Nothing to purge.
     purge_mock.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_reconcile_fast_path_when_db_exceeds_threshold(
+    hass: HomeAssistant,
+) -> None:
+    """Huge DBs must skip the rebuild path and use a glob purge instead.
+
+    The categorise loop is O(N) on the main thread, and a multi-million-entry
+    WHERE IN query into the recorder can hang its executor. The fast path
+    keeps the integration responsive at the cost of one boot without map
+    continuity.
+    """
+    entry = _make_entry()
+    entry.add_to_hass(hass)
+    manager = _make_manager(window_seconds=7200)
+
+    huge_id_list = [
+        f"{STRIKE_ENTITY_ID_PREFIX}{i:08x}"
+        for i in range(RECONCILE_REBUILD_THRESHOLD + 1)
+    ]
+
+    purge_mock = AsyncMock()
+    hass.services.async_register("recorder", "purge_entities", purge_mock)
+    fetch_mock = AsyncMock(return_value={})
+
+    with (
+        patch.object(hass.config, "components", {*hass.config.components, "recorder"}),
+        patch(
+            "custom_components.blitzortung.geo_location.recorder_get_instance",
+            return_value=MagicMock(),
+        ),
+        patch(
+            "custom_components.blitzortung.geo_location."
+            "_async_enumerate_strike_entity_ids",
+            new=AsyncMock(return_value=huge_id_list),
+        ),
+        patch(
+            "custom_components.blitzortung.geo_location._async_fetch_strike_states",
+            new=fetch_mock,
+        ),
+    ):
+        await _async_reconcile_strikes(hass, entry, manager)
+
+    # Bulk state fetch (the heavy O(N) categorise input) was NOT called.
+    fetch_mock.assert_not_called()
+    # Purge fell back to the glob path, not an explicit per-entity list.
+    purge_mock.assert_called_once()
+    call_data = purge_mock.call_args.args[0].data
+    assert call_data["entity_globs"] == [f"{STRIKE_ENTITY_ID_PREFIX}*"]
+    assert call_data["keep_days"] >= 1
 
 
 # ---------------------------------------------------------------------------

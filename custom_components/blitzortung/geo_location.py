@@ -38,6 +38,15 @@ STRIKE_ENTITY_ID_PREFIX = f"{GEO_LOCATION_PLATFORM}.lightning_strike_"
 RECORDER_DOMAIN = "recorder"
 RECONCILE_INTERVAL = timedelta(days=1)
 
+# When the DB has more orphan rows than this threshold, the rebuild path
+# becomes prohibitive (the categorise loop is O(N) on the main thread,
+# and a >2M-entity WHERE IN query into the recorder can hang the executor
+# for minutes). For such DBs we fall back to a glob purge that wipes
+# anything older than (time_window + a day's margin), preserving live
+# strikes for the next reconcile to handle but skipping the rebuild —
+# the integration self-heals once the DB shrinks under the threshold.
+RECONCILE_REBUILD_THRESHOLD = 10000
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -151,6 +160,17 @@ async def _async_reconcile_strikes(
         len(db_entity_ids),
         window_minutes,
     )
+
+    if len(db_entity_ids) > RECONCILE_REBUILD_THRESHOLD:
+        # Fast path. Skip rebuild and just bulk-purge anything older than the
+        # time window via a glob — the per-entity categorise loop would block
+        # the event loop for seconds at this volume, and a WHERE entity_id IN
+        # (...) with millions of values can hang the recorder executor for
+        # minutes. We lose map continuity across this restart, but the
+        # integration self-heals: once the DB drops under the threshold the
+        # next reconcile uses the full rebuild path.
+        await _async_fast_path_glob_purge(hass, manager, len(db_entity_ids))
+        return
 
     start_time = dt_util.utcnow() - timedelta(seconds=manager._window_seconds)  # noqa: SLF001
     states_dict = await _async_fetch_strike_states(
@@ -304,6 +324,43 @@ async def _async_purge_entity_ids(hass: HomeAssistant, entity_ids: list[str]) ->
         )
     except Exception:  # noqa: BLE001
         _LOGGER.debug("Recorder purge_entities failed", exc_info=True)
+
+
+async def _async_fast_path_glob_purge(
+    hass: HomeAssistant,
+    manager: "BlitzortungEventManager",
+    found_count: int,
+) -> None:
+    """Bulk-purge strike rows when the DB has too many entries to reconcile.
+
+    Uses recorder.purge_entities with the glob + keep_days. The recorder
+    processes the purge in its own executor; the main loop stays responsive.
+    keep_days is set to one day past the configured time window so any
+    truly-live strikes (whose last state was inside the window) survive.
+    """
+    keep_days = max(1, manager._window_seconds // 86400 + 1)  # noqa: SLF001
+    _LOGGER.warning(
+        "Strike reconcile: %d entries exceeds the rebuild threshold of %d. "
+        "Falling back to bulk glob purge (keep_days=%d) — the lightning map "
+        "will not show pre-restart strikes for this boot. The DB will be "
+        "trimmed in the background by the recorder; future restarts will use "
+        "the normal rebuild path once the count drops under the threshold.",
+        found_count,
+        RECONCILE_REBUILD_THRESHOLD,
+        keep_days,
+    )
+    try:
+        await hass.services.async_call(
+            RECORDER_DOMAIN,
+            "purge_entities",
+            {
+                "entity_globs": [f"{STRIKE_ENTITY_ID_PREFIX}*"],
+                "keep_days": keep_days,
+            },
+            blocking=False,
+        )
+    except Exception:  # noqa: BLE001
+        _LOGGER.debug("Recorder fast-path glob purge failed", exc_info=True)
 
 
 class BlitzortungEvent(GeolocationEvent):
