@@ -14,7 +14,7 @@ from homeassistant.const import (
     STATE_HOME,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.data_entry_flow import FlowResultType
+from homeassistant.data_entry_flow import FlowResultType, InvalidData
 from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -27,6 +27,12 @@ from custom_components.blitzortung.const import (
     CONFIG_TYPE_COORDINATES,
     CONFIG_TYPE_ENTITY,
     DOMAIN,
+    MAX_TRACKED_LIGHTNINGS_MAX,
+    MAX_TRACKED_LIGHTNINGS_MIN,
+    RADIUS_MAX,
+    RADIUS_MIN,
+    TIME_WINDOW_MAX,
+    TIME_WINDOW_MIN,
     ZONE_HOME,
 )
 
@@ -165,6 +171,78 @@ async def test_options_flow_success(
         CONF_TIME_WINDOW: 300,
         CONF_MAX_TRACKED_LIGHTNINGS: 150,
     }
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        (CONF_RADIUS, RADIUS_MIN - 1),
+        (CONF_RADIUS, RADIUS_MAX + 1),
+        (CONF_TIME_WINDOW, TIME_WINDOW_MIN - 1),
+        (CONF_TIME_WINDOW, TIME_WINDOW_MAX + 1),
+        (CONF_MAX_TRACKED_LIGHTNINGS, MAX_TRACKED_LIGHTNINGS_MIN - 1),
+        (CONF_MAX_TRACKED_LIGHTNINGS, MAX_TRACKED_LIGHTNINGS_MAX + 1),
+    ],
+)
+@pytest.mark.asyncio
+async def test_options_flow_rejects_out_of_range(
+    hass: HomeAssistant,
+    mock_config_entry_coordinates: MockConfigEntry,
+    field: str,
+    value: int,
+) -> None:
+    """Out-of-range values must be rejected, not silently accepted."""
+    result = await hass.config_entries.options.async_init(
+        mock_config_entry_coordinates.entry_id, context={"source": "user"}
+    )
+    user_input = {
+        CONF_RADIUS: 100,
+        CONF_TIME_WINDOW: 120,
+        CONF_MAX_TRACKED_LIGHTNINGS: 100,
+        field: value,
+    }
+    with pytest.raises(InvalidData) as exc_info:
+        await hass.config_entries.options.async_configure(
+            result["flow_id"],
+            user_input=user_input,
+        )
+    assert exc_info.value.path == [field]
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        (CONF_RADIUS, RADIUS_MIN),
+        (CONF_RADIUS, RADIUS_MAX),
+        (CONF_TIME_WINDOW, TIME_WINDOW_MIN),
+        (CONF_TIME_WINDOW, TIME_WINDOW_MAX),
+        (CONF_MAX_TRACKED_LIGHTNINGS, MAX_TRACKED_LIGHTNINGS_MIN),
+        (CONF_MAX_TRACKED_LIGHTNINGS, MAX_TRACKED_LIGHTNINGS_MAX),
+    ],
+)
+@pytest.mark.asyncio
+async def test_options_flow_accepts_boundary_values(
+    hass: HomeAssistant,
+    mock_config_entry_coordinates: MockConfigEntry,
+    field: str,
+    value: int,
+) -> None:
+    """Values exactly at the documented min/max bounds must be accepted."""
+    result = await hass.config_entries.options.async_init(
+        mock_config_entry_coordinates.entry_id, context={"source": "user"}
+    )
+    user_input = {
+        CONF_RADIUS: 100,
+        CONF_TIME_WINDOW: 120,
+        CONF_MAX_TRACKED_LIGHTNINGS: 100,
+        field: value,
+    }
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input=user_input,
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["data"][field] == value
 
 
 @pytest.mark.parametrize("platform", [DEVICE_TRACKER_DOMAIN, PERSON_DOMAIN])

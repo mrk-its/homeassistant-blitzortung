@@ -31,6 +31,12 @@ from .const import (
     DEFAULT_RADIUS,
     DEFAULT_TIME_WINDOW,
     DOMAIN,
+    MAX_TRACKED_LIGHTNINGS_MAX,
+    MAX_TRACKED_LIGHTNINGS_MIN,
+    RADIUS_MAX,
+    RADIUS_MIN,
+    TIME_WINDOW_MAX,
+    TIME_WINDOW_MIN,
     ZONE_HOME,
 )
 from .utils import get_coordinates_from_entity
@@ -261,21 +267,27 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
                 vol.Required(
                     CONF_RADIUS,
                     default=self.config_entry.options.get(CONF_RADIUS, DEFAULT_RADIUS),
-                ): int,
+                ): vol.All(int, vol.Range(min=RADIUS_MIN, max=RADIUS_MAX)),
                 vol.Optional(
                     CONF_TIME_WINDOW,
                     default=self.config_entry.options.get(
                         CONF_TIME_WINDOW,
                         DEFAULT_TIME_WINDOW,
                     ),
-                ): int,
+                ): vol.All(int, vol.Range(min=TIME_WINDOW_MIN, max=TIME_WINDOW_MAX)),
                 vol.Optional(
                     CONF_MAX_TRACKED_LIGHTNINGS,
                     default=self.config_entry.options.get(
                         CONF_MAX_TRACKED_LIGHTNINGS,
                         DEFAULT_MAX_TRACKED_LIGHTNINGS,
                     ),
-                ): int,
+                ): vol.All(
+                    int,
+                    vol.Range(
+                        min=MAX_TRACKED_LIGHTNINGS_MIN,
+                        max=MAX_TRACKED_LIGHTNINGS_MAX,
+                    ),
+                ),
             }
         )
 
