@@ -1,5 +1,6 @@
 """Support for Blitzortung geo location events."""
 
+import asyncio
 import bisect
 import logging
 import time
@@ -39,13 +40,20 @@ RECORDER_DOMAIN = "recorder"
 RECONCILE_INTERVAL = timedelta(days=1)
 
 # When the DB has more orphan rows than this threshold, the rebuild path
-# becomes prohibitive (the categorise loop is O(N) on the main thread,
-# and a >2M-entity WHERE IN query into the recorder can hang the executor
-# for minutes). For such DBs we fall back to a glob purge that wipes
-# anything older than (time_window + a day's margin), preserving live
-# strikes for the next reconcile to handle but skipping the rebuild —
-# the integration self-heals once the DB shrinks under the threshold.
+# becomes prohibitive (the categorise loop is O(N) on the main thread, and
+# a >2M-entity WHERE IN query into the recorder can hang its executor for
+# minutes). For such DBs we drain via chunked recorder.purge_entities
+# service calls instead of fetching state for rebuild.
 RECONCILE_REBUILD_THRESHOLD = 10000
+
+# Service-based cleanup tuning. Each chunk is a small explicit entity_id
+# list passed to recorder.purge_entities — the recorder handles FK chains,
+# transactions, and schema portability correctly. Sleeping between chunks
+# lets the recorder's executor drain its queue and keeps the event loop
+# responsive. A 2M-strike cleanup at 1000/chunk and 1s/chunk takes ~30 min
+# in the background; HA stays usable throughout.
+PURGE_CHUNK_SIZE = 1000
+PURGE_CHUNK_DELAY = 1.0
 
 
 async def async_setup_entry(
@@ -162,14 +170,12 @@ async def _async_reconcile_strikes(
     )
 
     if len(db_entity_ids) > RECONCILE_REBUILD_THRESHOLD:
-        # Fast path. Skip rebuild and just bulk-purge anything older than the
-        # time window via a glob — the per-entity categorise loop would block
-        # the event loop for seconds at this volume, and a WHERE entity_id IN
-        # (...) with millions of values can hang the recorder executor for
-        # minutes. We lose map continuity across this restart, but the
-        # integration self-heals: once the DB drops under the threshold the
-        # next reconcile uses the full rebuild path.
-        await _async_fast_path_glob_purge(hass, manager, len(db_entity_ids))
+        # Skip rebuild and drain via chunked recorder.purge_entities calls.
+        # The rebuild path's categorise loop is O(N) on the main thread,
+        # and a single glob purge at multi-million scale has been observed
+        # to hang or drop the SQL connection. Chunked service calls keep
+        # each recorder task small and let the main loop stay responsive.
+        await _async_batched_service_purge(hass, manager, db_entity_ids)
         return
 
     start_time = dt_util.utcnow() - timedelta(seconds=manager._window_seconds)  # noqa: SLF001
@@ -326,41 +332,101 @@ async def _async_purge_entity_ids(hass: HomeAssistant, entity_ids: list[str]) ->
         _LOGGER.debug("Recorder purge_entities failed", exc_info=True)
 
 
-async def _async_fast_path_glob_purge(
+async def _async_batched_service_purge(
     hass: HomeAssistant,
     manager: "BlitzortungEventManager",
-    found_count: int,
+    db_entity_ids: list[str],
 ) -> None:
-    """Bulk-purge strike rows when the DB has too many entries to reconcile.
+    """Drain orphan strike rows via chunked recorder.purge_entities calls.
 
-    Uses recorder.purge_entities with the glob + keep_days. The recorder
-    processes the purge in its own executor; the main loop stays responsive.
-    keep_days is set to one day past the configured time window so any
-    truly-live strikes (whose last state was inside the window) survive.
+    Used when the DB has too many entries for the rebuild path. A single
+    glob purge on a multi-million-entity DB has been observed to:
+      * hang the recorder executor for very long stretches, since the
+        recorder's purge_entity_data enumerates the full states_meta
+        table in Python on every iteration; and
+      * raise operational errors (dropped SQL connection) on some
+        backends at this scale.
+
+    The fix is the same official service — recorder.purge_entities,
+    which handles FK chains, transactions, and schema portability
+    correctly — but called repeatedly with small explicit entity_id
+    chunks instead of one huge glob. Each chunk is a short, bounded
+    task in the recorder's executor; the asyncio.sleep between chunks
+    yields the event loop and lets the recorder drain its queue.
+
+    Preserves rows newer than the configured time_window + 1 day margin
+    via keep_days so any truly-live strikes survive. The integration
+    self-heals: once the DB drops under RECONCILE_REBUILD_THRESHOLD,
+    the next reconcile uses the rebuild path that restores map
+    continuity across restart.
     """
-    keep_days = max(1, manager._window_seconds // 86400 + 1)  # noqa: SLF001
+    window_seconds = manager._window_seconds  # noqa: SLF001
+    keep_days = max(1, window_seconds // 86400 + 1)
+    total = len(db_entity_ids)
+    chunks = (total + PURGE_CHUNK_SIZE - 1) // PURGE_CHUNK_SIZE
+
     _LOGGER.warning(
         "Strike reconcile: %d entries exceeds the rebuild threshold of %d. "
-        "Falling back to bulk glob purge (keep_days=%d) — the lightning map "
-        "will not show pre-restart strikes for this boot. The DB will be "
-        "trimmed in the background by the recorder; future restarts will use "
-        "the normal rebuild path once the count drops under the threshold.",
-        found_count,
+        "Draining via chunked recorder.purge_entities — %d chunks of %d, "
+        "%.1fs sleep between, keep_days=%d. Estimated runtime: ~%d min. "
+        "Map will not show pre-restart strikes during this boot.",
+        total,
         RECONCILE_REBUILD_THRESHOLD,
+        chunks,
+        PURGE_CHUNK_SIZE,
+        PURGE_CHUNK_DELAY,
         keep_days,
+        int(chunks * PURGE_CHUNK_DELAY / 60),
     )
-    try:
-        await hass.services.async_call(
-            RECORDER_DOMAIN,
-            "purge_entities",
-            {
-                "entity_globs": [f"{STRIKE_ENTITY_ID_PREFIX}*"],
-                "keep_days": keep_days,
-            },
-            blocking=False,
+
+    started = time.monotonic()
+    failed_chunks = 0
+    for offset in range(0, total, PURGE_CHUNK_SIZE):
+        chunk = db_entity_ids[offset : offset + PURGE_CHUNK_SIZE]
+        try:
+            await hass.services.async_call(
+                RECORDER_DOMAIN,
+                "purge_entities",
+                {"entity_id": chunk, "keep_days": keep_days},
+                blocking=False,
+            )
+        except Exception:  # noqa: BLE001
+            failed_chunks += 1
+            _LOGGER.debug(
+                "Strike cleanup: chunk at offset %d failed; continuing",
+                offset,
+                exc_info=True,
+            )
+
+        # Periodic progress log every ~100 chunks (~100K entries by default).
+        chunk_idx = offset // PURGE_CHUNK_SIZE
+        if chunk_idx > 0 and chunk_idx % 100 == 0:
+            elapsed = time.monotonic() - started
+            done = min(offset + PURGE_CHUNK_SIZE, total)
+            _LOGGER.info(
+                "Strike cleanup: queued %d/%d entries (%.0fs elapsed)",
+                done,
+                total,
+                elapsed,
+            )
+
+        await asyncio.sleep(PURGE_CHUNK_DELAY)
+
+    elapsed = time.monotonic() - started
+    if failed_chunks:
+        _LOGGER.warning(
+            "Strike cleanup: queued %d entries in %.0fs (%d chunks failed; "
+            "those entries will be retried by the next daily reconcile)",
+            total,
+            elapsed,
+            failed_chunks,
         )
-    except Exception:  # noqa: BLE001
-        _LOGGER.debug("Recorder fast-path glob purge failed", exc_info=True)
+    else:
+        _LOGGER.info(
+            "Strike cleanup: queued all %d entries in %.0fs",
+            total,
+            elapsed,
+        )
 
 
 class BlitzortungEvent(GeolocationEvent):

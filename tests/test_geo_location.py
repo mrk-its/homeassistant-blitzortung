@@ -31,12 +31,14 @@ from custom_components.blitzortung.const import (
     DOMAIN,
 )
 from custom_components.blitzortung.geo_location import (
+    PURGE_CHUNK_SIZE,
     RECONCILE_INTERVAL,
     RECONCILE_REBUILD_THRESHOLD,
     STRIKE_ENTITY_ID_PREFIX,
     BlitzortungEvent,
     BlitzortungEventManager,
     Strikes,
+    _async_batched_service_purge,
     _async_reconcile_strikes,
     _cap_rebuild_to_capacity,
     _categorise_strikes,
@@ -509,12 +511,12 @@ async def test_reconcile_rebuilds_within_window_strikes(
 async def test_reconcile_fast_path_when_db_exceeds_threshold(
     hass: HomeAssistant,
 ) -> None:
-    """Huge DBs must skip the rebuild path and use a glob purge instead.
+    """Huge DBs must skip rebuild and drain via chunked purge_entities calls.
 
-    The categorise loop is O(N) on the main thread, and a multi-million-entry
-    WHERE IN query into the recorder can hang its executor. The fast path
-    keeps the integration responsive at the cost of one boot without map
-    continuity.
+    The rebuild path's categorise loop is O(N) on the main thread and the
+    bulk state fetch can hang the recorder executor at scale. Chunked
+    service calls keep each recorder task small and let the main loop
+    stay responsive while the orphans drain in the background.
     """
     entry = _make_entry()
     entry.add_to_hass(hass)
@@ -525,9 +527,8 @@ async def test_reconcile_fast_path_when_db_exceeds_threshold(
         for i in range(RECONCILE_REBUILD_THRESHOLD + 1)
     ]
 
-    purge_mock = AsyncMock()
-    hass.services.async_register("recorder", "purge_entities", purge_mock)
     fetch_mock = AsyncMock(return_value={})
+    purge_mock = AsyncMock()
 
     with (
         patch.object(hass.config, "components", {*hass.config.components, "recorder"}),
@@ -544,16 +545,92 @@ async def test_reconcile_fast_path_when_db_exceeds_threshold(
             "custom_components.blitzortung.geo_location._async_fetch_strike_states",
             new=fetch_mock,
         ),
+        patch(
+            "custom_components.blitzortung.geo_location."
+            "_async_batched_service_purge",
+            new=purge_mock,
+        ),
     ):
         await _async_reconcile_strikes(hass, entry, manager)
 
     # Bulk state fetch (the heavy O(N) categorise input) was NOT called.
     fetch_mock.assert_not_called()
-    # Purge fell back to the glob path, not an explicit per-entity list.
+    # Service-based batched purge was invoked with the full ID list.
     purge_mock.assert_called_once()
-    call_data = purge_mock.call_args.args[0].data
-    assert call_data["entity_globs"] == [f"{STRIKE_ENTITY_ID_PREFIX}*"]
-    assert call_data["keep_days"] >= 1
+    hass_arg, manager_arg, ids_arg = purge_mock.call_args.args
+    assert hass_arg is hass
+    assert manager_arg is manager
+    assert ids_arg == huge_id_list
+
+
+@pytest.mark.asyncio
+async def test_batched_service_purge_chunks_calls_and_sleeps(
+    hass: HomeAssistant,
+) -> None:
+    """Drains the entity-id list via small purge_entities chunks with sleeps."""
+    manager = _make_manager(window_seconds=7200)
+
+    # 2.5 chunks worth of entity IDs.
+    total = int(PURGE_CHUNK_SIZE * 2.5)
+    ids = [f"{STRIKE_ENTITY_ID_PREFIX}{i:08x}" for i in range(total)]
+
+    purge_mock = AsyncMock()
+    hass.services.async_register("recorder", "purge_entities", purge_mock)
+    sleep_mock = AsyncMock()
+
+    with patch(
+        "custom_components.blitzortung.geo_location.asyncio.sleep",
+        new=sleep_mock,
+    ):
+        await _async_batched_service_purge(hass, manager, ids)
+
+    # 3 chunks (1000, 1000, 500). Each → one service call + one sleep.
+    assert purge_mock.call_count == 3
+    assert sleep_mock.call_count == 3
+
+    # Every chunk passes entity_id (not entity_globs) and a keep_days >= 1.
+    chunk_sizes = []
+    for call in purge_mock.call_args_list:
+        data = call.args[0].data
+        assert "entity_id" in data
+        assert "entity_globs" not in data
+        assert data["keep_days"] >= 1
+        chunk_sizes.append(len(data["entity_id"]))
+
+    assert chunk_sizes == [
+        PURGE_CHUNK_SIZE,
+        PURGE_CHUNK_SIZE,
+        total - 2 * PURGE_CHUNK_SIZE,
+    ]
+
+
+@pytest.mark.asyncio
+async def test_batched_service_purge_continues_after_chunk_failure(
+    hass: HomeAssistant,
+) -> None:
+    """One failing chunk must not abort the whole drain."""
+    manager = _make_manager(window_seconds=7200)
+    ids = [f"{STRIKE_ENTITY_ID_PREFIX}{i:08x}" for i in range(PURGE_CHUNK_SIZE * 3)]
+
+    call_n = {"i": 0}
+
+    async def flaky_purge(call: object) -> None:
+        call_n["i"] += 1
+        if call_n["i"] == 2:
+            raise RuntimeError("transient recorder error")
+
+    hass.services.async_register("recorder", "purge_entities", flaky_purge)
+    sleep_mock = AsyncMock()
+
+    with patch(
+        "custom_components.blitzortung.geo_location.asyncio.sleep",
+        new=sleep_mock,
+    ):
+        # Must not raise.
+        await _async_batched_service_purge(hass, manager, ids)
+
+    # All 3 chunks were attempted; the failure in chunk 2 didn't abort the loop.
+    assert call_n["i"] == 3
 
 
 # ---------------------------------------------------------------------------
