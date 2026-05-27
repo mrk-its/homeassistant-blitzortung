@@ -4,18 +4,26 @@ import bisect
 import logging
 import time
 import uuid
+from datetime import timedelta
 from typing import Any
 
 from homeassistant.components.geo_location import DOMAIN as GEO_LOCATION_PLATFORM
 from homeassistant.components.geo_location import GeolocationEvent
-from homeassistant.const import UnitOfLength
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.components.recorder import get_instance as recorder_get_instance
+from homeassistant.components.recorder.db_schema import StatesMeta
+from homeassistant.components.recorder.history import get_significant_states
+from homeassistant.components.recorder.util import session_scope
+from homeassistant.config_entries import ConfigEntryState
+from homeassistant.const import ATTR_LATITUDE, ATTR_LONGITUDE, UnitOfLength
+from homeassistant.core import HomeAssistant, State, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
     async_dispatcher_send,
 )
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.util import dt as dt_util
 from homeassistant.util.dt import utc_from_timestamp
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 
@@ -25,6 +33,10 @@ from .const import ATTR_EXTERNAL_ID, ATTR_PUBLICATION_DATE, ATTRIBUTION, DOMAIN
 _LOGGER = logging.getLogger(__name__)
 
 SIGNAL_DELETE_ENTITY = "blitzortung_delete_entity_{0}"
+
+STRIKE_ENTITY_ID_PREFIX = f"{GEO_LOCATION_PLATFORM}.lightning_strike_"
+RECORDER_DOMAIN = "recorder"
+RECONCILE_INTERVAL = timedelta(days=1)
 
 
 async def async_setup_entry(
@@ -53,8 +65,210 @@ async def async_setup_entry(
         coordinator.time_window_seconds,
     )
 
+    # Reconcile DB state with the empty in-memory cache: strikes still within
+    # the time window come back to life on the map; strikes past their window
+    # (orphaned by a previous HA reboot mid-storm) get precisely purged.
+    await _async_reconcile_strikes(hass, config_entry, manager)
+
+    # Daily backstop. Defensive against rare orphan accumulation during a
+    # long-running HA process. Unregistered automatically on unload.
+    async def _periodic_reconcile(_now: Any) -> None:
+        await _async_reconcile_strikes(hass, config_entry, manager)
+
+    config_entry.async_on_unload(
+        async_track_time_interval(hass, _periodic_reconcile, RECONCILE_INTERVAL)
+    )
+
     coordinator.register_lightning_receiver(manager.lightning_cb)
     coordinator.register_on_tick(manager.tick)
+
+
+async def _async_reconcile_strikes(
+    hass: HomeAssistant,
+    config_entry: BlitzortungConfigEntry,
+    manager: "BlitzortungEventManager",
+) -> None:
+    """Reconcile recorder-persisted strikes with the in-memory cache.
+
+    The integration's strike entities are short-lived (max 24 h) but the
+    recorder DB outlives them: rows for a strike active when HA stopped
+    sit in the DB until normal retention purges them (often 6 months on
+    user configs). With a national-scale cache (5000+ strikes), that's
+    hundreds of thousands of orphan rows across reboots.
+
+    Strategy:
+
+    1. Enumerate every ``lightning_strike_*`` entity_id in the DB.
+    2. Bulk-fetch their last state within the configured time window.
+    3. For entities with state inside the window: reconstruct them as live
+       events, insert into the in-memory cache up to capacity (newest first),
+       register with HA. Normal ``tick()`` evicts them as time runs out,
+       producing proper removal records — no special-case purge needed.
+    4. For entities outside the window (orphans), and any rebuild overflow,
+       call recorder.purge_entities with the precise entity_id list.
+
+    Skipped entirely when a sibling Blitzortung config entry is already
+    loaded: strike entity_ids carry only a UUID, so we can't tell our
+    orphans from a sibling's live strikes.
+    """
+    others_loaded = any(
+        entry.entry_id != config_entry.entry_id
+        and entry.state == ConfigEntryState.LOADED
+        for entry in hass.config_entries.async_entries(DOMAIN)
+    )
+    if others_loaded:
+        _LOGGER.debug(
+            "Skipping strike reconcile: another Blitzortung entry is loaded"
+        )
+        return
+
+    if RECORDER_DOMAIN not in hass.config.components:
+        return
+
+    instance = recorder_get_instance(hass)
+    if instance is None:
+        return
+
+    db_entity_ids = await _async_enumerate_strike_entity_ids(instance)
+    if not db_entity_ids:
+        return
+
+    start_time = dt_util.utcnow() - timedelta(seconds=manager._window_seconds)  # noqa: SLF001
+    states_dict = await _async_fetch_strike_states(
+        hass, instance, db_entity_ids, start_time
+    )
+
+    rebuild_candidates, purge_ids = _categorise_strikes(
+        db_entity_ids, states_dict, manager, start_time.timestamp()
+    )
+
+    rebuild_candidates, purge_ids = _cap_rebuild_to_capacity(
+        rebuild_candidates, purge_ids, manager
+    )
+
+    to_register: list[BlitzortungEvent] = []
+    for event in rebuild_candidates:
+        # insort returns None only if at-capacity-and-older-than-oldest,
+        # which can't happen here (we just cleared against capacity), but
+        # handle defensively.
+        if manager._strikes.insort(event) is None:  # noqa: SLF001
+            purge_ids.append(event.entity_id)
+            continue
+        to_register.append(event)
+
+    if to_register:
+        manager._async_add_entities(to_register)  # noqa: SLF001
+
+    if purge_ids:
+        await _async_purge_entity_ids(hass, purge_ids)
+
+    _LOGGER.debug(
+        "Strike reconcile: rebuilt %d, purged %d",
+        len(to_register),
+        len(purge_ids),
+    )
+
+
+async def _async_enumerate_strike_entity_ids(instance: Any) -> list[str]:
+    """Return all lightning_strike_* entity_ids known to the recorder.
+
+    Uses the same StatesMeta query the recorder runs internally for
+    purge_entities — there is no public glob-enumeration API.
+    """
+
+    def _query() -> list[str]:
+        with session_scope(session=instance.get_session(), read_only=True) as session:
+            return [
+                eid
+                for (eid,) in session.query(StatesMeta.entity_id)
+                .filter(StatesMeta.entity_id.like(f"{STRIKE_ENTITY_ID_PREFIX}%"))
+                .all()
+            ]
+
+    try:
+        return await instance.async_add_executor_job(_query)
+    except Exception:  # noqa: BLE001
+        _LOGGER.debug("Failed to enumerate strike entity_ids", exc_info=True)
+        return []
+
+
+async def _async_fetch_strike_states(
+    hass: HomeAssistant,
+    instance: Any,
+    entity_ids: list[str],
+    start_time: Any,
+) -> dict[str, list[State]]:
+    """Bulk-fetch the last state inside the time window for each entity_id."""
+    try:
+        return await instance.async_add_executor_job(
+            get_significant_states,
+            hass,
+            start_time,
+            None,  # end_time
+            entity_ids,
+            None,  # filters
+            False,  # include_start_time_state — only changes within window
+        )
+    except Exception:  # noqa: BLE001
+        _LOGGER.debug("Failed to fetch strike state history", exc_info=True)
+        return {}
+
+
+def _categorise_strikes(
+    db_entity_ids: list[str],
+    states_dict: dict[str, list[State]],
+    manager: "BlitzortungEventManager",
+    start_ts: float,
+) -> tuple[list["BlitzortungEvent"], list[str]]:
+    """Split DB entity_ids into rebuild candidates and purge-bound orphans."""
+    live_entity_ids = {ev.entity_id for ev in manager._strikes}  # noqa: SLF001
+    rebuild_candidates: list[BlitzortungEvent] = []
+    purge_ids: list[str] = []
+
+    for entity_id in db_entity_ids:
+        if entity_id in live_entity_ids:
+            continue
+        states = states_dict.get(entity_id, [])
+        if not states:
+            purge_ids.append(entity_id)
+            continue
+        event = BlitzortungEvent.from_recorder_state(states[-1], manager._unit)  # noqa: SLF001
+        if event is None or event._publication_date < start_ts:  # noqa: SLF001
+            purge_ids.append(entity_id)
+            continue
+        rebuild_candidates.append(event)
+
+    return rebuild_candidates, purge_ids
+
+
+def _cap_rebuild_to_capacity(
+    rebuild_candidates: list["BlitzortungEvent"],
+    purge_ids: list[str],
+    manager: "BlitzortungEventManager",
+) -> tuple[list["BlitzortungEvent"], list[str]]:
+    """Trim rebuild list to remaining cache capacity; overflow joins purge."""
+    remaining = manager._strikes._capacity - len(manager._strikes)  # noqa: SLF001
+    if remaining <= 0:
+        purge_ids.extend(e.entity_id for e in rebuild_candidates)
+        return [], purge_ids
+    if len(rebuild_candidates) > remaining:
+        rebuild_candidates.sort(key=lambda e: e._publication_date, reverse=True)  # noqa: SLF001
+        purge_ids.extend(e.entity_id for e in rebuild_candidates[remaining:])
+        rebuild_candidates = rebuild_candidates[:remaining]
+    return rebuild_candidates, purge_ids
+
+
+async def _async_purge_entity_ids(hass: HomeAssistant, entity_ids: list[str]) -> None:
+    """Call recorder.purge_entities with an explicit entity_id list."""
+    try:
+        await hass.services.async_call(
+            RECORDER_DOMAIN,
+            "purge_entities",
+            {"entity_id": entity_ids},
+            blocking=False,
+        )
+    except Exception:  # noqa: BLE001
+        _LOGGER.debug("Recorder purge_entities failed", exc_info=True)
 
 
 class BlitzortungEvent(GeolocationEvent):
@@ -68,22 +282,29 @@ class BlitzortungEvent(GeolocationEvent):
 
     def __init__(
         self,
-        distance: int,
+        distance: float,
         latitude: float,
         longitude: float,
         unit: str,
         time: int,
         status: int,
         region: int,
+        strike_id: str | None = None,
     ) -> None:
-        """Initialize entity with data provided."""
+        """Initialize entity with data provided.
+
+        ``strike_id`` is normally generated fresh per strike; the optional
+        argument exists so the reconcile path can reconstruct an event with
+        the original entity_id after an HA restart, preserving recorder
+        history continuity.
+        """
         self._time = time
         self._status = status
         self._region = region
         self._publication_date = time / 1e9
         self._remove_signal_delete = None
-        self._strike_id = str(uuid.uuid4()).replace("-", "")
-        self.entity_id = f"geo_location.lightning_strike_{self._strike_id}"
+        self._strike_id = strike_id or str(uuid.uuid4()).replace("-", "")
+        self.entity_id = f"{STRIKE_ENTITY_ID_PREFIX}{self._strike_id}"
         self._attr_distance = distance
         self._attr_latitude = latitude
         self._attr_longitude = longitude
@@ -92,6 +313,40 @@ class BlitzortungEvent(GeolocationEvent):
             ATTR_PUBLICATION_DATE: utc_from_timestamp(self._publication_date),
         }
         self._attr_unit_of_measurement = unit
+
+    @classmethod
+    def from_recorder_state(cls, state: State, unit: str) -> "BlitzortungEvent | None":
+        """Reconstruct a strike from a recorder-persisted state row.
+
+        Returns None if the row's shape is unexpected (corrupt attributes,
+        missing fields). Defensive — recorder schema changes or partial
+        writes shouldn't break setup.
+        """
+        try:
+            strike_id = state.attributes[ATTR_EXTERNAL_ID]
+            pub_date_raw = state.attributes[ATTR_PUBLICATION_DATE]
+            if isinstance(pub_date_raw, str):
+                pub_date = dt_util.parse_datetime(pub_date_raw)
+            else:
+                pub_date = pub_date_raw
+            if pub_date is None:
+                return None
+            distance = float(state.state)
+            latitude = float(state.attributes[ATTR_LATITUDE])
+            longitude = float(state.attributes[ATTR_LONGITUDE])
+        except (KeyError, ValueError, TypeError):
+            return None
+        # status/region aren't preserved in state attributes; default to 0.
+        return cls(
+            distance=distance,
+            latitude=latitude,
+            longitude=longitude,
+            unit=unit,
+            time=int(pub_date.timestamp() * 1e9),
+            status=0,
+            region=0,
+            strike_id=strike_id,
+        )
 
     @callback
     def _delete_callback(self) -> None:
@@ -119,9 +374,24 @@ class Strikes(list):
         self._capacity = capacity
         super().__init__()
 
-    def insort(self, item: BlitzortungEvent) -> tuple[BlitzortungEvent]:
-        """Insert item into the list, keeping it sorted by key."""
+    def insort(self, item: BlitzortungEvent) -> tuple[BlitzortungEvent, ...] | None:
+        """Insert item into the list, keeping it sorted by key.
+
+        Returns the tuple of evicted items (possibly empty), or None if the item
+        was rejected because it's older than every retained strike and the cache
+        is already at capacity. Rejection avoids a race in which the caller
+        registers the new entity with HA and then immediately fires the
+        eviction signal — before the entity's delete-listener has been
+        attached in async_added_to_hass — leaving a ghost entity that never
+        gets removed.
+        """
         k = self._key_fn(item)
+        if (
+            len(self) >= self._capacity
+            and self._keys
+            and k <= self._keys[0]
+        ):
+            return None
         if k > self._max_key:
             self._max_key = k
             self._keys.append(k)
@@ -135,7 +405,7 @@ class Strikes(list):
             del self._keys[0:n]
             to_delete = self[0:n]
             self[0:n] = []
-            return to_delete
+            return tuple(to_delete)
         return ()
 
     def cleanup(self, k: float) -> tuple[BlitzortungEvent]:
@@ -187,6 +457,12 @@ class BlitzortungEventManager:
             lightning["region"],
         )
         to_delete = self._strikes.insort(event)
+        if to_delete is None:
+            _LOGGER.debug(
+                "Dropping late strike at %s (older than oldest tracked)",
+                event._publication_date,  # noqa: SLF001
+            )
+            return
         self._async_add_entities([event])
         if to_delete:
             self._remove_events(to_delete)
