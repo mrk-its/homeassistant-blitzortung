@@ -27,6 +27,7 @@ from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.util import dt as dt_util
 from homeassistant.util.dt import utc_from_timestamp
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
+from sqlalchemy import text
 
 from . import BlitzortungConfigEntry
 from .const import ATTR_EXTERNAL_ID, ATTR_PUBLICATION_DATE, ATTRIBUTION, DOMAIN
@@ -50,10 +51,21 @@ RECONCILE_REBUILD_THRESHOLD = 10000
 # list passed to recorder.purge_entities — the recorder handles FK chains,
 # transactions, and schema portability correctly. Sleeping between chunks
 # lets the recorder's executor drain its queue and keeps the event loop
-# responsive. A 2M-strike cleanup at 1000/chunk and 1s/chunk takes ~30 min
-# in the background; HA stays usable throughout.
-PURGE_CHUNK_SIZE = 1000
+# responsive.
+#
+# PURGE_CHUNK_SIZE is bounded by the recorder's MAX_EVENT_DATA_BYTES
+# (32 KB at HA 2026.5). The call_service event carries our entity_id
+# list as JSON; at ~67 bytes/entity_id, 350 lands around 24 KB with
+# comfortable margin. Going over the limit doesn't break the call
+# (the in-memory event still reaches the handler), but the recorder
+# logs a noisy warning per call and refuses to persist the event row.
+PURGE_CHUNK_SIZE = 350
 PURGE_CHUNK_DELAY = 1.0
+
+# Portable LIKE-with-ESCAPE pattern. '!' avoids the backslash-doubling
+# pain that MySQL and SQLite handle differently.
+_STRIKE_LIKE_PATTERN = "geo!_location.lightning!_strike!_%"
+_ESCAPE_CHAR = "!"
 
 
 async def async_setup_entry(
@@ -175,7 +187,9 @@ async def _async_reconcile_strikes(
         # and a single glob purge at multi-million scale has been observed
         # to hang or drop the SQL connection. Chunked service calls keep
         # each recorder task small and let the main loop stay responsive.
-        await _async_batched_service_purge(hass, manager, db_entity_ids)
+        # The cleanup function re-enumerates states_meta via cursor paging,
+        # so the count above (db_entity_ids) is only used for the log line.
+        await _async_batched_service_purge(hass, instance, manager, len(db_entity_ids))
         return
 
     start_time = dt_util.utcnow() - timedelta(seconds=manager._window_seconds)  # noqa: SLF001
@@ -334,8 +348,9 @@ async def _async_purge_entity_ids(hass: HomeAssistant, entity_ids: list[str]) ->
 
 async def _async_batched_service_purge(
     hass: HomeAssistant,
+    instance: Any,
     manager: "BlitzortungEventManager",
-    db_entity_ids: list[str],
+    initial_found_count: int,
 ) -> None:
     """Drain orphan strike rows via chunked recorder.purge_entities calls.
 
@@ -350,64 +365,75 @@ async def _async_batched_service_purge(
     The fix is the same official service — recorder.purge_entities,
     which handles FK chains, transactions, and schema portability
     correctly — but called repeatedly with small explicit entity_id
-    chunks instead of one huge glob. Each chunk is a short, bounded
-    task in the recorder's executor; the asyncio.sleep between chunks
-    yields the event loop and lets the recorder drain its queue.
+    chunks. Each chunk is a short, bounded task in the recorder's
+    executor; the asyncio.sleep between chunks yields the event loop
+    and lets the recorder drain its queue.
 
-    Preserves rows newer than the configured time_window + 1 day margin
-    via keep_days so any truly-live strikes survive. The integration
-    self-heals: once the DB drops under RECONCILE_REBUILD_THRESHOLD,
-    the next reconcile uses the rebuild path that restores map
-    continuity across restart.
+    Each iteration re-enumerates the next slice of states_meta via
+    cursor paging (metadata_id > last_seen). This adapts to concurrent
+    external cleanup (a user running the SQL script alongside us) and
+    terminates naturally when the table is empty — no stale snapshot
+    to grind through.
+
+    keep_days is derived from the integration's own time_window — no
+    extra margin. For sub-day windows, keep_days = 0, which purges
+    everything for the matched entity_ids regardless of age; the
+    rebuild path (under threshold) is where map continuity for live
+    strikes is preserved.
     """
     window_seconds = manager._window_seconds  # noqa: SLF001
-    keep_days = max(1, window_seconds // 86400 + 1)
-    total = len(db_entity_ids)
-    chunks = (total + PURGE_CHUNK_SIZE - 1) // PURGE_CHUNK_SIZE
+    keep_days = window_seconds // 86400
 
     _LOGGER.warning(
         "Strike reconcile: %d entries exceeds the rebuild threshold of %d. "
-        "Draining via chunked recorder.purge_entities — %d chunks of %d, "
-        "%.1fs sleep between, keep_days=%d. Estimated runtime: ~%d min. "
-        "Map will not show pre-restart strikes during this boot.",
-        total,
+        "Draining via chunked recorder.purge_entities (chunk=%d, "
+        "delay=%.1fs, keep_days=%d). The map will not show pre-restart "
+        "strikes during this boot.",
+        initial_found_count,
         RECONCILE_REBUILD_THRESHOLD,
-        chunks,
         PURGE_CHUNK_SIZE,
         PURGE_CHUNK_DELAY,
         keep_days,
-        int(chunks * PURGE_CHUNK_DELAY / 60),
     )
 
     started = time.monotonic()
+    cursor = 0
+    total_queued = 0
     failed_chunks = 0
-    for offset in range(0, total, PURGE_CHUNK_SIZE):
-        chunk = db_entity_ids[offset : offset + PURGE_CHUNK_SIZE]
+    chunk_idx = 0
+
+    while True:
+        chunk_data = await _async_enumerate_strike_chunk(
+            instance, cursor, PURGE_CHUNK_SIZE
+        )
+        if not chunk_data:
+            break
+
+        entity_ids = [eid for (_mid, eid) in chunk_data]
+        cursor = max(mid for (mid, _eid) in chunk_data)
+
         try:
             await hass.services.async_call(
                 RECORDER_DOMAIN,
                 "purge_entities",
-                {"entity_id": chunk, "keep_days": keep_days},
+                {"entity_id": entity_ids, "keep_days": keep_days},
                 blocking=False,
             )
         except Exception:  # noqa: BLE001
             failed_chunks += 1
             _LOGGER.debug(
-                "Strike cleanup: chunk at offset %d failed; continuing",
-                offset,
+                "Strike cleanup: chunk %d failed; continuing", chunk_idx,
                 exc_info=True,
             )
 
-        # Periodic progress log every ~100 chunks (~100K entries by default).
-        chunk_idx = offset // PURGE_CHUNK_SIZE
-        if chunk_idx > 0 and chunk_idx % 100 == 0:
+        total_queued += len(entity_ids)
+        chunk_idx += 1
+        if chunk_idx % 100 == 0:
             elapsed = time.monotonic() - started
-            done = min(offset + PURGE_CHUNK_SIZE, total)
             _LOGGER.info(
-                "Strike cleanup: queued %d/%d entries (%.0fs elapsed)",
-                done,
-                total,
-                elapsed,
+                "Strike cleanup: queued %d entries across %d chunks "
+                "(%.0fs elapsed, cursor=%d)",
+                total_queued, chunk_idx, elapsed, cursor,
             )
 
         await asyncio.sleep(PURGE_CHUNK_DELAY)
@@ -417,16 +443,51 @@ async def _async_batched_service_purge(
         _LOGGER.warning(
             "Strike cleanup: queued %d entries in %.0fs (%d chunks failed; "
             "those entries will be retried by the next daily reconcile)",
-            total,
-            elapsed,
-            failed_chunks,
+            total_queued, elapsed, failed_chunks,
         )
     else:
         _LOGGER.info(
-            "Strike cleanup: queued all %d entries in %.0fs",
-            total,
-            elapsed,
+            "Strike cleanup: drained all entries in %.0fs (%d queued)",
+            elapsed, total_queued,
         )
+
+
+async def _async_enumerate_strike_chunk(
+    instance: Any, after_metadata_id: int, limit: int
+) -> list[tuple[int, str]]:
+    """Return up to `limit` (metadata_id, entity_id) pairs above a cursor.
+
+    Cursor paging by metadata_id ensures forward progress: even if a
+    queued purge task hasn't actually deleted the row from states_meta
+    yet, we won't revisit it on the next iteration. The states_meta
+    table has an index on entity_id (ix_states_meta_entity_id) and
+    primary key on metadata_id, so the LIKE prefix + ORDER BY filter
+    is fast even on millions of rows.
+    """
+    def _query() -> list[tuple[int, str]]:
+        with session_scope(session=instance.get_session(), read_only=True) as session:
+            rows = session.execute(
+                text(
+                    # _ESCAPE_CHAR is a literal module constant, not user input.
+                    "SELECT metadata_id, entity_id FROM states_meta "  # noqa: S608
+                    f"WHERE entity_id LIKE :pat ESCAPE '{_ESCAPE_CHAR}' "
+                    "AND metadata_id > :after "
+                    "ORDER BY metadata_id "
+                    "LIMIT :limit"
+                ),
+                {
+                    "pat": _STRIKE_LIKE_PATTERN,
+                    "after": after_metadata_id,
+                    "limit": limit,
+                },
+            )
+            return [(row[0], row[1]) for row in rows]
+
+    try:
+        return await instance.async_add_executor_job(_query)
+    except Exception:  # noqa: BLE001
+        _LOGGER.debug("Strike cleanup: cursor enumerate failed", exc_info=True)
+        return []
 
 
 class BlitzortungEvent(GeolocationEvent):

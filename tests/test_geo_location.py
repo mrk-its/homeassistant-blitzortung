@@ -557,51 +557,67 @@ async def test_reconcile_fast_path_when_db_exceeds_threshold(
     fetch_mock.assert_not_called()
     # Service-based batched purge was invoked with the full ID list.
     purge_mock.assert_called_once()
-    hass_arg, manager_arg, ids_arg = purge_mock.call_args.args
+    hass_arg, instance_arg, manager_arg, found_count = purge_mock.call_args.args
     assert hass_arg is hass
     assert manager_arg is manager
-    assert ids_arg == huge_id_list
+    assert instance_arg is not None
+    assert found_count == len(huge_id_list)
 
 
 @pytest.mark.asyncio
-async def test_batched_service_purge_chunks_calls_and_sleeps(
+async def test_batched_service_purge_drains_via_cursor_until_empty(
     hass: HomeAssistant,
 ) -> None:
-    """Drains the entity-id list via small purge_entities chunks with sleeps."""
+    """Cleanup loops cursor-paged enumerations until the table is empty."""
     manager = _make_manager(window_seconds=7200)
+    instance = MagicMock()
 
-    # 2.5 chunks worth of entity IDs.
+    # 2.5 chunks worth of strike entities; cursor enumerator returns slices.
     total = int(PURGE_CHUNK_SIZE * 2.5)
-    ids = [f"{STRIKE_ENTITY_ID_PREFIX}{i:08x}" for i in range(total)]
+    all_rows = [
+        (i + 1, f"{STRIKE_ENTITY_ID_PREFIX}{i:08x}") for i in range(total)
+    ]
 
-    purge_mock = AsyncMock()
+    call_log: list[list[str]] = []
+
+    async def fake_enumerate(_inst: object, after: int, limit: int) -> list:
+        # Return rows with metadata_id > after, up to limit.
+        return [r for r in all_rows if r[0] > after][:limit]
+
+    purge_mock = AsyncMock(
+        side_effect=lambda call: call_log.append(list(call.data["entity_id"])),
+    )
     hass.services.async_register("recorder", "purge_entities", purge_mock)
     sleep_mock = AsyncMock()
 
-    with patch(
-        "custom_components.blitzortung.geo_location.asyncio.sleep",
-        new=sleep_mock,
+    with (
+        patch(
+            "custom_components.blitzortung.geo_location."
+            "_async_enumerate_strike_chunk",
+            new=fake_enumerate,
+        ),
+        patch(
+            "custom_components.blitzortung.geo_location.asyncio.sleep",
+            new=sleep_mock,
+        ),
     ):
-        await _async_batched_service_purge(hass, manager, ids)
+        await _async_batched_service_purge(hass, instance, manager, total)
 
-    # 3 chunks (1000, 1000, 500). Each → one service call + one sleep.
+    # 3 chunks (350, 350, 175). Then a 4th enumerate returns empty → terminate.
     assert purge_mock.call_count == 3
     assert sleep_mock.call_count == 3
-
-    # Every chunk passes entity_id (not entity_globs) and a keep_days >= 1.
-    chunk_sizes = []
-    for call in purge_mock.call_args_list:
-        data = call.args[0].data
-        assert "entity_id" in data
-        assert "entity_globs" not in data
-        assert data["keep_days"] >= 1
-        chunk_sizes.append(len(data["entity_id"]))
-
+    chunk_sizes = [len(ids) for ids in call_log]
     assert chunk_sizes == [
         PURGE_CHUNK_SIZE,
         PURGE_CHUNK_SIZE,
         total - 2 * PURGE_CHUNK_SIZE,
     ]
+    # keep_days is derived from time_window (7200s = 0 days, since < 1 day).
+    for call in purge_mock.call_args_list:
+        data = call.args[0].data
+        assert "entity_id" in data
+        assert "entity_globs" not in data
+        assert data["keep_days"] == 0
 
 
 @pytest.mark.asyncio
@@ -610,11 +626,19 @@ async def test_batched_service_purge_continues_after_chunk_failure(
 ) -> None:
     """One failing chunk must not abort the whole drain."""
     manager = _make_manager(window_seconds=7200)
-    ids = [f"{STRIKE_ENTITY_ID_PREFIX}{i:08x}" for i in range(PURGE_CHUNK_SIZE * 3)]
+    instance = MagicMock()
+
+    total = PURGE_CHUNK_SIZE * 3
+    all_rows = [
+        (i + 1, f"{STRIKE_ENTITY_ID_PREFIX}{i:08x}") for i in range(total)
+    ]
+
+    async def fake_enumerate(_inst: object, after: int, limit: int) -> list:
+        return [r for r in all_rows if r[0] > after][:limit]
 
     call_n = {"i": 0}
 
-    async def flaky_purge(call: object) -> None:
+    async def flaky_purge(_call: object) -> None:
         call_n["i"] += 1
         if call_n["i"] == 2:
             raise RuntimeError("transient recorder error")
@@ -622,15 +646,69 @@ async def test_batched_service_purge_continues_after_chunk_failure(
     hass.services.async_register("recorder", "purge_entities", flaky_purge)
     sleep_mock = AsyncMock()
 
-    with patch(
-        "custom_components.blitzortung.geo_location.asyncio.sleep",
-        new=sleep_mock,
+    with (
+        patch(
+            "custom_components.blitzortung.geo_location."
+            "_async_enumerate_strike_chunk",
+            new=fake_enumerate,
+        ),
+        patch(
+            "custom_components.blitzortung.geo_location.asyncio.sleep",
+            new=sleep_mock,
+        ),
     ):
-        # Must not raise.
-        await _async_batched_service_purge(hass, manager, ids)
+        await _async_batched_service_purge(hass, instance, manager, total)
 
-    # All 3 chunks were attempted; the failure in chunk 2 didn't abort the loop.
+    # All 3 chunks attempted; the failure in chunk 2 didn't abort the loop.
     assert call_n["i"] == 3
+
+
+@pytest.mark.asyncio
+async def test_batched_service_purge_uses_window_for_keep_days(
+    hass: HomeAssistant,
+) -> None:
+    """keep_days = window_seconds // 86400, no 24h margin added."""
+    instance = MagicMock()
+
+    # Single chunk only — set up empty enumeration after the first slice.
+    async def fake_enumerate_once(_inst: object, after: int, limit: int) -> list:
+        if after == 0:
+            return [(1, f"{STRIKE_ENTITY_ID_PREFIX}aa")]
+        return []
+
+    purge_mock = AsyncMock()
+    hass.services.async_register("recorder", "purge_entities", purge_mock)
+
+    with (
+        patch(
+            "custom_components.blitzortung.geo_location."
+            "_async_enumerate_strike_chunk",
+            new=fake_enumerate_once,
+        ),
+        patch(
+            "custom_components.blitzortung.geo_location.asyncio.sleep",
+            new=AsyncMock(),
+        ),
+    ):
+        # window = 25h → keep_days = 25*3600 // 86400 = 1
+        await _async_batched_service_purge(
+            hass, instance, _make_manager(window_seconds=25 * 3600), 1
+        )
+        assert purge_mock.call_args.args[0].data["keep_days"] == 1
+        purge_mock.reset_mock()
+
+        # window = 2d → keep_days = 2
+        await _async_batched_service_purge(
+            hass, instance, _make_manager(window_seconds=2 * 86400), 1
+        )
+        assert purge_mock.call_args.args[0].data["keep_days"] == 2
+        purge_mock.reset_mock()
+
+        # window = 2h → keep_days = 0 (sub-day, no preservation)
+        await _async_batched_service_purge(
+            hass, instance, _make_manager(window_seconds=2 * 3600), 1
+        )
+        assert purge_mock.call_args.args[0].data["keep_days"] == 0
 
 
 # ---------------------------------------------------------------------------
