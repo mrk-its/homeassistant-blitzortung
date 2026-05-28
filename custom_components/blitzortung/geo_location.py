@@ -375,6 +375,13 @@ async def _async_batched_service_purge(
     terminates naturally when the table is empty — no stale snapshot
     to grind through.
 
+    Bounded by max(metadata_id) at start time. New strikes arriving
+    from MQTT during the drain get higher metadata_ids than the upper
+    bound and are deliberately skipped — otherwise the cursor loop
+    would chase its own tail forever, purging live strikes as fast as
+    MQTT delivers them. Without this bound, an active storm would keep
+    the integration's map permanently empty.
+
     keep_days is derived from the integration's own time_window — no
     extra margin. For sub-day windows, keep_days = 0, which purges
     everything for the matched entity_ids regardless of age; the
@@ -384,16 +391,22 @@ async def _async_batched_service_purge(
     window_seconds = manager._window_seconds  # noqa: SLF001
     keep_days = window_seconds // 86400
 
+    upper_bound = await _async_get_max_strike_metadata_id(instance)
+    if not upper_bound:
+        _LOGGER.info("Strike cleanup: nothing in states_meta to drain")
+        return
+
     _LOGGER.warning(
         "Strike reconcile: %d entries exceeds the rebuild threshold of %d. "
         "Draining via chunked recorder.purge_entities (chunk=%d, "
-        "delay=%.1fs, keep_days=%d). The map will not show pre-restart "
-        "strikes during this boot.",
+        "delay=%.1fs, keep_days=%d, upper_bound=metadata_id<=%d). The map "
+        "will not show pre-restart strikes during this boot.",
         initial_found_count,
         RECONCILE_REBUILD_THRESHOLD,
         PURGE_CHUNK_SIZE,
         PURGE_CHUNK_DELAY,
         keep_days,
+        upper_bound,
     )
 
     started = time.monotonic()
@@ -404,7 +417,7 @@ async def _async_batched_service_purge(
 
     while True:
         chunk_data = await _async_enumerate_strike_chunk(
-            instance, cursor, PURGE_CHUNK_SIZE
+            instance, cursor, PURGE_CHUNK_SIZE, upper_bound
         )
         if not chunk_data:
             break
@@ -453,7 +466,10 @@ async def _async_batched_service_purge(
 
 
 async def _async_enumerate_strike_chunk(
-    instance: Any, after_metadata_id: int, limit: int
+    instance: Any,
+    after_metadata_id: int,
+    limit: int,
+    upper_bound: int,
 ) -> list[tuple[int, str]]:
     """Return up to `limit` (metadata_id, entity_id) pairs above a cursor.
 
@@ -463,6 +479,11 @@ async def _async_enumerate_strike_chunk(
     table has an index on entity_id (ix_states_meta_entity_id) and
     primary key on metadata_id, so the LIKE prefix + ORDER BY filter
     is fast even on millions of rows.
+
+    upper_bound (inclusive) caps the cursor walk at the snapshot taken
+    when cleanup began. Anything with metadata_id > upper_bound is a
+    live strike that arrived after cleanup started — those are left
+    for normal eviction / the rebuild path to handle.
     """
     def _query() -> list[tuple[int, str]]:
         with session_scope(session=instance.get_session(), read_only=True) as session:
@@ -472,12 +493,14 @@ async def _async_enumerate_strike_chunk(
                     "SELECT metadata_id, entity_id FROM states_meta "  # noqa: S608
                     f"WHERE entity_id LIKE :pat ESCAPE '{_ESCAPE_CHAR}' "
                     "AND metadata_id > :after "
+                    "AND metadata_id <= :upper "
                     "ORDER BY metadata_id "
                     "LIMIT :limit"
                 ),
                 {
                     "pat": _STRIKE_LIKE_PATTERN,
                     "after": after_metadata_id,
+                    "upper": upper_bound,
                     "limit": limit,
                 },
             )
@@ -488,6 +511,27 @@ async def _async_enumerate_strike_chunk(
     except Exception:  # noqa: BLE001
         _LOGGER.debug("Strike cleanup: cursor enumerate failed", exc_info=True)
         return []
+
+
+async def _async_get_max_strike_metadata_id(instance: Any) -> int:
+    """Return the highest metadata_id for strike entities, or 0 if none."""
+    def _query() -> int:
+        with session_scope(session=instance.get_session(), read_only=True) as session:
+            row = session.execute(
+                text(
+                    # _ESCAPE_CHAR is a literal module constant, not user input.
+                    "SELECT MAX(metadata_id) FROM states_meta "  # noqa: S608
+                    f"WHERE entity_id LIKE :pat ESCAPE '{_ESCAPE_CHAR}'"
+                ),
+                {"pat": _STRIKE_LIKE_PATTERN},
+            ).fetchone()
+            return int(row[0]) if row and row[0] is not None else 0
+
+    try:
+        return await instance.async_add_executor_job(_query)
+    except Exception:  # noqa: BLE001
+        _LOGGER.debug("Strike cleanup: max metadata_id query failed", exc_info=True)
+        return 0
 
 
 class BlitzortungEvent(GeolocationEvent):

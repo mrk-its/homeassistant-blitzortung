@@ -399,6 +399,34 @@ async def test_async_setup_entry_imperial_system(
     assert coordinator.radius > 150
 
 
+async def test_async_setup_entry_warns_on_empty_geohash(
+    hass: HomeAssistant,
+    mock_config_entry_coordinates: MockConfigEntry,
+    mock_mqtt: MagicMock,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """When geohash_overlap returns empty, a WARNING must surface the silent break."""
+    # Mock geohash_overlap to return empty (simulates radius too large)
+    with patch(
+        "custom_components.blitzortung.geohash_overlap",
+        return_value=set(),
+    ):
+        await hass.config_entries.async_setup(
+            mock_config_entry_coordinates.entry_id
+        )
+        await hass.async_block_till_done()
+
+    assert mock_config_entry_coordinates.state is ConfigEntryState.LOADED
+    # The integration setup proceeds (MQTT connects, sensors register) but the
+    # operator gets a loud warning that no strikes will arrive.
+    assert any(
+        "No geohash tiles" in record.message
+        and "NO STRIKES WILL ARRIVE" in record.message
+        for record in caplog.records
+        if record.levelname == "WARNING"
+    )
+
+
 async def test_async_update_options_reloads_entry(
     hass: HomeAssistant,
     mock_config_entry_coordinates: MockConfigEntry,

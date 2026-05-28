@@ -579,10 +579,13 @@ async def test_batched_service_purge_drains_via_cursor_until_empty(
     ]
 
     call_log: list[list[str]] = []
+    max_metadata_id = all_rows[-1][0]
 
-    async def fake_enumerate(_inst: object, after: int, limit: int) -> list:
-        # Return rows with metadata_id > after, up to limit.
-        return [r for r in all_rows if r[0] > after][:limit]
+    async def fake_enumerate(
+        _inst: object, after: int, limit: int, upper: int,
+    ) -> list:
+        # Return rows in (after, upper] up to limit.
+        return [r for r in all_rows if after < r[0] <= upper][:limit]
 
     purge_mock = AsyncMock(
         side_effect=lambda call: call_log.append(list(call.data["entity_id"])),
@@ -595,6 +598,11 @@ async def test_batched_service_purge_drains_via_cursor_until_empty(
             "custom_components.blitzortung.geo_location."
             "_async_enumerate_strike_chunk",
             new=fake_enumerate,
+        ),
+        patch(
+            "custom_components.blitzortung.geo_location."
+            "_async_get_max_strike_metadata_id",
+            new=AsyncMock(return_value=max_metadata_id),
         ),
         patch(
             "custom_components.blitzortung.geo_location.asyncio.sleep",
@@ -633,8 +641,10 @@ async def test_batched_service_purge_continues_after_chunk_failure(
         (i + 1, f"{STRIKE_ENTITY_ID_PREFIX}{i:08x}") for i in range(total)
     ]
 
-    async def fake_enumerate(_inst: object, after: int, limit: int) -> list:
-        return [r for r in all_rows if r[0] > after][:limit]
+    async def fake_enumerate(
+        _inst: object, after: int, limit: int, upper: int,
+    ) -> list:
+        return [r for r in all_rows if after < r[0] <= upper][:limit]
 
     call_n = {"i": 0}
 
@@ -651,6 +661,11 @@ async def test_batched_service_purge_continues_after_chunk_failure(
             "custom_components.blitzortung.geo_location."
             "_async_enumerate_strike_chunk",
             new=fake_enumerate,
+        ),
+        patch(
+            "custom_components.blitzortung.geo_location."
+            "_async_get_max_strike_metadata_id",
+            new=AsyncMock(return_value=all_rows[-1][0]),
         ),
         patch(
             "custom_components.blitzortung.geo_location.asyncio.sleep",
@@ -671,7 +686,9 @@ async def test_batched_service_purge_uses_window_for_keep_days(
     instance = MagicMock()
 
     # Single chunk only — set up empty enumeration after the first slice.
-    async def fake_enumerate_once(_inst: object, after: int, limit: int) -> list:
+    async def fake_enumerate_once(
+        _inst: object, after: int, limit: int, upper: int,
+    ) -> list:
         if after == 0:
             return [(1, f"{STRIKE_ENTITY_ID_PREFIX}aa")]
         return []
@@ -684,6 +701,11 @@ async def test_batched_service_purge_uses_window_for_keep_days(
             "custom_components.blitzortung.geo_location."
             "_async_enumerate_strike_chunk",
             new=fake_enumerate_once,
+        ),
+        patch(
+            "custom_components.blitzortung.geo_location."
+            "_async_get_max_strike_metadata_id",
+            new=AsyncMock(return_value=1),
         ),
         patch(
             "custom_components.blitzortung.geo_location.asyncio.sleep",
@@ -709,6 +731,66 @@ async def test_batched_service_purge_uses_window_for_keep_days(
             hass, instance, _make_manager(window_seconds=2 * 3600), 1
         )
         assert purge_mock.call_args.args[0].data["keep_days"] == 0
+
+
+@pytest.mark.asyncio
+async def test_batched_service_purge_does_not_eat_live_strikes(
+    hass: HomeAssistant,
+) -> None:
+    """The cleanup loop must skip strikes that arrive after it began.
+
+    Without an upper bound, the cursor would walk past its starting set
+    and start purging MQTT-delivered live strikes — keeping the map
+    permanently empty during active weather.
+    """
+    instance = MagicMock()
+    manager = _make_manager(window_seconds=7200)
+
+    # At cleanup-start, states_meta has metadata_ids 1..100.
+    # New strikes during cleanup get ids 101+ — they must NOT be purged.
+    pre_existing = [
+        (i + 1, f"{STRIKE_ENTITY_ID_PREFIX}old{i:08x}") for i in range(100)
+    ]
+    arrived_during = [
+        (101 + i, f"{STRIKE_ENTITY_ID_PREFIX}new{i:08x}") for i in range(50)
+    ]
+    all_rows = pre_existing + arrived_during
+
+    queued_ids: list[str] = []
+
+    async def fake_enumerate(
+        _inst: object, after: int, limit: int, upper: int,
+    ) -> list:
+        return [r for r in all_rows if after < r[0] <= upper][:limit]
+
+    purge_mock = AsyncMock(
+        side_effect=lambda call: queued_ids.extend(call.data["entity_id"]),
+    )
+    hass.services.async_register("recorder", "purge_entities", purge_mock)
+
+    with (
+        patch(
+            "custom_components.blitzortung.geo_location."
+            "_async_enumerate_strike_chunk",
+            new=fake_enumerate,
+        ),
+        patch(
+            "custom_components.blitzortung.geo_location."
+            "_async_get_max_strike_metadata_id",
+            new=AsyncMock(return_value=100),  # snapshot at start
+        ),
+        patch(
+            "custom_components.blitzortung.geo_location.asyncio.sleep",
+            new=AsyncMock(),
+        ),
+    ):
+        await _async_batched_service_purge(hass, instance, manager, 100)
+
+    # All 100 pre-existing ids were queued for purge.
+    assert len(queued_ids) == 100
+    assert all("old" in eid for eid in queued_ids)
+    # None of the 50 new ones were touched.
+    assert not any("new" in eid for eid in queued_ids)
 
 
 # ---------------------------------------------------------------------------

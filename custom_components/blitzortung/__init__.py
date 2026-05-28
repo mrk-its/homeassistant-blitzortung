@@ -319,6 +319,22 @@ class BlitzortungCoordinator:
             self.geohash_overlap,
         )
 
+        # geohash_overlap silently returns set() when the bounding box
+        # exceeds precision-1 tile coverage (~6700 km at mid-latitudes,
+        # less near the poles). Without subscriptions no strikes ever
+        # arrive, so make this audible rather than silent.
+        if self.latitude is not None and not self.geohash_overlap:
+            _LOGGER.warning(
+                "No geohash tiles for lat=%s lon=%s radius=%skm — the "
+                "bounding box exceeds geohash precision-1 coverage and "
+                "no MQTT subscriptions will be created. NO STRIKES WILL "
+                "ARRIVE until the radius is reduced (try below 4000 km "
+                "/ 2500 mi).",
+                self.latitude,
+                self.longitude,
+                self.radius,
+            )
+
         self.mqtt_client = MQTT(
             hass,
             "blitzortung.ha.sed.pl",
@@ -419,6 +435,12 @@ class BlitzortungCoordinator:
             self.radius,
             self.geohash_overlap,
         )
+        if not self.geohash_overlap:
+            _LOGGER.warning(
+                "After location/radius update, no geohash tiles overlap — "
+                "no MQTT subscriptions will be active until the radius is "
+                "reduced (try below 4000 km / 2500 mi)."
+            )
 
         # If connected, re-subscribe to the new geohash topics.
         if not self.is_connected:
