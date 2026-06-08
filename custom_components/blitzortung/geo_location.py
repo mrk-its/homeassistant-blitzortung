@@ -157,9 +157,7 @@ async def _async_reconcile_strikes(
         for entry in hass.config_entries.async_entries(DOMAIN)
     )
     if others_loaded:
-        _LOGGER.debug(
-            "Skipping strike reconcile: another Blitzortung entry is loaded"
-        )
+        _LOGGER.debug("Skipping strike reconcile: another Blitzortung entry is loaded")
         return
 
     if RECORDER_DOMAIN not in hass.config.components:
@@ -205,9 +203,7 @@ async def _async_reconcile_strikes(
     # in the final log line. After this point, _cap_rebuild_to_capacity may
     # move overflow from rebuild → purge, which would otherwise hide the
     # "how many were actually outside the window" signal.
-    live_skipped = (
-        len(db_entity_ids) - len(rebuild_candidates) - len(purge_ids)
-    )
+    live_skipped = len(db_entity_ids) - len(rebuild_candidates) - len(purge_ids)
     outside_window = len(purge_ids)
     within_window = len(rebuild_candidates)
 
@@ -435,7 +431,8 @@ async def _async_batched_service_purge(
         except Exception:  # noqa: BLE001
             failed_chunks += 1
             _LOGGER.debug(
-                "Strike cleanup: chunk %d failed; continuing", chunk_idx,
+                "Strike cleanup: chunk %d failed; continuing",
+                chunk_idx,
                 exc_info=True,
             )
 
@@ -446,7 +443,10 @@ async def _async_batched_service_purge(
             _LOGGER.info(
                 "Strike cleanup: queued %d entries across %d chunks "
                 "(%.0fs elapsed, cursor=%d)",
-                total_queued, chunk_idx, elapsed, cursor,
+                total_queued,
+                chunk_idx,
+                elapsed,
+                cursor,
             )
 
         await asyncio.sleep(PURGE_CHUNK_DELAY)
@@ -456,12 +456,15 @@ async def _async_batched_service_purge(
         _LOGGER.warning(
             "Strike cleanup: queued %d entries in %.0fs (%d chunks failed; "
             "those entries will be retried by the next daily reconcile)",
-            total_queued, elapsed, failed_chunks,
+            total_queued,
+            elapsed,
+            failed_chunks,
         )
     else:
         _LOGGER.info(
             "Strike cleanup: drained all entries in %.0fs (%d queued)",
-            elapsed, total_queued,
+            elapsed,
+            total_queued,
         )
 
 
@@ -485,6 +488,7 @@ async def _async_enumerate_strike_chunk(
     live strike that arrived after cleanup started — those are left
     for normal eviction / the rebuild path to handle.
     """
+
     def _query() -> list[tuple[int, str]]:
         with session_scope(session=instance.get_session(), read_only=True) as session:
             rows = session.execute(
@@ -515,6 +519,7 @@ async def _async_enumerate_strike_chunk(
 
 async def _async_get_max_strike_metadata_id(instance: Any) -> int:
     """Return the highest metadata_id for strike entities, or 0 if none."""
+
     def _query() -> int:
         with session_scope(session=instance.get_session(), read_only=True) as session:
             row = session.execute(
@@ -649,11 +654,7 @@ class Strikes(list):
         gets removed.
         """
         k = self._key_fn(item)
-        if (
-            len(self) >= self._capacity
-            and self._keys
-            and k <= self._keys[0]
-        ):
+        if len(self) >= self._capacity and self._keys and k <= self._keys[0]:
             return None
         if k > self._max_key:
             self._max_key = k
