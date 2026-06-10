@@ -262,19 +262,43 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
         if user_input is not None:
             return self.async_create_entry(data=user_input)
 
+        # NumberSelector enforces min/max in the UI and on submit, but always
+        # returns float (even with step=1). Coerce back to int — downstream
+        # uses (Strikes capacity, slice indexing, time arithmetic) all assume
+        # integer values.
         options_schema = vol.Schema(
             {
                 vol.Required(
                     CONF_RADIUS,
                     default=self.config_entry.options.get(CONF_RADIUS, DEFAULT_RADIUS),
-                ): vol.All(int, vol.Range(min=RADIUS_MIN, max=RADIUS_MAX)),
+                ): vol.All(
+                    selector.NumberSelector(
+                        selector.NumberSelectorConfig(
+                            mode=selector.NumberSelectorMode.BOX,
+                            min=RADIUS_MIN,
+                            max=RADIUS_MAX,
+                            step=1,
+                        ),
+                    ),
+                    vol.Coerce(int),
+                ),
                 vol.Optional(
                     CONF_TIME_WINDOW,
                     default=self.config_entry.options.get(
                         CONF_TIME_WINDOW,
                         DEFAULT_TIME_WINDOW,
                     ),
-                ): vol.All(int, vol.Range(min=TIME_WINDOW_MIN, max=TIME_WINDOW_MAX)),
+                ): vol.All(
+                    selector.NumberSelector(
+                        selector.NumberSelectorConfig(
+                            mode=selector.NumberSelectorMode.BOX,
+                            min=TIME_WINDOW_MIN,
+                            max=TIME_WINDOW_MAX,
+                            step=1,
+                        ),
+                    ),
+                    vol.Coerce(int),
+                ),
                 vol.Optional(
                     CONF_MAX_TRACKED_LIGHTNINGS,
                     default=self.config_entry.options.get(
@@ -282,11 +306,15 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
                         DEFAULT_MAX_TRACKED_LIGHTNINGS,
                     ),
                 ): vol.All(
-                    int,
-                    vol.Range(
-                        min=MAX_TRACKED_LIGHTNINGS_MIN,
-                        max=MAX_TRACKED_LIGHTNINGS_MAX,
+                    selector.NumberSelector(
+                        selector.NumberSelectorConfig(
+                            mode=selector.NumberSelectorMode.BOX,
+                            min=MAX_TRACKED_LIGHTNINGS_MIN,
+                            max=MAX_TRACKED_LIGHTNINGS_MAX,
+                            step=1,
+                        ),
                     ),
+                    vol.Coerce(int),
                 ),
             }
         )
