@@ -32,13 +32,13 @@ To change the detection radius, time window, and max tracked lightnings, go to *
 > If you use a location entity as the coordinate source, the integration will use new coordinates if the location changes by more than 25% of the radius length.
 
 > [!IMPORTANT]
-> Integration can create many new `geo_location` entities in a short time, especially if the radius is set to a large value. To protect the database from large amounts of data, it is recommended to exclude the `geo_location` domain from processing by the recorder.
+> Integration can create many new `geo_location` entities in a short time, especially if the radius is set to a large value. To protect the database from data floods, it is recommended to exclude the `geo_location` domain from processing by the recorder.
 > ```yaml
 > recorder:
 >   exclude:
 >     domains:
 >       - geo_location
-```
+> ```
 
 # Reviews and How-Tos
 You can read and see (YouTube) how this component was used in the following community video.
