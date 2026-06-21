@@ -69,6 +69,12 @@ Key facts:
 
 `strings.json` is the source of truth. All 10 translation files in `translations/` (en, fi, fr, hr, nb, nl, pl, sk, sl, ua) must be updated together when adding/changing user-facing strings.
 
+## Code style
+
+Comments explain *why* something is done, not *what* the code does. Do not restate the code or add comments for obvious decisions.
+
+Docstrings: prefer one-liners. If needed, max 2–3 lines — never longer.
+
 ## Testing quirks
 
 - Mock the `MQTT` class with the `mock_mqtt` fixture from `tests/conftest.py`
