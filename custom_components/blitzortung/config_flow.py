@@ -265,7 +265,9 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
         # NumberSelector enforces min/max in the UI and on submit, but always
         # returns float (even with step=1). Coerce back to int — downstream
         # uses (Strikes capacity, slice indexing, time arithmetic) all assume
-        # integer values.
+        # integer values. The trailing vol.Range is backend defense-in-depth:
+        # the selector only guards the UI path, so a value submitted via YAML
+        # import or the API (which bypasses the selector) is still bounded.
         options_schema = vol.Schema(
             {
                 vol.Required(
@@ -281,6 +283,7 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
                         ),
                     ),
                     vol.Coerce(int),
+                    vol.Range(min=RADIUS_MIN, max=RADIUS_MAX),
                 ),
                 vol.Optional(
                     CONF_TIME_WINDOW,
@@ -298,6 +301,7 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
                         ),
                     ),
                     vol.Coerce(int),
+                    vol.Range(min=TIME_WINDOW_MIN, max=TIME_WINDOW_MAX),
                 ),
                 vol.Optional(
                     CONF_MAX_TRACKED_LIGHTNINGS,
@@ -315,6 +319,9 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
                         ),
                     ),
                     vol.Coerce(int),
+                    vol.Range(
+                        min=MAX_TRACKED_LIGHTNINGS_MIN, max=MAX_TRACKED_LIGHTNINGS_MAX
+                    ),
                 ),
             }
         )
