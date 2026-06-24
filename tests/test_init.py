@@ -569,6 +569,7 @@ async def test_connect_with_server_stats(
     coordinator.mqtt_client = MagicMock(
         async_connect=AsyncMock(),
         async_subscribe=AsyncMock(return_value=MagicMock()),
+        async_disconnect=AsyncMock(),
     )
 
     await coordinator.connect()
@@ -577,6 +578,8 @@ async def test_connect_with_server_stats(
         call.args[0] for call in coordinator.mqtt_client.async_subscribe.call_args_list
     ]
     assert any("$SYS/broker/#" in t for t in topics)
+
+    await coordinator.disconnect()
 
 
 async def test_disconnect_cancels_pending_refresh(
