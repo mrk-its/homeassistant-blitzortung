@@ -127,7 +127,7 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors["base"] = "entity_without_coordinates"
             else:
                 await self.async_set_unique_id(unique_id)
-                self._abort_if_unique_id_configured()
+                self._abort_if_unique_id_configured(reload_on_update=False)
 
                 data = {
                     CONF_NAME: title,
@@ -161,7 +161,7 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
             await self.async_set_unique_id(
                 f"{user_input[CONF_LATITUDE]}-{user_input[CONF_LONGITUDE]}"
             )
-            self._abort_if_unique_id_configured()
+            self._abort_if_unique_id_configured(reload_on_update=False)
 
             data = {
                 CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
@@ -213,8 +213,8 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             unique_id = f"{user_input[CONF_LATITUDE]}-{user_input[CONF_LONGITUDE]}"
             await self.async_set_unique_id(unique_id)
-            self._abort_if_unique_id_configured()
-            return self.async_update_reload_and_abort(
+            self._abort_if_unique_id_configured(reload_on_update=False)
+            return self.async_update_and_abort(
                 entry,
                 unique_id=unique_id,
                 data_updates=user_input,
