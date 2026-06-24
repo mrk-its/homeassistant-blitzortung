@@ -245,6 +245,47 @@ async def test_options_flow_accepts_boundary_values(
     assert result["data"][field] == value
 
 
+@pytest.mark.asyncio
+async def test_options_flow_clamps_render_of_legacy_value(
+    hass: HomeAssistant,
+    mock_config_entry_coordinates: MockConfigEntry,
+) -> None:
+    """Render a legacy out-of-range value clamped, without rewriting it.
+
+    A stored value above the current max (e.g. saved before the cap was
+    lowered) renders clamped to the slider range, but the stored config is
+    left untouched until the user actually saves.
+    """
+    over_max = MAX_TRACKED_LIGHTNINGS_MAX + 9000
+    hass.config_entries.async_update_entry(
+        mock_config_entry_coordinates,
+        options={
+            CONF_RADIUS: 100,
+            CONF_TIME_WINDOW: 10,
+            CONF_MAX_TRACKED_LIGHTNINGS: over_max,
+        },
+    )
+
+    result = await hass.config_entries.options.async_init(
+        mock_config_entry_coordinates.entry_id, context={"source": "user"}
+    )
+    assert result["type"] is FlowResultType.FORM
+
+    # The value rendered into the slider is clamped to the cap...
+    suggested = {
+        marker.schema: marker.description["suggested_value"]
+        for marker in result["data_schema"].schema
+        if marker.description and "suggested_value" in marker.description
+    }
+    assert suggested[CONF_MAX_TRACKED_LIGHTNINGS] == MAX_TRACKED_LIGHTNINGS_MAX
+
+    # ...but the stored config still holds the original out-of-range value,
+    # because merely opening the form must not rewrite it.
+    assert (
+        mock_config_entry_coordinates.options[CONF_MAX_TRACKED_LIGHTNINGS] == over_max
+    )
+
+
 @pytest.mark.parametrize("platform", [DEVICE_TRACKER_DOMAIN, PERSON_DOMAIN])
 @pytest.mark.asyncio
 async def test_user_flow_success_entity(hass: HomeAssistant, platform: str) -> None:
