@@ -62,7 +62,7 @@
           "max_tracked_lightnings": "Maks antall sporede lyn"
         },
         "data_description": {
-          "radius": "Radius p\u00e5 sirkelen i `km` eller `mi` for hvilke lyn vil bli oppdaget.",
+          "radius": "Radius p\u00e5 sirkelen for hvilke lyn vil bli oppdaget.",
           "time_window": "Levetid for sporede lyn i minutter.",
           "max_tracked_lightnings": "Maksimalt antall sporede lyn."
         }

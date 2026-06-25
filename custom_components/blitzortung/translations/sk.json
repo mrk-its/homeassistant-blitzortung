@@ -62,7 +62,7 @@
           "max_tracked_lightnings": "Max. po\u010det sledovan\u00fdch bleskov"
         },
         "data_description": {
-          "radius": "Polomer kruhu v `km` alebo `mi`, pre ktor\u00fd sa bud\u00fa detekova\u0165 blesky.",
+          "radius": "Polomer kruhu, pre ktor\u00fd sa bud\u00fa detekova\u0165 blesky.",
           "time_window": "\u017divotnos\u0165 sledovan\u00fdch bleskov v min\u00fatach.",
           "max_tracked_lightnings": "Maxim\u00e1lny po\u010det sledovan\u00fdch bleskov."
         }

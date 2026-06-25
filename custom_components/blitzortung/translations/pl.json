@@ -62,7 +62,7 @@
           "max_tracked_lightnings": "Maksymalna liczba b\u0142yskawic"
         },
         "data_description": {
-          "radius": "Promie\u0144 okr\u0119gu w `km` lub `mi`, dla kt\u00f3rego b\u0119d\u0105 wykrywane b\u0142yskawice.",
+          "radius": "Promie\u0144 okr\u0119gu, dla kt\u00f3rego b\u0119d\u0105 wykrywane b\u0142yskawice.",
           "time_window": "Czas \u017cycia \u015bledzonych b\u0142yskawic w minutach.",
           "max_tracked_lightnings": "Maksymalna liczba \u015bledzonych b\u0142yskawic."
         }

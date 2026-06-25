@@ -62,7 +62,7 @@
           "max_tracked_lightnings": "Najve\u010dje \u0161tevilo sledenih strel"
         },
         "data_description": {
-          "radius": "Polmer kroga v `km` ali `mi`, za katerega bodo zaznane strele.",
+          "radius": "Polmer kroga, za katerega bodo zaznane strele.",
           "time_window": "\u017divljenjska doba sledenih strel v minutah.",
           "max_tracked_lightnings": "Najve\u010dje \u0161tevilo sledenih strel."
         }

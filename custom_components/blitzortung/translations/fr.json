@@ -62,7 +62,7 @@
           "max_tracked_lightnings": "Nombre maximum d'\u00e9clairs suivis"
         },
         "data_description": {
-          "radius": "Rayon du cercle en `km` ou `mi` pour lequel les \u00e9clairs seront d\u00e9tect\u00e9s.",
+          "radius": "Rayon du cercle pour lequel les \u00e9clairs seront d\u00e9tect\u00e9s.",
           "time_window": "Dur\u00e9e de vie des \u00e9clairs suivis en minutes.",
           "max_tracked_lightnings": "Nombre maximum d'\u00e9clairs suivis."
         }
