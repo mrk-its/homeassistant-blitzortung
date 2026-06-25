@@ -13,11 +13,18 @@ from homeassistant.config_entries import (
     ConfigFlowResult,
     OptionsFlow,
 )
-from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME
+from homeassistant.const import (
+    CONF_LATITUDE,
+    CONF_LONGITUDE,
+    CONF_NAME,
+    UnitOfLength,
+    UnitOfTime,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import selector
+from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 
 from .const import (
     CONF_CONFIG_TYPE,
@@ -31,6 +38,12 @@ from .const import (
     DEFAULT_RADIUS,
     DEFAULT_TIME_WINDOW,
     DOMAIN,
+    MAX_TRACKED_LIGHTNINGS_MAX,
+    MAX_TRACKED_LIGHTNINGS_MIN,
+    RADIUS_MAX,
+    RADIUS_MIN,
+    TIME_WINDOW_MAX,
+    TIME_WINDOW_MIN,
     ZONE_HOME,
 )
 from .utils import get_coordinates_from_entity
@@ -52,6 +65,15 @@ CONFIG_TYPE_SELECTOR = selector.SelectSelector(
         translation_key=CONF_CONFIG_TYPE,
     )
 )
+
+
+def _clamp(value: int, low: int, high: int) -> int:
+    """Clamp value into [low, high].
+
+    Used to render a slider for a stored option that predates the current
+    bounds without mutating the stored value.
+    """
+    return max(low, min(high, value))
 
 
 def _validate_input_entity(
@@ -256,34 +278,101 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
         if user_input is not None:
             return self.async_create_entry(data=user_input)
 
+        # NumberSelector enforces min/max in the UI and on submit, but always
+        # returns float (even with step=1). Coerce back to int — downstream
+        # uses (Strikes capacity, slice indexing, time arithmetic) all assume
+        # integer values. The trailing vol.Range is backend defense-in-depth:
+        # the selector only guards the UI path, so a value submitted via YAML
+        # import or the API (which bypasses the selector) is still bounded.
         options_schema = vol.Schema(
             {
                 vol.Required(
                     CONF_RADIUS,
                     default=self.config_entry.options.get(CONF_RADIUS, DEFAULT_RADIUS),
-                ): int,
+                ): vol.All(
+                    selector.NumberSelector(
+                        selector.NumberSelectorConfig(
+                            mode=selector.NumberSelectorMode.SLIDER,
+                            min=RADIUS_MIN,
+                            max=RADIUS_MAX,
+                            step=10,
+                            unit_of_measurement=UnitOfLength.MILES
+                            if self.hass.config.units == IMPERIAL_SYSTEM
+                            else UnitOfLength.KILOMETERS,
+                        ),
+                    ),
+                    vol.Coerce(int),
+                    vol.Range(min=RADIUS_MIN, max=RADIUS_MAX),
+                ),
                 vol.Optional(
                     CONF_TIME_WINDOW,
                     default=self.config_entry.options.get(
                         CONF_TIME_WINDOW,
                         DEFAULT_TIME_WINDOW,
                     ),
-                ): int,
+                ): vol.All(
+                    selector.NumberSelector(
+                        selector.NumberSelectorConfig(
+                            mode=selector.NumberSelectorMode.SLIDER,
+                            min=TIME_WINDOW_MIN,
+                            max=TIME_WINDOW_MAX,
+                            step=10,
+                            unit_of_measurement=UnitOfTime.MINUTES,
+                        ),
+                    ),
+                    vol.Coerce(int),
+                    vol.Range(min=TIME_WINDOW_MIN, max=TIME_WINDOW_MAX),
+                ),
                 vol.Optional(
                     CONF_MAX_TRACKED_LIGHTNINGS,
                     default=self.config_entry.options.get(
                         CONF_MAX_TRACKED_LIGHTNINGS,
                         DEFAULT_MAX_TRACKED_LIGHTNINGS,
                     ),
-                ): int,
+                ): vol.All(
+                    selector.NumberSelector(
+                        selector.NumberSelectorConfig(
+                            mode=selector.NumberSelectorMode.SLIDER,
+                            min=MAX_TRACKED_LIGHTNINGS_MIN,
+                            max=MAX_TRACKED_LIGHTNINGS_MAX,
+                            step=100,
+                        ),
+                    ),
+                    vol.Coerce(int),
+                    vol.Range(
+                        min=MAX_TRACKED_LIGHTNINGS_MIN, max=MAX_TRACKED_LIGHTNINGS_MAX
+                    ),
+                ),
             }
         )
 
+        # Clamp the values we *render* into the slider's range, but only for
+        # display. A pre-existing entry can hold a value above the current
+        # max (e.g. max_tracked_lightnings=10000 saved before the cap was
+        # lowered to 1000). The slider can't represent an out-of-range value,
+        # so render it pinned to the cap. The stored config is left untouched:
+        # async_show_form never writes, and the real value is only overwritten
+        # if the user explicitly saves (which then submits the in-range value).
+        opts = self.config_entry.options
+        suggested = {
+            CONF_RADIUS: _clamp(
+                opts.get(CONF_RADIUS, DEFAULT_RADIUS), RADIUS_MIN, RADIUS_MAX
+            ),
+            CONF_TIME_WINDOW: _clamp(
+                opts.get(CONF_TIME_WINDOW, DEFAULT_TIME_WINDOW),
+                TIME_WINDOW_MIN,
+                TIME_WINDOW_MAX,
+            ),
+            CONF_MAX_TRACKED_LIGHTNINGS: _clamp(
+                opts.get(CONF_MAX_TRACKED_LIGHTNINGS, DEFAULT_MAX_TRACKED_LIGHTNINGS),
+                MAX_TRACKED_LIGHTNINGS_MIN,
+                MAX_TRACKED_LIGHTNINGS_MAX,
+            ),
+        }
+
         return self.async_show_form(
             step_id="init",
-            data_schema=self.add_suggested_values_to_schema(
-                options_schema, self.config_entry.options
-            ),
+            data_schema=self.add_suggested_values_to_schema(options_schema, suggested),
         )
 
 
