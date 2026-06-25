@@ -62,7 +62,7 @@
           "max_tracked_lightnings": "Maksimalan broj pra\u0107enih gromova"
         },
         "data_description": {
-          "radius": "Radijus kruga u `km` ili `mi` za koji \u0107e gromovi biti otkriveni.",
+          "radius": "Radijus kruga za koji \u0107e gromovi biti otkriveni.",
           "time_window": "Vijek trajanja pra\u0107enih gromova u minutama.",
           "max_tracked_lightnings": "Maksimalan broj pra\u0107enih gromova."
         }

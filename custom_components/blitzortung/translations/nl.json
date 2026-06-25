@@ -62,7 +62,7 @@
           "max_tracked_lightnings": "Maximum aantal gevolgde bliksems"
         },
         "data_description": {
-          "radius": "Straal van de cirkel in `km` of `mi` waarvoor bliksems worden gedetecteerd.",
+          "radius": "Straal van de cirkel waarvoor bliksems worden gedetecteerd.",
           "time_window": "Levensduur van gevolgde bliksems in minuten.",
           "max_tracked_lightnings": "Maximum aantal gevolgde bliksems."
         }
