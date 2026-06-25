@@ -235,8 +235,8 @@ async def test_options_flow_accepts_boundary_values(
         CONF_RADIUS: 100,
         CONF_TIME_WINDOW: 120,
         CONF_MAX_TRACKED_LIGHTNINGS: 100,
-        field: value,
     }
+    user_input[field] = value
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input=user_input,
