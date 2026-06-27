@@ -116,8 +116,8 @@
   },
   "repair": {
     "max_tracked_lightnings_warning": {
-      "title": "Large number of tracked lightnings: {max_tracked_lightnings}",
-      "description": "Large number of tracked lightnings: {max_tracked_lightnings}, it may lead to bigger memory usage / unstable frontend / uncontrolled growth of the database."
+      "title": "Du\u017ca liczba \u015bledzonych b\u0142yskawic",
+      "description": "Du\u017ca liczba \u015bledzonych b\u0142yskawic ({max_tracked_lightnings}) mo\u017ce prowadzi\u0107 do wi\u0119kszego zu\u017cycia pami\u0119ci, niestabilnego interfejsu lub niekontrolowanego wzrostu bazy danych."
     }
   }
 }

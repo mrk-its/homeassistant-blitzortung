@@ -117,7 +117,7 @@
   "repair": {
     "max_tracked_lightnings_warning": {
       "title": "Large number of tracked lightnings",
-      "description": "Large number of tracked lightnings {max_tracked_lightnings} may lead to bigger memory usage, unstable frontend or uncontrolled growth of the database."
+      "description": "Large number of tracked lightnings ({max_tracked_lightnings}) may lead to bigger memory usage, unstable frontend or uncontrolled growth of the database."
     }
   }
 }
