@@ -8,11 +8,7 @@ from homeassistant.helpers import issue_registry as ir
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.blitzortung.const import (
-    CONF_CONFIG_TYPE,
     CONF_MAX_TRACKED_LIGHTNINGS,
-    CONF_RADIUS,
-    CONF_TIME_WINDOW,
-    CONFIG_TYPE_COORDINATES,
     DOMAIN,
 )
 from custom_components.blitzortung.repairs import (
@@ -40,36 +36,13 @@ async def _setup_flow(
     return flow
 
 
-def _make_entry(
-    hass: HomeAssistant, unique_id: str, max_val: int = 600
-) -> MockConfigEntry:
-    """Create a coordinates-based MockConfigEntry."""
-    entry = MockConfigEntry(
-        domain=DOMAIN,
-        data={
-            "name": "Test Location",
-            "latitude": 50.0,
-            "longitude": 10.0,
-            CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
-        },
-        unique_id=unique_id,
-        version=6,
-        options={
-            CONF_RADIUS: 100,
-            CONF_MAX_TRACKED_LIGHTNINGS: max_val,
-            CONF_TIME_WINDOW: 10,
-        },
-    )
-    entry.add_to_hass(hass)
-    return entry
-
-
 async def test_init_shows_menu(
     hass: HomeAssistant,
     mock_mqtt: MagicMock,
+    mock_config_entry_coordinates: MockConfigEntry,
 ) -> None:
     """Test the init step shows a menu with confirm and ignore options."""
-    entry = _make_entry(hass, "50.0-10.0-menu")
+    entry = mock_config_entry_coordinates
     flow = await _setup_flow(hass, entry)
 
     result = await flow.async_step_init()
@@ -80,9 +53,10 @@ async def test_init_shows_menu(
 async def test_confirm_step_reduces_value_and_reloads(
     hass: HomeAssistant,
     mock_mqtt: MagicMock,
+    mock_config_entry_coordinates: MockConfigEntry,
 ) -> None:
     """Test confirm step sets max_tracked_lightnings to 400 and reloads."""
-    entry = _make_entry(hass, "50.0-10.0-confirm")
+    entry = mock_config_entry_coordinates
     flow = await _setup_flow(hass, entry)
     issue_id = flow.issue_id
 
@@ -112,9 +86,10 @@ async def test_confirm_step_unknown_entry(
 async def test_ignore_step(
     hass: HomeAssistant,
     mock_mqtt: MagicMock,
+    mock_config_entry_coordinates: MockConfigEntry,
 ) -> None:
     """Test the ignore step calls async_ignore_issue and aborts."""
-    entry = _make_entry(hass, "50.0-10.0-ignore")
+    entry = mock_config_entry_coordinates
     flow = await _setup_flow(hass, entry)
 
     with patch(
