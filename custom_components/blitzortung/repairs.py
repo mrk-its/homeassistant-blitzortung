@@ -1,6 +1,12 @@
 """Repairs platform for Blitzortung integration."""
 
-from homeassistant.components.repairs import RepairsFlow, RepairsFlowResult
+from typing import TYPE_CHECKING
+
+from homeassistant.components.repairs import (
+    ConfirmRepairFlow,
+    RepairsFlow,
+    RepairsFlowResult,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry as ir
 
@@ -17,8 +23,10 @@ class MaxTrackedLightningsRepairFlow(RepairsFlow):
         """Handle the first step of a fix flow."""
         issue_registry = ir.async_get(self.hass)
         description_placeholders = None
+
         if issue := issue_registry.async_get_issue(DOMAIN, self.issue_id):
             description_placeholders = issue.translation_placeholders
+
         return self.async_show_menu(
             menu_options=["confirm", "ignore"],
             description_placeholders=description_placeholders,
@@ -29,16 +37,26 @@ class MaxTrackedLightningsRepairFlow(RepairsFlow):
         user_input: dict[str, str] | None = None,  # noqa: ARG002
     ) -> RepairsFlowResult:
         """Handle the confirm step of a fix flow."""
-        entry_id = self.data.get("entry_id")
-        if entry_id:
-            entry = self.hass.config_entries.async_get_entry(entry_id)
-            if entry:
-                new_options = {
-                    **entry.options,
-                    CONF_MAX_TRACKED_LIGHTNINGS: 400,
-                }
-                self.hass.config_entries.async_update_entry(entry, options=new_options)
-                await self.hass.config_entries.async_reload(entry_id)
+        if TYPE_CHECKING:
+            assert self.data
+
+        entry_id = self.data["entry_id"]
+
+        if TYPE_CHECKING:
+            assert isinstance(entry_id, str)
+
+        entry = self.hass.config_entries.async_get_entry(entry_id)
+
+        if not entry:
+            return self.async_abort(reason="entry_not_found")
+
+        new_options = {
+            **entry.options,
+            CONF_MAX_TRACKED_LIGHTNINGS: 400,
+        }
+        self.hass.config_entries.async_update_entry(entry, options=new_options)
+        await self.hass.config_entries.async_reload(entry_id)
+
         return self.async_create_entry(title="", data={})
 
     async def async_step_ignore(
@@ -58,4 +76,5 @@ async def async_create_fix_flow(
     """Create flow."""
     if issue_id.startswith("max_tracked_lightnings_warning"):
         return MaxTrackedLightningsRepairFlow()
-    return None  # type: ignore[return-value]
+
+    return ConfirmRepairFlow()
