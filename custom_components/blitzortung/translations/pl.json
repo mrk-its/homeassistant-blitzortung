@@ -113,5 +113,24 @@
         }
       }
     }
+  },
+  "issues": {
+    "max_tracked_lightnings_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Du\u017ca liczba \u015bledzonych b\u0142yskawic ({max_tracked_lightnings}) mo\u017ce prowadzi\u0107 do wi\u0119kszego zu\u017cycia pami\u0119ci, niestabilnego interfejsu lub niekontrolowanego wzrostu bazy danych.\n\nWybierz, czy chcesz zmniejszy\u0107 liczb\u0119 \u015bledzonych b\u0142yskawic do 500, czy zignorowa\u0107 problem. Mo\u017cesz tak\u017ce samodzielnie zmieni\u0107 liczb\u0119 \u015bledzonych b\u0142yskawic w opcjach wpisu konfiguracyjnego.",
+            "menu_options": {
+              "confirm": "Zmniejsz do 500",
+              "ignore": "Ignoruj"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Problem zignorowany"
+        }
+      },
+      "title": "Du\u017ca liczba \u015bledzonych b\u0142yskawic"
+    }
   }
 }

@@ -113,5 +113,24 @@
         }
       }
     }
+  },
+  "issues": {
+    "max_tracked_lightnings_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Stort antall sporede lyn ({max_tracked_lightnings}) kan f\u00f8re til st\u00f8rre minnebruk, ustabilt grensesnitt eller ukontrollert vekst av databasen.\n\nVelg om du vil redusere antall sporede lyn til 500 eller ignorere problemet. Du kan ogs\u00e5 endre antall sporede lyn selv i konfigurasjonsinnstillingene.",
+            "menu_options": {
+              "confirm": "Reduser til 500",
+              "ignore": "Ignorer"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Problem ignorert"
+        }
+      },
+      "title": "Stort antall sporede lyn"
+    }
   }
 }

@@ -113,5 +113,24 @@
         }
       }
     }
+  },
+  "issues": {
+    "max_tracked_lightnings_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Large number of tracked lightnings ({max_tracked_lightnings}) may lead to bigger memory usage, unstable frontend or uncontrolled growth of the database.\n\nChoose whether you want to reduce the number of tracked lightnings to 500 or ignore the issue. You can also change the number of tracked lightnings yourself in the config entry options.",
+            "menu_options": {
+              "confirm": "Reduce to 500",
+              "ignore": "Ignore"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Issue ignored"
+        }
+      },
+      "title": "Large number of tracked lightnings"
+    }
   }
 }

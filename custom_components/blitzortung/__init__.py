@@ -22,6 +22,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.event import (
     async_track_state_change_event,
@@ -50,6 +51,7 @@ from .const import (
     DEFAULT_TIME_WINDOW,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
+    MAX_TRACKED_LIGHTNINGS_WARNING,
     MIN_LOCATION_CHANGE_MULTIPLIER,
     PLATFORMS,
     SERVER_STATS,
@@ -76,6 +78,12 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     return True
 
 
+def _async_delete_max_tracked_issue(hass: HomeAssistant, entry_id: str) -> None:
+    """Delete the max tracked lightnings issue if it exists."""
+    issue_id = f"max_tracked_lightnings_warning_{entry_id}"
+    ir.async_delete_issue(hass, DOMAIN, issue_id)
+
+
 async def async_setup_entry(
     hass: HomeAssistant, config_entry: BlitzortungConfigEntry
 ) -> bool:
@@ -96,12 +104,27 @@ async def async_setup_entry(
     max_tracked_lightnings = config_entry.options[CONF_MAX_TRACKED_LIGHTNINGS]
     time_window_seconds = config_entry.options[CONF_TIME_WINDOW] * 60
 
-    if max_tracked_lightnings >= 500:  # noqa: PLR2004
+    if max_tracked_lightnings > MAX_TRACKED_LIGHTNINGS_WARNING:
         _LOGGER.warning(
-            "Large number of tracked lightnings: %s, it may lead to"
-            "bigger memory usage / unstable frontend",
+            "Large number of tracked lightnings: %s, it may lead to "
+            "bigger memory usage / unstable frontend / uncontrolled growth "
+            "of the database",
             max_tracked_lightnings,
         )
+        ir.async_create_issue(
+            hass,
+            DOMAIN,
+            f"max_tracked_lightnings_warning_{config_entry.entry_id}",
+            is_fixable=True,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key="max_tracked_lightnings_warning",
+            translation_placeholders={
+                "max_tracked_lightnings": str(max_tracked_lightnings),
+            },
+            data={"entry_id": config_entry.entry_id},
+        )
+    else:
+        _async_delete_max_tracked_issue(hass, config_entry.entry_id)
 
     if location_entity is not None:
         coordinates = get_coordinates_from_entity(hass, location_entity)
@@ -168,6 +191,8 @@ async def async_unload_entry(
     """Unload a config entry."""
     await config_entry.runtime_data.disconnect()
     _LOGGER.debug("Disconnected")
+
+    _async_delete_max_tracked_issue(hass, config_entry.entry_id)
 
     return await hass.config_entries.async_unload_platforms(config_entry, PLATFORMS)
 

@@ -16,6 +16,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -799,7 +800,7 @@ async def test_max_tracked_lightnings_warning(
     hass: HomeAssistant,
     mock_mqtt: MagicMock,
 ) -> None:
-    """Test that a warning is logged when max_tracked_lightnings >= 500."""
+    """Test warning logged and issue created when max_tracked_lightnings > 500."""
     entry = MockConfigEntry(
         domain=DOMAIN,
         data={
@@ -824,6 +825,120 @@ async def test_max_tracked_lightnings_warning(
 
     assert entry.state is ConfigEntryState.LOADED
     mock_logger.warning.assert_called()
+
+    issue_id = f"max_tracked_lightnings_warning_{entry.entry_id}"
+    issue = ir.async_get(hass).async_get_issue(DOMAIN, issue_id)
+    assert issue is not None
+    assert issue.severity == "warning"
+    assert issue.is_fixable
+    assert issue.translation_key == "max_tracked_lightnings_warning"
+    assert issue.translation_placeholders == {"max_tracked_lightnings": "600"}
+
+
+async def test_max_tracked_lightnings_below_threshold_no_issue(
+    hass: HomeAssistant,
+    mock_mqtt: MagicMock,
+) -> None:
+    """Test no repair issue is created when max_tracked_lightnings <= 500."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            CONF_NAME: "Test Location",
+            CONF_LATITUDE: 50.0,
+            CONF_LONGITUDE: 10.0,
+            CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
+        },
+        unique_id="50.0-10.0-safe",
+        version=6,
+        options={
+            CONF_RADIUS: 100,
+            CONF_MAX_TRACKED_LIGHTNINGS: 400,
+            CONF_TIME_WINDOW: 10,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    assert entry.state is ConfigEntryState.LOADED
+    issue_id = f"max_tracked_lightnings_warning_{entry.entry_id}"
+    assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id) is None
+
+
+async def test_max_tracked_lightnings_issue_deleted_on_unload(
+    hass: HomeAssistant,
+    mock_mqtt: MagicMock,
+) -> None:
+    """Test repair issue is deleted when config entry is unloaded."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            CONF_NAME: "Test Location",
+            CONF_LATITUDE: 50.0,
+            CONF_LONGITUDE: 10.0,
+            CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
+        },
+        unique_id="50.0-10.0-unload",
+        version=6,
+        options={
+            CONF_RADIUS: 100,
+            CONF_MAX_TRACKED_LIGHTNINGS: 600,
+            CONF_TIME_WINDOW: 10,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    issue_id = f"max_tracked_lightnings_warning_{entry.entry_id}"
+    assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id) is not None
+
+    await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
+    assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id) is None
+
+
+async def test_max_tracked_lightnings_issue_deleted_when_options_reduced(
+    hass: HomeAssistant,
+    mock_mqtt: MagicMock,
+) -> None:
+    """Test repair issue is deleted when options are updated to below threshold."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            CONF_NAME: "Test Location",
+            CONF_LATITUDE: 50.0,
+            CONF_LONGITUDE: 10.0,
+            CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
+        },
+        unique_id="50.0-10.0-reduce",
+        version=6,
+        options={
+            CONF_RADIUS: 100,
+            CONF_MAX_TRACKED_LIGHTNINGS: 600,
+            CONF_TIME_WINDOW: 10,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    issue_id = f"max_tracked_lightnings_warning_{entry.entry_id}"
+    assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id) is not None
+
+    hass.config_entries.async_update_entry(
+        entry,
+        options={
+            CONF_RADIUS: 100,
+            CONF_MAX_TRACKED_LIGHTNINGS: 400,
+            CONF_TIME_WINDOW: 10,
+        },
+    )
+    await hass.async_block_till_done()
+
+    assert entry.state is ConfigEntryState.LOADED
+    assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id) is None
 
 
 def test_apply_location_entity_state_with_none_state(
