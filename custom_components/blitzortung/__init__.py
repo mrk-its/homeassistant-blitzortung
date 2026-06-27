@@ -18,6 +18,7 @@ from homeassistant.const import (
     CONF_LATITUDE,
     CONF_LONGITUDE,
     CONF_NAME,
+    MAX_TRACKED_LIGHTNINGS_WARNING,
     UnitOfLength,
 )
 from homeassistant.core import HomeAssistant, callback
@@ -96,7 +97,7 @@ async def async_setup_entry(
     max_tracked_lightnings = config_entry.options[CONF_MAX_TRACKED_LIGHTNINGS]
     time_window_seconds = config_entry.options[CONF_TIME_WINDOW] * 60
 
-    if max_tracked_lightnings >= 500:  # noqa: PLR2004
+    if max_tracked_lightnings >= MAX_TRACKED_LIGHTNINGS_WARNING:
         _LOGGER.warning(
             "Large number of tracked lightnings: %s, it may lead to"
             "bigger memory usage / unstable frontend",
