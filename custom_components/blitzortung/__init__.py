@@ -81,8 +81,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 def _async_delete_max_tracked_issue(hass: HomeAssistant, entry_id: str) -> None:
     """Delete the max tracked lightnings issue if it exists."""
     issue_id = f"max_tracked_lightnings_warning_{entry_id}"
-    if ir.async_get(hass).async_get_issue(DOMAIN, issue_id):
-        ir.async_delete_issue(hass, DOMAIN, issue_id)
+    ir.async_delete_issue(hass, DOMAIN, issue_id)
 
 
 async def async_setup_entry(
@@ -105,7 +104,7 @@ async def async_setup_entry(
     max_tracked_lightnings = config_entry.options[CONF_MAX_TRACKED_LIGHTNINGS]
     time_window_seconds = config_entry.options[CONF_TIME_WINDOW] * 60
 
-    if max_tracked_lightnings >= MAX_TRACKED_LIGHTNINGS_WARNING:
+    if max_tracked_lightnings > MAX_TRACKED_LIGHTNINGS_WARNING:
         _LOGGER.warning(
             "Large number of tracked lightnings: %s, it may lead to "
             "bigger memory usage / unstable frontend / uncontrolled growth "

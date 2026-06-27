@@ -10,6 +10,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.blitzortung.const import (
     CONF_MAX_TRACKED_LIGHTNINGS,
     DOMAIN,
+    MAX_TRACKED_LIGHTNINGS_WARNING,
 )
 from custom_components.blitzortung.repairs import (
     MaxTrackedLightningsRepairFlow,
@@ -64,7 +65,7 @@ async def test_confirm_step_reduces_value_and_reloads(
     assert result["type"] == "create_entry"
     assert result["data"] == {}
 
-    assert entry.options[CONF_MAX_TRACKED_LIGHTNINGS] == 400
+    assert entry.options[CONF_MAX_TRACKED_LIGHTNINGS] == MAX_TRACKED_LIGHTNINGS_WARNING
     assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id) is None
 
 

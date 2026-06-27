@@ -10,7 +10,7 @@ from homeassistant.components.repairs import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry as ir
 
-from .const import CONF_MAX_TRACKED_LIGHTNINGS, DOMAIN
+from .const import CONF_MAX_TRACKED_LIGHTNINGS, DOMAIN, MAX_TRACKED_LIGHTNINGS_WARNING
 
 
 class MaxTrackedLightningsRepairFlow(RepairsFlow):
@@ -52,10 +52,9 @@ class MaxTrackedLightningsRepairFlow(RepairsFlow):
 
         new_options = {
             **entry.options,
-            CONF_MAX_TRACKED_LIGHTNINGS: 400,
+            CONF_MAX_TRACKED_LIGHTNINGS: MAX_TRACKED_LIGHTNINGS_WARNING,
         }
         self.hass.config_entries.async_update_entry(entry, options=new_options)
-        await self.hass.config_entries.async_reload(entry_id)
 
         return self.async_create_entry(title="", data={})
 

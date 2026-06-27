@@ -800,7 +800,7 @@ async def test_max_tracked_lightnings_warning(
     hass: HomeAssistant,
     mock_mqtt: MagicMock,
 ) -> None:
-    """Test warning logged and issue created when max_tracked_lightnings >= 500."""
+    """Test warning logged and issue created when max_tracked_lightnings > 500."""
     entry = MockConfigEntry(
         domain=DOMAIN,
         data={
@@ -839,7 +839,7 @@ async def test_max_tracked_lightnings_below_threshold_no_issue(
     hass: HomeAssistant,
     mock_mqtt: MagicMock,
 ) -> None:
-    """Test no repair issue is created when max_tracked_lightnings < 500."""
+    """Test no repair issue is created when max_tracked_lightnings <= 500."""
     entry = MockConfigEntry(
         domain=DOMAIN,
         data={
@@ -935,7 +935,6 @@ async def test_max_tracked_lightnings_issue_deleted_when_options_reduced(
             CONF_TIME_WINDOW: 10,
         },
     )
-    await hass.config_entries.async_reload(entry.entry_id)
     await hass.async_block_till_done()
 
     assert entry.state is ConfigEntryState.LOADED

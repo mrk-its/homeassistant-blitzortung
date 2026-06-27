@@ -44,7 +44,7 @@ def mock_config_entry_coordinates(hass: HomeAssistant) -> MockConfigEntry:
         version=6,
         options={
             CONF_RADIUS: 100,
-            CONF_MAX_TRACKED_LIGHTNINGS: 500,
+            CONF_MAX_TRACKED_LIGHTNINGS: 600,
             CONF_TIME_WINDOW: 10,
         },
     )
@@ -67,7 +67,7 @@ def mock_config_entry_location_entity(hass: HomeAssistant) -> MockConfigEntry:
         version=6,
         options={
             CONF_RADIUS: 100,
-            CONF_MAX_TRACKED_LIGHTNINGS: 500,
+            CONF_MAX_TRACKED_LIGHTNINGS: 600,
             CONF_TIME_WINDOW: 10,
         },
     )
