@@ -118,9 +118,16 @@
     "max_tracked_lightnings_warning": {
       "fix_flow": {
         "step": {
-          "confirm": {
-            "description": "Suuri m\u00e4\u00e4r\u00e4 seurattuja salamoita ({max_tracked_lightnings}) voi johtaa suurempaan muistink\u00e4ytt\u00f6\u00f6n, ep\u00e4vakaaseen k\u00e4ytt\u00f6liittym\u00e4\u00e4n tai tietokannan hallitsemattomaan kasvuun.\n\nValitse **Submit**-painike pienent\u00e4\u00e4ksesi seurattavien salamoiden enimm\u00e4ism\u00e4\u00e4r\u00e4n 400:aan."
+          "init": {
+            "description": "Suuri m\u00e4\u00e4r\u00e4 seurattuja salamoita ({max_tracked_lightnings}) voi johtaa suurempaan muistink\u00e4ytt\u00f6\u00f6n, ep\u00e4vakaaseen k\u00e4ytt\u00f6liittym\u00e4\u00e4n tai tietokannan hallitsemattomaan kasvuun.\n\nValitse, haluatko v\u00e4hent\u00e4\u00e4 seurattavien salamoiden m\u00e4\u00e4r\u00e4n 400:aan vai ohittaa ongelman. Voit my\u00f6s muuttaa seurattavien salamoiden m\u00e4\u00e4r\u00e4\u00e4 itse konfigurointimerkinn\u00e4n asetuksissa.",
+            "menu_options": {
+              "confirm": "V\u00e4henn\u00e4 400:aan",
+              "ignore": "Ohita"
+            }
           }
+        },
+        "abort": {
+          "issue_ignored": "Ongelma ohitettu"
         }
       },
       "title": "Suuri m\u00e4\u00e4r\u00e4 seurattuja salamoita"

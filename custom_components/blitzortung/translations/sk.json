@@ -118,9 +118,16 @@
     "max_tracked_lightnings_warning": {
       "fix_flow": {
         "step": {
-          "confirm": {
-            "description": "Ve\u013ek\u00fd po\u010det sledovan\u00fdch bleskov ({max_tracked_lightnings}) m\u00f4\u017ee vies\u0165 k v\u00e4\u010d\u0161ej spotrebe pam\u00e4te, nestabiln\u00e9mu rozhraniu alebo nekontrolovan\u00e9mu rastu datab\u00e1zy.\n\nVyberte tla\u010didlo **Odosla\u0165** pre zn\u00ed\u017eenie maxim\u00e1lneho po\u010dtu sledovan\u00fdch bleskov na 400."
+          "init": {
+            "description": "Ve\u013ek\u00fd po\u010det sledovan\u00fdch bleskov ({max_tracked_lightnings}) m\u00f4\u017ee vies\u0165 k v\u00e4\u010d\u0161ej spotrebe pam\u00e4te, nestabiln\u00e9mu rozhraniu alebo nekontrolovan\u00e9mu rastu datab\u00e1zy.\n\nVyberte, \u010di chcete zn\u00ed\u017ei\u0165 po\u010det sledovan\u00fdch bleskov na 400 alebo probl\u00e9m ignorova\u0165. Po\u010det sledovan\u00fdch bleskov m\u00f4\u017eete tie\u017e zmeni\u0165 sami v mo\u017enostiach konfigura\u010dn\u00e9ho z\u00e1znamu.",
+            "menu_options": {
+              "confirm": "Zn\u00ed\u017ei\u0165 na 400",
+              "ignore": "Ignorova\u0165"
+            }
           }
+        },
+        "abort": {
+          "issue_ignored": "Probl\u00e9m ignorovan\u00fd"
         }
       },
       "title": "Ve\u013ek\u00fd po\u010det sledovan\u00fdch bleskov"

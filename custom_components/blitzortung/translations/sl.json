@@ -118,9 +118,16 @@
     "max_tracked_lightnings_warning": {
       "fix_flow": {
         "step": {
-          "confirm": {
-            "description": "Veliko \u0161tevilo sledenih strel ({max_tracked_lightnings}) lahko povzro\u010di ve\u010djo porabo pomnilnika, nestabilen vmesnik ali nenadzorovano rast podatkovne baze.\n\nIzberite gumb **Po\u0161lji** za zmanj\u0161anje najve\u010djega \u0161tevila sledenih strel na 400."
+          "init": {
+            "description": "Veliko \u0161tevilo sledenih strel ({max_tracked_lightnings}) lahko povzro\u010di ve\u010djo porabo pomnilnika, nestabilen vmesnik ali nenadzorovano rast podatkovne baze.\n\nIzberite, ali \u017eelite zmanj\u0161ati \u0161tevilo sledenih strel na 400 ali prezreti te\u017eavo. \u0160tevilo sledenih strel lahko spremenite tudi sami v mo\u017enostih konfiguracijskega vnosa.",
+            "menu_options": {
+              "confirm": "Zmanj\u0161aj na 400",
+              "ignore": "Prezri"
+            }
           }
+        },
+        "abort": {
+          "issue_ignored": "Te\u017eava prezrta"
         }
       },
       "title": "Veliko \u0161tevilo sledenih strel"

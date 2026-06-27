@@ -118,9 +118,16 @@
     "max_tracked_lightnings_warning": {
       "fix_flow": {
         "step": {
-          "confirm": {
-            "description": "Velik broj pra\u0107enih gromova ({max_tracked_lightnings}) mo\u017ee dovesti do ve\u0107eg kori\u0161tenja memorije, nestabilnog su\u010delja ili nekontroliranog rasta baze podataka.\n\nOdaberite gumb **Submit** za smanjenje maksimalnog broja pra\u0107enih gromova na 400."
+          "init": {
+            "description": "Velik broj pra\u0107enih gromova ({max_tracked_lightnings}) mo\u017ee dovesti do ve\u0107eg kori\u0161tenja memorije, nestabilnog su\u010delja ili nekontroliranog rasta baze podataka.\n\nOdaberite \u017eelite li smanjiti broj pra\u0107enih gromova na 400 ili zanemariti problem. Tako\u0111er mo\u017eete sami promijeniti broj pra\u0107enih gromova u opcijama konfiguracijskog unosa.",
+            "menu_options": {
+              "confirm": "Smanji na 400",
+              "ignore": "Zanemari"
+            }
           }
+        },
+        "abort": {
+          "issue_ignored": "Problem zanemaren"
         }
       },
       "title": "Velik broj pra\u0107enih gromova"
