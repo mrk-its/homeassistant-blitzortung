@@ -305,7 +305,6 @@ class BlitzortungCoordinator:
 
         self._disconnect_callbacks = []
         self.unloading = False
-        self.geo_event_manager = None
 
         self._geohash_unsubscribers: list[Callable[[], None]] = []
         self._location_unsubscribe: Callable[[], None] | None = None
@@ -514,10 +513,6 @@ class BlitzortungCoordinator:
             cb()
         self._disconnect_callbacks.clear()
         self.sensors.clear()
-
-        if self.geo_event_manager:
-            self.geo_event_manager.async_remove_all()
-
         self.callbacks.clear()
         self.lightning_callbacks.clear()
         self.on_tick_callbacks.clear()

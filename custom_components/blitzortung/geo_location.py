@@ -55,7 +55,6 @@ async def async_setup_entry(
 
     coordinator.register_lightning_receiver(manager.lightning_cb)
     coordinator.register_on_tick(manager.tick)
-    coordinator.geo_event_manager = manager
 
 
 class BlitzortungEvent(GeolocationEvent):
@@ -210,16 +209,6 @@ class BlitzortungEventManager:
                 self._hass,
                 SIGNAL_DELETE_ENTITY.format(event._strike_id),  # noqa: SLF001
             )
-
-    @callback
-    def async_remove_all(self) -> None:
-        """Remove all tracked geo location events."""
-        to_delete = list(self._strikes)
-        self._strikes[:] = []
-        self._strikes._keys = []  # noqa: SLF001
-        if to_delete:
-            self._remove_events(to_delete)
-        _LOGGER.debug("Removed all %s geo location events", len(to_delete))
 
     def tick(self) -> None:
         """Handle tick."""
