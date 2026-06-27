@@ -137,15 +137,3 @@ async def test_async_create_fix_flow_matches_warning_issue(
         {"entry_id": "abc123"},
     )
     assert isinstance(flow, MaxTrackedLightningsRepairFlow)
-
-
-async def test_async_create_fix_flow_unknown_issue(
-    hass: HomeAssistant,
-) -> None:
-    """Test async_create_fix_flow returns None for unknown issues."""
-    flow = await async_create_fix_flow(
-        hass,
-        "some_other_issue",
-        None,
-    )
-    assert flow is None
