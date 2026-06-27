@@ -99,8 +99,9 @@ async def async_setup_entry(
 
     if max_tracked_lightnings >= MAX_TRACKED_LIGHTNINGS_WARNING:
         _LOGGER.warning(
-            "Large number of tracked lightnings: %s, it may lead to"
-            "bigger memory usage / unstable frontend",
+            "Large number of tracked lightnings: %s, it may lead to "
+            "bigger memory usage / unstable frontend / uncontrolled growth "
+            "of the database",
             max_tracked_lightnings,
         )
 
