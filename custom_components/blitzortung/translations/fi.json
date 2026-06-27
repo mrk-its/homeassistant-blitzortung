@@ -113,5 +113,17 @@
         }
       }
     }
+  },
+  "issues": {
+    "max_tracked_lightnings_warning": {
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "description": "Suuri m\u00e4\u00e4r\u00e4 seurattuja salamoita ({max_tracked_lightnings}) voi johtaa suurempaan muistink\u00e4ytt\u00f6\u00f6n, ep\u00e4vakaaseen k\u00e4ytt\u00f6liittym\u00e4\u00e4n tai tietokannan hallitsemattomaan kasvuun.\n\nValitse **Submit**-painike pienent\u00e4\u00e4ksesi seurattavien salamoiden enimm\u00e4ism\u00e4\u00e4r\u00e4n 400:aan."
+          }
+        }
+      },
+      "title": "Suuri m\u00e4\u00e4r\u00e4 seurattuja salamoita"
+    }
   }
 }
