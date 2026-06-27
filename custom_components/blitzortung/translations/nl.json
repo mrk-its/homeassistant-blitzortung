@@ -119,9 +119,9 @@
       "fix_flow": {
         "step": {
           "init": {
-            "description": "Een groot aantal gevolgde bliksems ({max_tracked_lightnings}) kan leiden tot hoger geheugengebruik, een instabiele interface of ongecontroleerde groei van de database.\n\nKies of u het aantal gevolgde bliksems wilt verminderen tot 400 of het probleem wilt negeren. U kunt het aantal gevolgde bliksems ook zelf wijzigen in de opties van de configuratie-invoer.",
+            "description": "Een groot aantal gevolgde bliksems ({max_tracked_lightnings}) kan leiden tot hoger geheugengebruik, een instabiele interface of ongecontroleerde groei van de database.\n\nKies of u het aantal gevolgde bliksems wilt verminderen tot 500 of het probleem wilt negeren. U kunt het aantal gevolgde bliksems ook zelf wijzigen in de opties van de configuratie-invoer.",
             "menu_options": {
-              "confirm": "Verminder naar 400",
+              "confirm": "Verminder naar 500",
               "ignore": "Negeren"
             }
           }
