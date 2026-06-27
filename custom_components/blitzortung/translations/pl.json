@@ -114,10 +114,16 @@
       }
     }
   },
-  "repair": {
+  "issues": {
     "max_tracked_lightnings_warning": {
-      "title": "Du\u017ca liczba \u015bledzonych b\u0142yskawic",
-      "description": "Du\u017ca liczba \u015bledzonych b\u0142yskawic ({max_tracked_lightnings}) mo\u017ce prowadzi\u0107 do wi\u0119kszego zu\u017cycia pami\u0119ci, niestabilnego interfejsu lub niekontrolowanego wzrostu bazy danych."
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "description": "Du\u017ca liczba \u015bledzonych b\u0142yskawic ({max_tracked_lightnings}) mo\u017ce prowadzi\u0107 do wi\u0119kszego zu\u017cycia pami\u0119ci, niestabilnego interfejsu lub niekontrolowanego wzrostu bazy danych."
+          }
+        }
+      },
+      "title": "Du\u017ca liczba \u015bledzonych b\u0142yskawic"
     }
   }
 }
