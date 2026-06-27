@@ -119,7 +119,7 @@
       "fix_flow": {
         "step": {
           "confirm": {
-            "description": "Du\u017ca liczba \u015bledzonych b\u0142yskawic ({max_tracked_lightnings}) mo\u017ce prowadzi\u0107 do wi\u0119kszego zu\u017cycia pami\u0119ci, niestabilnego interfejsu lub niekontrolowanego wzrostu bazy danych."
+            "description": "Du\u017ca liczba \u015bledzonych b\u0142yskawic ({max_tracked_lightnings}) mo\u017ce prowadzi\u0107 do wi\u0119kszego zu\u017cycia pami\u0119ci, niestabilnego interfejsu lub niekontrolowanego wzrostu bazy danych.\n\nWybierz przycisk **Submit**, aby zmniejszy\u0107 maksymaln\u0105 liczb\u0119 \u015bledzonych b\u0142yskawic do 400."
           }
         }
       },
