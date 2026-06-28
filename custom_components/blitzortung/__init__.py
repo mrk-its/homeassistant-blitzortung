@@ -126,7 +126,8 @@ async def async_setup_entry(
             severity=ir.IssueSeverity.WARNING,
             translation_key="max_tracked_lightnings_warning",
             translation_placeholders={
-                "max_tracked_lightnings": str(max_tracked_lightnings),
+                "tracked_lightnings": str(max_tracked_lightnings),
+                "max_tracked_lightnings": str(MAX_TRACKED_LIGHTNINGS_WARNING),
             },
             data={"entry_id": config_entry.entry_id},
         )
