@@ -107,6 +107,14 @@ class BlitzortungEvent(GeolocationEvent):
             self._delete_callback,
         )
 
+    async def async_will_remove_from_hass(self) -> None:
+        """Call when entity will be removed from hass."""
+        if self._remove_signal_delete:
+            self._remove_signal_delete()
+        entity_registry = er.async_get(self.hass)
+        if self.entity_id in entity_registry.entities:
+            entity_registry.async_remove(self.entity_id)
+
 
 class Strikes(list):
     """Define a list of lightning strikes, keeping it sorted by publication date."""
