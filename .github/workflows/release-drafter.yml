@@ -13,9 +13,6 @@ jobs:
       pull-requests: read
     name: Release Drafter
     steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v7
-
       - name: Run Release Drafter
         uses: release-drafter/release-drafter@v7
         env:
