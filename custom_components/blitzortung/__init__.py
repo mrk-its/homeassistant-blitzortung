@@ -54,6 +54,7 @@ from .const import (
     MAX_TRACKED_LIGHTNINGS_WARNING,
     MIN_LOCATION_CHANGE_MULTIPLIER,
     PLATFORMS,
+    RADIUS_MAX,
     SERVER_STATS,
 )
 from .entity import BlitzortungEntity
@@ -81,6 +82,12 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 def _async_delete_max_tracked_issue(hass: HomeAssistant, entry_id: str) -> None:
     """Delete the max tracked lightnings issue if it exists."""
     issue_id = f"max_tracked_lightnings_warning_{entry_id}"
+    ir.async_delete_issue(hass, DOMAIN, issue_id)
+
+
+def _async_delete_radius_max_issue(hass: HomeAssistant, entry_id: str) -> None:
+    """Delete the radius max issue if it exists."""
+    issue_id = f"radius_max_warning_{entry_id}"
     ir.async_delete_issue(hass, DOMAIN, issue_id)
 
 
@@ -125,6 +132,23 @@ async def async_setup_entry(
         )
     else:
         _async_delete_max_tracked_issue(hass, config_entry.entry_id)
+
+    if radius > RADIUS_MAX:
+        ir.async_create_issue(
+            hass,
+            DOMAIN,
+            f"radius_max_warning_{config_entry.entry_id}",
+            is_fixable=True,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key="radius_max_warning",
+            translation_placeholders={
+                "radius": str(radius),
+                "radius_max": str(RADIUS_MAX),
+            },
+            data={"entry_id": config_entry.entry_id},
+        )
+    else:
+        _async_delete_radius_max_issue(hass, config_entry.entry_id)
 
     if location_entity is not None:
         coordinates = get_coordinates_from_entity(hass, location_entity)
@@ -193,6 +217,7 @@ async def async_unload_entry(
     _LOGGER.debug("Disconnected")
 
     _async_delete_max_tracked_issue(hass, config_entry.entry_id)
+    _async_delete_radius_max_issue(hass, config_entry.entry_id)
 
     return await hass.config_entries.async_unload_platforms(config_entry, PLATFORMS)
 
