@@ -119,9 +119,9 @@
       "fix_flow": {
         "step": {
           "init": {
-            "description": "Veliko \u0161tevilo sledenih strel ({max_tracked_lightnings}) lahko povzro\u010di ve\u010djo porabo pomnilnika, nestabilen vmesnik ali nenadzorovano rast podatkovne baze.\n\nIzberite, ali \u017eelite zmanj\u0161ati \u0161tevilo sledenih strel na 500 ali prezreti te\u017eavo. \u0160tevilo sledenih strel lahko spremenite tudi sami v mo\u017enostih konfiguracijskega vnosa.",
+            "description": "Veliko \u0161tevilo sledenih strel ({tracked_lightnings}) lahko povzro\u010di ve\u010djo porabo pomnilnika, nestabilen vmesnik ali nenadzorovano rast podatkovne baze.\n\nIzberite, ali \u017eelite zmanj\u0161ati \u0161tevilo sledenih strel ali prezreti te\u017eavo. \u0160tevilo sledenih strel lahko spremenite tudi sami v mo\u017enostih konfiguracijskega vnosa.",
             "menu_options": {
-              "confirm": "Zmanj\u0161aj na 500",
+              "confirm": "Zmanj\u0161aj na {max_tracked_lightnings}",
               "ignore": "Prezri"
             }
           }

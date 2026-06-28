@@ -119,9 +119,9 @@
       "fix_flow": {
         "step": {
           "init": {
-            "description": "Un grand nombre d\u2019\u00e9clairs suivis ({max_tracked_lightnings}) peut entra\u00eener une utilisation accrue de la m\u00e9moire, une interface instable ou une croissance incontr\u00f4l\u00e9e de la base de donn\u00e9es.\n\nChoisissez si vous souhaitez r\u00e9duire le nombre d\u2019\u00e9clairs suivis \u00e0 500 ou ignorer le probl\u00e8me. Vous pouvez \u00e9galement modifier vous-m\u00eame le nombre d\u2019\u00e9clairs suivis dans les options de l\u2019entr\u00e9e de configuration.",
+            "description": "Un grand nombre d\u2019\u00e9clairs suivis ({tracked_lightnings}) peut entra\u00eener une utilisation accrue de la m\u00e9moire, une interface instable ou une croissance incontr\u00f4l\u00e9e de la base de donn\u00e9es.\n\nChoisissez si vous souhaitez r\u00e9duire le nombre d\u2019\u00e9clairs suivis ou ignorer le probl\u00e8me. Vous pouvez \u00e9galement modifier vous-m\u00eame le nombre d\u2019\u00e9clairs suivis dans les options de l\u2019entr\u00e9e de configuration.",
             "menu_options": {
-              "confirm": "R\u00e9duire \u00e0 500",
+              "confirm": "R\u00e9duire \u00e0 {max_tracked_lightnings}",
               "ignore": "Ignorer"
             }
           }
