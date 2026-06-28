@@ -24,6 +24,7 @@ categories:
     labels:
       - "maintenance"
       - "ci"
+      - "tests"
 
   - title: "📚 Documentation"
     labels:
