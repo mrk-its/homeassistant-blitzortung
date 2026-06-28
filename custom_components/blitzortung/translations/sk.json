@@ -131,6 +131,23 @@
         }
       },
       "title": "Ve\u013ek\u00fd po\u010det sledovan\u00fdch bleskov"
+    },
+    "radius_max_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Detection radius ({radius}) exceeds the maximum allowed value of {radius_max} may lead to bigger memory usage, unstable frontend or uncontrolled growth of the database.\n\nChoose whether you want to reduce the radius or ignore this issue. You can also change the radius yourself in the config entry options.",
+            "menu_options": {
+              "confirm": "Reduce to {radius_max}",
+              "ignore": "Ignore"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Issue ignored"
+        }
+      },
+      "title": "Large detection radius"
     }
   }
 }

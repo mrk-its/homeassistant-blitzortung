@@ -136,9 +136,9 @@
       "fix_flow": {
         "step": {
           "init": {
-            "description": "Detection radius ({radius}) exceeds the maximum allowed value of {radius_max} may lead to bigger memory usage, unstable frontend or uncontrolled growth of the database.\n\nChoose whether you want to reduce the radius to 4000 or ignore this issue. You can also change the radius yourself in the config entry options.",
+            "description": "Detection radius ({radius}) exceeds the maximum allowed value of {radius_max} may lead to bigger memory usage, unstable frontend or uncontrolled growth of the database.\n\nChoose whether you want to reduce the radius or ignore this issue. You can also change the radius yourself in the config entry options.",
             "menu_options": {
-              "confirm": "Reduce to 4000",
+              "confirm": "Reduce to {radius_max}",
               "ignore": "Ignore"
             }
           }

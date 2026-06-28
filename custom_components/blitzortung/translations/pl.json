@@ -131,6 +131,23 @@
         }
       },
       "title": "Du\u017ca liczba \u015bledzonych b\u0142yskawic"
+    },
+    "radius_max_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Promie\u0144 wykrywania ({radius}) przekracza maksymaln\u0105 dozwolon\u0105 warto\u015b\u0107 {radius_max} mo\u017ce prowadzi\u0107 do wi\u0119kszego zu\u017cycia pami\u0119ci, niestabilnego interfejsu lub niekontrolowanego wzrostu bazy danych.\n\nWybierz, czy chcesz zmniejszy\u0107 promie\u0144, czy zignorowa\u0107 ten problem. Mo\u017cesz r\u00f3wnie\u017c samodzielnie zmieni\u0107 promie\u0144 w opcjach wpisu konfiguracyjnego.",
+            "menu_options": {
+              "confirm": "Zmniejsz do {radius_max}",
+              "ignore": "Ignoruj"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Problem zignorowany"
+        }
+      },
+      "title": "Du\u017cy promie\u0144 wykrywania"
     }
   }
 }
