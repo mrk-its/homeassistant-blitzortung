@@ -15,6 +15,13 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v7
 
+      - name: Set package version
+        run: |
+          version="${{ github.event.release.tag_name }}"
+          version="${version#v}"
+          sed -i 's/^__version__ = .*/__version__ = "'"${version}"'"/' custom_components/blitzortung/version.py
+          sed -i "s/\"version\": \".*\"/\"version\": \"${version}\"/" custom_components/blitzortung/manifest.json
+
       - name: Create zipped release package
         shell: bash
         run: |
