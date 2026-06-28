@@ -635,7 +635,7 @@ def test_on_hello_message_same_version(
     """Test that a hello message with same/older version does not notify."""
     coordinator = BlitzortungCoordinator(hass, 50.0, 10.0, None, 100, 100, 600, False)
 
-    payload = json.dumps({"latest_version": "0.0.1"})
+    payload = json.dumps({"latest_version": "0.0.0"})
     message = Message(
         topic="component/hello",
         payload=payload,
