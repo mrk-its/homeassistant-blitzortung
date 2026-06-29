@@ -130,7 +130,7 @@
           "issue_ignored": "Te\u017eava prezrta"
         }
       },
-      "title": "Veliko \u0161tevilo sledenih strel"
+      "title": "{name}: veliko \u0161tevilo sledenih strel"
     },
     "radius_max_warning": {
       "fix_flow": {
@@ -147,7 +147,7 @@
           "issue_ignored": "Te\u017eava prezrta"
         }
       },
-      "title": "Velik polmer zaznavanja strel"
+      "title": "{name}: velik polmer zaznavanja strel"
     }
   }
 }

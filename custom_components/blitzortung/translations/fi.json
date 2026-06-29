@@ -130,7 +130,7 @@
           "issue_ignored": "Ongelma ohitettu"
         }
       },
-      "title": "Suuri m\u00e4\u00e4r\u00e4 seurattuja salamoita"
+      "title": "{name}: suuri m\u00e4\u00e4r\u00e4 seurattuja salamoita"
     },
     "radius_max_warning": {
       "fix_flow": {
@@ -147,7 +147,7 @@
           "issue_ignored": "Ongelma ohitettu"
         }
       },
-      "title": "Suuri salaman havaitsemiss\u00e4de"
+      "title": "{name}: suuri salaman havaitsemiss\u00e4de"
     }
   }
 }

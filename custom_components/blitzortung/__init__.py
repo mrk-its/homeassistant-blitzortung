@@ -128,6 +128,7 @@ async def async_setup_entry(
             translation_placeholders={
                 "tracked_lightnings": str(max_tracked_lightnings),
                 "max_tracked_lightnings": str(MAX_TRACKED_LIGHTNINGS_WARNING),
+                "name": config_entry.data[CONF_NAME],
             },
             data={"entry_id": config_entry.entry_id},
         )
@@ -145,6 +146,7 @@ async def async_setup_entry(
             translation_placeholders={
                 "radius": str(radius),
                 "radius_max": str(RADIUS_MAX),
+                "name": config_entry.data[CONF_NAME],
             },
             data={"entry_id": config_entry.entry_id},
         )

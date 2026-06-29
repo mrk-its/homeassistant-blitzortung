@@ -130,7 +130,7 @@
           "issue_ignored": "Problem zignorowany"
         }
       },
-      "title": "Du\u017ca liczba \u015bledzonych b\u0142yskawic"
+      "title": "{name}: du\u017ca liczba \u015bledzonych b\u0142yskawic"
     },
     "radius_max_warning": {
       "fix_flow": {
@@ -147,7 +147,7 @@
           "issue_ignored": "Problem zignorowany"
         }
       },
-      "title": "Du\u017cy promie\u0144 wykrywania b\u0142yskawic"
+      "title": "{name}: du\u017cy promie\u0144 wykrywania b\u0142yskawic"
     }
   }
 }

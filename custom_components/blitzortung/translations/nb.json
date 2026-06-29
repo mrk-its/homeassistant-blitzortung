@@ -130,7 +130,7 @@
           "issue_ignored": "Problem ignorert"
         }
       },
-      "title": "Stort antall sporede lyn"
+      "title": "{name}: stort antall sporede lyn"
     },
     "radius_max_warning": {
       "fix_flow": {
@@ -147,7 +147,7 @@
           "issue_ignored": "Problem ignorert"
         }
       },
-      "title": "Stor lyndeteksjonsradius"
+      "title": "{name}: stor lyndeteksjonsradius"
     }
   }
 }

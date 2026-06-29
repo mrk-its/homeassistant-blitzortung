@@ -130,7 +130,7 @@
           "issue_ignored": "Probl\u00e9m ignorovan\u00fd"
         }
       },
-      "title": "Ve\u013ek\u00fd po\u010det sledovan\u00fdch bleskov"
+      "title": "{name}: ve\u013ek\u00fd po\u010det sledovan\u00fdch bleskov"
     },
     "radius_max_warning": {
       "fix_flow": {
@@ -147,7 +147,7 @@
           "issue_ignored": "Probl\u00e9m ignorovan\u00fd"
         }
       },
-      "title": "Ve\u013ek\u00fd polomer detekcie bleskov"
+      "title": "{name}: ve\u013ek\u00fd polomer detekcie bleskov"
     }
   }
 }

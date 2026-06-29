@@ -130,7 +130,7 @@
           "issue_ignored": "Issue ignored"
         }
       },
-      "title": "Large number of tracked lightnings"
+      "title": "{name}: large number of tracked lightnings"
     },
     "radius_max_warning": {
       "fix_flow": {
@@ -147,7 +147,7 @@
           "issue_ignored": "Issue ignored"
         }
       },
-      "title": "Large lightnings detection radius"
+      "title": "{name}: large lightnings detection radius"
     }
   }
 }

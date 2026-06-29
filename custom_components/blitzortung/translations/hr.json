@@ -130,7 +130,7 @@
           "issue_ignored": "Problem zanemaren"
         }
       },
-      "title": "Velik broj pra\u0107enih gromova"
+      "title": "{name}: velik broj pra\u0107enih gromova"
     },
     "radius_max_warning": {
       "fix_flow": {
@@ -147,7 +147,7 @@
           "issue_ignored": "Problem zanemaren"
         }
       },
-      "title": "Veliki radijus otkrivanja gromova"
+      "title": "{name}: veliki radijus otkrivanja gromova"
     }
   }
 }

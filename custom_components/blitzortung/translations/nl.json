@@ -130,7 +130,7 @@
           "issue_ignored": "Probleem genegeerd"
         }
       },
-      "title": "Groot aantal gevolgde bliksems"
+      "title": "{name}: groot aantal gevolgde bliksems"
     },
     "radius_max_warning": {
       "fix_flow": {
@@ -147,7 +147,7 @@
           "issue_ignored": "Probleem genegeerd"
         }
       },
-      "title": "Grote bliksemdetectiestraal"
+      "title": "{name}: grote bliksemdetectiestraal"
     }
   }
 }
