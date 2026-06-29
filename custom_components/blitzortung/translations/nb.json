@@ -113,41 +113,5 @@
         }
       }
     }
-  },
-  "issues": {
-    "max_tracked_lightnings_warning": {
-      "fix_flow": {
-        "step": {
-          "init": {
-            "description": "Stort antall sporede lyn ({tracked_lightnings}) kan f\u00f8re til st\u00f8rre minnebruk, ustabilt grensesnitt eller ukontrollert vekst av databasen.\n\nVelg om du vil redusere antall sporede lyn eller ignorere problemet. Du kan ogs\u00e5 endre antall sporede lyn selv i konfigurasjonsinnstillingene.",
-            "menu_options": {
-              "confirm": "Reduser til {max_tracked_lightnings}",
-              "ignore": "Ignorer"
-            }
-          }
-        },
-        "abort": {
-          "issue_ignored": "Problem ignorert"
-        }
-      },
-      "title": "Stort antall sporede lyn"
-    },
-    "radius_max_warning": {
-      "fix_flow": {
-        "step": {
-          "init": {
-            "description": "Detection radius ({radius}) exceeds the maximum allowed value of {radius_max} may lead to bigger memory usage, unstable frontend or uncontrolled growth of the database.\n\nChoose whether you want to reduce the radius or ignore this issue. You can also change the radius yourself in the config entry options.",
-            "menu_options": {
-              "confirm": "Reduce to {radius_max}",
-              "ignore": "Ignore"
-            }
-          }
-        },
-        "abort": {
-          "issue_ignored": "Issue ignored"
-        }
-      },
-      "title": "Large detection radius"
-    }
   }
 }

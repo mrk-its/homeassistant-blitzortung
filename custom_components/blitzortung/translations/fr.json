@@ -113,41 +113,5 @@
         }
       }
     }
-  },
-  "issues": {
-    "max_tracked_lightnings_warning": {
-      "fix_flow": {
-        "step": {
-          "init": {
-            "description": "Un grand nombre d\u2019\u00e9clairs suivis ({tracked_lightnings}) peut entra\u00eener une utilisation accrue de la m\u00e9moire, une interface instable ou une croissance incontr\u00f4l\u00e9e de la base de donn\u00e9es.\n\nChoisissez si vous souhaitez r\u00e9duire le nombre d\u2019\u00e9clairs suivis ou ignorer le probl\u00e8me. Vous pouvez \u00e9galement modifier vous-m\u00eame le nombre d\u2019\u00e9clairs suivis dans les options de l\u2019entr\u00e9e de configuration.",
-            "menu_options": {
-              "confirm": "R\u00e9duire \u00e0 {max_tracked_lightnings}",
-              "ignore": "Ignorer"
-            }
-          }
-        },
-        "abort": {
-          "issue_ignored": "Probl\u00e8me ignor\u00e9"
-        }
-      },
-      "title": "Grand nombre d\u2019\u00e9clairs suivis"
-    },
-    "radius_max_warning": {
-      "fix_flow": {
-        "step": {
-          "init": {
-            "description": "Detection radius ({radius}) exceeds the maximum allowed value of {radius_max} may lead to bigger memory usage, unstable frontend or uncontrolled growth of the database.\n\nChoose whether you want to reduce the radius or ignore this issue. You can also change the radius yourself in the config entry options.",
-            "menu_options": {
-              "confirm": "Reduce to {radius_max}",
-              "ignore": "Ignore"
-            }
-          }
-        },
-        "abort": {
-          "issue_ignored": "Issue ignored"
-        }
-      },
-      "title": "Large detection radius"
-    }
   }
 }

@@ -113,41 +113,5 @@
         }
       }
     }
-  },
-  "issues": {
-    "max_tracked_lightnings_warning": {
-      "fix_flow": {
-        "step": {
-          "init": {
-            "description": "Velik broj pra\u0107enih gromova ({tracked_lightnings}) mo\u017ee dovesti do ve\u0107eg kori\u0161tenja memorije, nestabilnog su\u010delja ili nekontroliranog rasta baze podataka.\n\nOdaberite \u017eelite li smanjiti broj pra\u0107enih gromova ili zanemariti problem. Tako\u0111er mo\u017eete sami promijeniti broj pra\u0107enih gromova u opcijama konfiguracijskog unosa.",
-            "menu_options": {
-              "confirm": "Smanji na {max_tracked_lightnings}",
-              "ignore": "Zanemari"
-            }
-          }
-        },
-        "abort": {
-          "issue_ignored": "Problem zanemaren"
-        }
-      },
-      "title": "Velik broj pra\u0107enih gromova"
-    },
-    "radius_max_warning": {
-      "fix_flow": {
-        "step": {
-          "init": {
-            "description": "Detection radius ({radius}) exceeds the maximum allowed value of {radius_max} may lead to bigger memory usage, unstable frontend or uncontrolled growth of the database.\n\nChoose whether you want to reduce the radius or ignore this issue. You can also change the radius yourself in the config entry options.",
-            "menu_options": {
-              "confirm": "Reduce to {radius_max}",
-              "ignore": "Ignore"
-            }
-          }
-        },
-        "abort": {
-          "issue_ignored": "Issue ignored"
-        }
-      },
-      "title": "Large detection radius"
-    }
   }
 }

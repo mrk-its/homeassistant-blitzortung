@@ -113,41 +113,5 @@
         }
       }
     }
-  },
-  "issues": {
-    "max_tracked_lightnings_warning": {
-      "fix_flow": {
-        "step": {
-          "init": {
-            "description": "Suuri m\u00e4\u00e4r\u00e4 seurattuja salamoita ({tracked_lightnings}) voi johtaa suurempaan muistink\u00e4ytt\u00f6\u00f6n, ep\u00e4vakaaseen k\u00e4ytt\u00f6liittym\u00e4\u00e4n tai tietokannan hallitsemattomaan kasvuun.\n\nValitse, haluatko v\u00e4hent\u00e4\u00e4 seurattavien salamoiden m\u00e4\u00e4r\u00e4n vai ohittaa ongelman. Voit my\u00f6s muuttaa seurattavien salamoiden m\u00e4\u00e4r\u00e4\u00e4 itse konfigurointimerkinn\u00e4n asetuksissa.",
-            "menu_options": {
-              "confirm": "V\u00e4henn\u00e4 {max_tracked_lightnings}:aan",
-              "ignore": "Ohita"
-            }
-          }
-        },
-        "abort": {
-          "issue_ignored": "Ongelma ohitettu"
-        }
-      },
-      "title": "Suuri m\u00e4\u00e4r\u00e4 seurattuja salamoita"
-    },
-    "radius_max_warning": {
-      "fix_flow": {
-        "step": {
-          "init": {
-            "description": "Detection radius ({radius}) exceeds the maximum allowed value of {radius_max} may lead to bigger memory usage, unstable frontend or uncontrolled growth of the database.\n\nChoose whether you want to reduce the radius or ignore this issue. You can also change the radius yourself in the config entry options.",
-            "menu_options": {
-              "confirm": "Reduce to {radius_max}",
-              "ignore": "Ignore"
-            }
-          }
-        },
-        "abort": {
-          "issue_ignored": "Issue ignored"
-        }
-      },
-      "title": "Large detection radius"
-    }
   }
 }
