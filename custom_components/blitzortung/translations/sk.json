@@ -113,5 +113,41 @@
         }
       }
     }
+  },
+  "issues": {
+    "max_tracked_lightnings_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Ve\u013ek\u00fd po\u010det sledovan\u00fdch bleskov ({tracked_lightnings}) m\u00f4\u017ee vies\u0165 k v\u00e4\u010d\u0161ej spotrebe pam\u00e4te, nestabiln\u00e9mu rozhraniu alebo nekontrolovan\u00e9mu rastu datab\u00e1zy.\n\nVyberte, \u010di chcete zn\u00ed\u017ei\u0165 po\u010det sledovan\u00fdch bleskov alebo ignorova\u0165 probl\u00e9m. Po\u010det sledovan\u00fdch bleskov m\u00f4\u017eete tie\u017e zmeni\u0165 sami v mo\u017enostiach konfigur\u00e1cie.",
+            "menu_options": {
+              "confirm": "Zn\u00ed\u017ei\u0165 na {max_tracked_lightnings}",
+              "ignore": "Ignorova\u0165"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Probl\u00e9m ignorovan\u00fd"
+        }
+      },
+      "title": "Ve\u013ek\u00fd po\u010det sledovan\u00fdch bleskov"
+    },
+    "radius_max_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Ve\u013ek\u00fd polomer detekcie bleskov ({radius}) m\u00f4\u017ee vies\u0165 k v\u00e4\u010d\u0161ej spotrebe pam\u00e4te, nestabiln\u00e9mu rozhraniu alebo nekontrolovan\u00e9mu rastu datab\u00e1zy.\n\nVyberte, \u010di chcete zmen\u0161i\u0165 polomer alebo ignorova\u0165 tento probl\u00e9m. Polomer m\u00f4\u017eete tie\u017e zmeni\u0165 sami v mo\u017enostiach konfigur\u00e1cie.",
+            "menu_options": {
+              "confirm": "Zn\u00ed\u017ei\u0165 na {radius_max}",
+              "ignore": "Ignorova\u0165"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Probl\u00e9m ignorovan\u00fd"
+        }
+      },
+      "title": "Ve\u013ek\u00fd polomer detekcie bleskov"
+    }
   }
 }

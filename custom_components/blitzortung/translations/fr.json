@@ -113,5 +113,41 @@
         }
       }
     }
+  },
+  "issues": {
+    "max_tracked_lightnings_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Un grand nombre d'\u00e9clairs suivis ({tracked_lightnings}) peut entra\u00eener une utilisation plus importante de la m\u00e9moire, une interface instable ou une croissance non contr\u00f4l\u00e9e de la base de donn\u00e9es.\n\nChoisissez si vous souhaitez r\u00e9duire le nombre d'\u00e9clairs suivis ou ignorer le probl\u00e8me. Vous pouvez \u00e9galement modifier vous-m\u00eame le nombre d'\u00e9clairs suivis dans les options de configuration.",
+            "menu_options": {
+              "confirm": "R\u00e9duire \u00e0 {max_tracked_lightnings}",
+              "ignore": "Ignorer"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Probl\u00e8me ignor\u00e9"
+        }
+      },
+      "title": "Grand nombre d'\u00e9clairs suivis"
+    },
+    "radius_max_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Un grand rayon de d\u00e9tection des \u00e9clairs ({radius}) peut entra\u00eener une utilisation plus importante de la m\u00e9moire, une interface instable ou une croissance non contr\u00f4l\u00e9e de la base de donn\u00e9es.\n\nChoisissez si vous souhaitez r\u00e9duire le rayon ou ignorer ce probl\u00e8me. Vous pouvez \u00e9galement modifier le rayon vous-m\u00eame dans les options de configuration.",
+            "menu_options": {
+              "confirm": "R\u00e9duire \u00e0 {radius_max}",
+              "ignore": "Ignorer"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Probl\u00e8me ignor\u00e9"
+        }
+      },
+      "title": "Grand rayon de d\u00e9tection des \u00e9clairs"
+    }
   }
 }

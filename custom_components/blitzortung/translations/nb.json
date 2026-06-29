@@ -113,5 +113,41 @@
         }
       }
     }
+  },
+  "issues": {
+    "max_tracked_lightnings_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Stort antall sporede lyn ({tracked_lightnings}) kan f\u00f8re til st\u00f8rre minnebruk, ustabilt grensesnitt eller ukontrollert vekst av databasen.\n\nVelg om du vil redusere antall sporede lyn eller ignorere problemet. Du kan ogs\u00e5 endre antall sporede lyn selv i konfigurasjonsalternativene.",
+            "menu_options": {
+              "confirm": "Reduser til {max_tracked_lightnings}",
+              "ignore": "Ignorer"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Problem ignorert"
+        }
+      },
+      "title": "Stort antall sporede lyn"
+    },
+    "radius_max_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Stor lyndeteksjonsradius ({radius}) kan f\u00f8re til st\u00f8rre minnebruk, ustabilt grensesnitt eller ukontrollert vekst av databasen.\n\nVelg om du vil redusere radiusen eller ignorere dette problemet. Du kan ogs\u00e5 endre radiusen selv i konfigurasjonsalternativene.",
+            "menu_options": {
+              "confirm": "Reduser til {radius_max}",
+              "ignore": "Ignorer"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Problem ignorert"
+        }
+      },
+      "title": "Stor lyndeteksjonsradius"
+    }
   }
 }

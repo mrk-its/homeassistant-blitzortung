@@ -113,5 +113,41 @@
         }
       }
     }
+  },
+  "issues": {
+    "max_tracked_lightnings_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Een groot aantal gevolgde bliksems ({tracked_lightnings}) kan leiden tot een hoger geheugengebruik, een onstabiele interface of ongecontroleerde groei van de database.\n\nKies of u het aantal gevolgde bliksems wilt verminderen of het probleem wilt negeren. U kunt het aantal gevolgde bliksems ook zelf wijzigen in de configuratie-opties.",
+            "menu_options": {
+              "confirm": "Verminder naar {max_tracked_lightnings}",
+              "ignore": "Negeren"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Probleem genegeerd"
+        }
+      },
+      "title": "Groot aantal gevolgde bliksems"
+    },
+    "radius_max_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Een grote bliksemdetectiestraal ({radius}) kan leiden tot een hoger geheugengebruik, een onstabiele interface of ongecontroleerde groei van de database.\n\nKies of u de straal wilt verkleinen of dit probleem wilt negeren. U kunt de straal ook zelf wijzigen in de configuratie-opties.",
+            "menu_options": {
+              "confirm": "Verminder naar {radius_max}",
+              "ignore": "Negeren"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Probleem genegeerd"
+        }
+      },
+      "title": "Grote bliksemdetectiestraal"
+    }
   }
 }

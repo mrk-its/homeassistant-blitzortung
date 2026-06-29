@@ -113,5 +113,41 @@
         }
       }
     }
+  },
+  "issues": {
+    "max_tracked_lightnings_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Suuri m\u00e4\u00e4r\u00e4 seurattuja salamoita ({tracked_lightnings}) voi johtaa suurempaan muistink\u00e4ytt\u00f6\u00f6n, ep\u00e4vakaaseen k\u00e4ytt\u00f6liittym\u00e4\u00e4n tai tietokannan hallitsemattomaan kasvuun.\n\nValitse, haluatko v\u00e4hent\u00e4\u00e4 seurattujen salamoiden m\u00e4\u00e4r\u00e4\u00e4 vai ohittaa ongelman. Voit my\u00f6s muuttaa seurattujen salamoiden m\u00e4\u00e4r\u00e4\u00e4 itse asetuksissa.",
+            "menu_options": {
+              "confirm": "V\u00e4henn\u00e4 arvoon {max_tracked_lightnings}",
+              "ignore": "Ohita"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Ongelma ohitettu"
+        }
+      },
+      "title": "Suuri m\u00e4\u00e4r\u00e4 seurattuja salamoita"
+    },
+    "radius_max_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Suuri salaman havaitsemiss\u00e4de ({radius}) voi johtaa suurempaan muistink\u00e4ytt\u00f6\u00f6n, ep\u00e4vakaaseen k\u00e4ytt\u00f6liittym\u00e4\u00e4n tai tietokannan hallitsemattomaan kasvuun.\n\nValitse, haluatko pienent\u00e4\u00e4 s\u00e4dett\u00e4 vai ohittaa t\u00e4m\u00e4n ongelman. Voit my\u00f6s muuttaa s\u00e4dett\u00e4 itse asetuksissa.",
+            "menu_options": {
+              "confirm": "V\u00e4henn\u00e4 arvoon {radius_max}",
+              "ignore": "Ohita"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Ongelma ohitettu"
+        }
+      },
+      "title": "Suuri salaman havaitsemiss\u00e4de"
+    }
   }
 }
