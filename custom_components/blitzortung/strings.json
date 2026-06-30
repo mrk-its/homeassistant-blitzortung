@@ -148,6 +148,23 @@
         }
       },
       "title": "{name}: large lightnings detection radius"
+    },
+    "time_window_max_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Large time window ({time_window}) may lead to bigger memory usage, unstable frontend or uncontrolled growth of the database.\n\nChoose whether you want to reduce the time window or ignore this issue. You can also change the time window yourself in the config entry options.",
+            "menu_options": {
+              "confirm": "Reduce to {time_window_max}",
+              "ignore": "Ignore"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Issue ignored"
+        }
+      },
+      "title": "{name}: large time window"
     }
   }
 }

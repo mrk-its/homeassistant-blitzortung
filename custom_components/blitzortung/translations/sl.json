@@ -148,6 +148,23 @@
         }
       },
       "title": "{name}: velik polmer zaznavanja strel"
+    },
+    "time_window_max_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Velik \u010dasovni okvir ({time_window}) lahko povzro\u010di ve\u010djo porabo pomnilnika, nestabilen vmesnik ali nenadzorovano rast baze podatkov.\n\nIzberite, ali \u017eelite zmanj\u0161ati \u010dasovni okvir ali prezreti to te\u017eavo. \u010casovni okvir lahko spremenite tudi sami v mo\u017enostih konfiguracije.",
+            "menu_options": {
+              "confirm": "Zmanj\u0161aj na {time_window_max}",
+              "ignore": "Prezri"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Te\u017eava prezrta"
+        }
+      },
+      "title": "{name}: velik \u010dasovni okvir"
     }
   }
 }

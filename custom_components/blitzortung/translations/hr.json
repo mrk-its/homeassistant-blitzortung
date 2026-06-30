@@ -148,6 +148,23 @@
         }
       },
       "title": "{name}: veliki radijus otkrivanja gromova"
+    },
+    "time_window_max_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Veliki vremenski period ({time_window}) mo\u017ee dovesti do ve\u0107e potro\u0161nje memorije, nestabilnog su\u010delja ili nekontroliranog rasta baze podataka.\n\nOdaberite \u017eelite li smanjiti vremenski period ili zanemariti ovaj problem. Tako\u0111er mo\u017eete sami promijeniti vremenski period u opcijama konfiguracije.",
+            "menu_options": {
+              "confirm": "Smanji na {time_window_max}",
+              "ignore": "Zanemari"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Problem zanemaren"
+        }
+      },
+      "title": "{name}: veliki vremenski period"
     }
   }
 }
