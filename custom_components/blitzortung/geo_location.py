@@ -97,6 +97,7 @@ class BlitzortungEvent(GeolocationEvent):
     def _delete_callback(self) -> None:
         """Remove this entity."""
         self._remove_signal_delete()
+        self._remove_signal_delete = None
         self.hass.async_create_task(self.async_remove(force_remove=True))
 
     async def async_added_to_hass(self) -> None:
@@ -111,6 +112,7 @@ class BlitzortungEvent(GeolocationEvent):
         """Call when entity will be removed from hass."""
         if self._remove_signal_delete:
             self._remove_signal_delete()
+            self._remove_signal_delete = None
         entity_registry = er.async_get(self.hass)
         if self.entity_id in entity_registry.entities:
             entity_registry.async_remove(self.entity_id)
