@@ -1,6 +1,5 @@
 """Tests for the Blitzortung __init__.py module."""
 
-import json
 import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -17,6 +16,7 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import issue_registry as ir
+from homeassistant.helpers.json import json_dumps
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -611,7 +611,7 @@ def test_on_hello_message_new_version_available(
     """Test that a hello message with newer version triggers notification."""
     coordinator = BlitzortungCoordinator(hass, 50.0, 10.0, None, 100, 100, 600, False)
 
-    payload = json.dumps({"latest_version": "99.0.0"})
+    payload = json_dumps({"latest_version": "99.0.0"})
     message = Message(
         topic="component/hello",
         payload=payload,
@@ -635,7 +635,7 @@ def test_on_hello_message_same_version(
     """Test that a hello message with same/older version does not notify."""
     coordinator = BlitzortungCoordinator(hass, 50.0, 10.0, None, 100, 100, 600, False)
 
-    payload = json.dumps({"latest_version": "0.0.0"})
+    payload = json_dumps({"latest_version": "0.0.0"})
     message = Message(
         topic="component/hello",
         payload=payload,
@@ -656,7 +656,7 @@ def test_on_hello_message_custom_message_and_title(
     """Test that custom message and title from hello payload are used."""
     coordinator = BlitzortungCoordinator(hass, 50.0, 10.0, None, 100, 100, 600, False)
 
-    payload = json.dumps(
+    payload = json_dumps(
         {
             "latest_version": "99.0.0",
             "latest_version_message": "Custom update message",
@@ -696,7 +696,7 @@ async def test_on_mqtt_message_lightning_within_radius(
     message_cb = MagicMock()
     coordinator.callbacks.append(message_cb)
 
-    payload = json.dumps({"lat": 50.01, "lon": 10.01})
+    payload = json_dumps({"lat": 50.01, "lon": 10.01})
     message = Message(
         topic="blitzortung/1.1/u/3/3/#",
         payload=payload,
@@ -721,7 +721,7 @@ async def test_on_mqtt_message_lightning_outside_radius(
     coordinator.lightning_callbacks.append(lightning_cb)
 
     # Very far away
-    payload = json.dumps({"lat": 0.0, "lon": 0.0})
+    payload = json_dumps({"lat": 0.0, "lon": 0.0})
     message = Message(
         topic="blitzortung/1.1/s/0/0/#",
         payload=payload,

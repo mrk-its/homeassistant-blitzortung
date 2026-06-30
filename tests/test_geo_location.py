@@ -1,6 +1,5 @@
 """Tests for the Blitzortung geo_location module."""
 
-import json
 import logging
 from unittest.mock import MagicMock
 
@@ -8,6 +7,7 @@ import pytest
 from homeassistant.components.geo_location import DOMAIN as GEO_LOCATION_DOMAIN
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.json import json_dumps
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.blitzortung.const import (
@@ -33,7 +33,7 @@ async def test_geo_location_entity_lifecycle(
 
     coordinator = mock_config_entry_coordinates.runtime_data
 
-    payload = json.dumps(
+    payload = json_dumps(
         {
             "lat": 50.01,
             "lon": 10.01,
@@ -94,7 +94,7 @@ async def test_geo_location_delete_callback_no_warning(
 
     coordinator = entry.runtime_data
 
-    payload1 = json.dumps(
+    payload1 = json_dumps(
         {
             "lat": 50.01,
             "lon": 10.01,
@@ -116,7 +116,7 @@ async def test_geo_location_delete_callback_no_warning(
     assert len(geo_entity_ids) == 1
     first_entity_id = geo_entity_ids[0]
 
-    payload2 = json.dumps(
+    payload2 = json_dumps(
         {
             "lat": 50.02,
             "lon": 10.02,
