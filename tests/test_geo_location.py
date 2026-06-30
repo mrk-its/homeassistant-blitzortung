@@ -5,10 +5,10 @@ import logging
 from unittest.mock import MagicMock
 
 import pytest
+from homeassistant.components.geo_location import DOMAIN as GEO_LOCATION_DOMAIN
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
-from homeassistant.components.geo_location import DOMAIN as GEO_LOCATION_DOMAIN
 
 from custom_components.blitzortung.const import (
     CONF_CONFIG_TYPE,
