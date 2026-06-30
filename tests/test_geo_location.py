@@ -8,6 +8,7 @@ import pytest
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
+from homeassistant.components.geo_location import DOMAIN as GEO_LOCATION_DOMAIN
 
 from custom_components.blitzortung.const import (
     CONF_CONFIG_TYPE,
@@ -50,7 +51,7 @@ async def test_geo_location_entity_lifecycle(
     await coordinator.on_mqtt_message(message)
     await hass.async_block_till_done()
 
-    geo_entity_ids = hass.states.async_entity_ids("geo_location")
+    geo_entity_ids = hass.states.async_entity_ids(GEO_LOCATION_DOMAIN)
     assert len(geo_entity_ids) == 1
     entity_id = geo_entity_ids[0]
     assert hass.states.get(entity_id) is not None
@@ -59,7 +60,7 @@ async def test_geo_location_entity_lifecycle(
     await hass.async_block_till_done()
 
     assert hass.states.get(entity_id) is None
-    assert entity_id not in hass.states.async_entity_ids()
+    assert entity_id not in hass.states.async_entity_ids(GEO_LOCATION_DOMAIN)
 
 
 async def test_geo_location_delete_callback_no_warning(
@@ -111,7 +112,7 @@ async def test_geo_location_delete_callback_no_warning(
     await coordinator.on_mqtt_message(message1)
     await hass.async_block_till_done()
 
-    geo_entity_ids = hass.states.async_entity_ids("geo_location")
+    geo_entity_ids = hass.states.async_entity_ids(GEO_LOCATION_DOMAIN)
     assert len(geo_entity_ids) == 1
     first_entity_id = geo_entity_ids[0]
 
@@ -133,7 +134,7 @@ async def test_geo_location_delete_callback_no_warning(
     await coordinator.on_mqtt_message(message2)
     await hass.async_block_till_done()
 
-    geo_entity_ids = hass.states.async_entity_ids("geo_location")
+    geo_entity_ids = hass.states.async_entity_ids(GEO_LOCATION_DOMAIN)
     assert len(geo_entity_ids) == 1
     second_entity_id = geo_entity_ids[0]
 
