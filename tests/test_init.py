@@ -833,7 +833,11 @@ async def test_max_tracked_lightnings_warning(
     assert issue.severity == "warning"
     assert issue.is_fixable
     assert issue.translation_key == "max_tracked_lightnings_warning"
-    assert issue.translation_placeholders == {"max_tracked_lightnings": "600"}
+    assert issue.translation_placeholders == {
+        "tracked_lightnings": "600",
+        "max_tracked_lightnings": "500",
+        "name": "Test Location",
+    }
 
 
 async def test_max_tracked_lightnings_below_threshold_no_issue(
@@ -1036,6 +1040,7 @@ async def test_radius_max_warning(
     assert issue.is_fixable
     assert issue.translation_key == "radius_max_warning"
     assert issue.translation_placeholders == {
+        "name": "Test Location",
         "radius": str(RADIUS_MAX + 1000),
         "radius_max": str(RADIUS_MAX),
     }
