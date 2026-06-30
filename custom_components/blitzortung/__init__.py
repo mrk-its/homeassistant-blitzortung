@@ -246,6 +246,7 @@ async def async_unload_entry(
 
     _async_delete_max_tracked_issue(hass, config_entry.entry_id)
     _async_delete_radius_max_issue(hass, config_entry.entry_id)
+    _async_delete_time_window_max_issue(hass, config_entry.entry_id)
 
     return await hass.config_entries.async_unload_platforms(config_entry, PLATFORMS)
 
