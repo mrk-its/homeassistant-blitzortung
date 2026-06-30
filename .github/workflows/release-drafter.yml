@@ -11,9 +11,15 @@ jobs:
     permissions:
       contents: write
       pull-requests: read
-    name: Release Drafter
     steps:
-      - name: Run Release Drafter
+      - name: Stable draft
         uses: release-drafter/release-drafter@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Beta draft
+        uses: release-drafter/release-drafter@v7
+        with:
+          config-name: release-drafter-beta.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
