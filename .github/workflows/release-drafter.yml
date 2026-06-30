@@ -11,6 +11,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: read
+    name: Release Drafter
     steps:
       - name: Stable draft
         uses: release-drafter/release-drafter@v7
