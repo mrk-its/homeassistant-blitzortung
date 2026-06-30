@@ -1,5 +1,5 @@
-name-template: "v$NEXT_PRERELEASE_VERSION"
-tag-template: "v$NEXT_PRERELEASE_VERSION"
+name-template: "v$RESOLVED_VERSION$NEXT_PRERELEASE_VERSION_PRERELEASE"
+tag-template: "v$RESOLVED_VERSION$NEXT_PRERELEASE_VERSION_PRERELEASE"
 
 change-template: "- #$NUMBER $TITLE @$AUTHOR"
 sort-direction: ascending
