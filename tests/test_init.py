@@ -34,6 +34,7 @@ from custom_components.blitzortung.const import (
     DEFAULT_MAX_TRACKED_LIGHTNINGS,
     DEFAULT_TIME_WINDOW,
     DOMAIN,
+    RADIUS_MAX,
 )
 from custom_components.blitzortung.mqtt import Message
 
@@ -832,7 +833,11 @@ async def test_max_tracked_lightnings_warning(
     assert issue.severity == "warning"
     assert issue.is_fixable
     assert issue.translation_key == "max_tracked_lightnings_warning"
-    assert issue.translation_placeholders == {"max_tracked_lightnings": "600"}
+    assert issue.translation_placeholders == {
+        "tracked_lightnings": "600",
+        "max_tracked_lightnings": "500",
+        "name": "Test Location",
+    }
 
 
 async def test_max_tracked_lightnings_below_threshold_no_issue(
@@ -998,3 +1003,150 @@ def test_register_message_receiver(hass: HomeAssistant) -> None:
     coordinator.register_message_receiver(cb)
 
     assert cb in coordinator.callbacks
+
+
+async def test_radius_max_warning(
+    hass: HomeAssistant,
+    mock_mqtt: MagicMock,
+) -> None:
+    """Test issue created when radius > RADIUS_MAX."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            CONF_NAME: "Test Location",
+            CONF_LATITUDE: 50.0,
+            CONF_LONGITUDE: 10.0,
+            CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
+        },
+        unique_id="50.0-10.0-radius-warn",
+        version=6,
+        options={
+            CONF_RADIUS: RADIUS_MAX + 1000,
+            CONF_MAX_TRACKED_LIGHTNINGS: 100,
+            CONF_TIME_WINDOW: 10,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    assert entry.state is ConfigEntryState.LOADED
+
+    issue_id = f"radius_max_warning_{entry.entry_id}"
+    issue = ir.async_get(hass).async_get_issue(DOMAIN, issue_id)
+    assert issue is not None
+    assert issue.severity == "warning"
+    assert issue.is_fixable
+    assert issue.translation_key == "radius_max_warning"
+    assert issue.translation_placeholders == {
+        "name": "Test Location",
+        "radius": str(RADIUS_MAX + 1000),
+        "radius_max": str(RADIUS_MAX),
+    }
+
+
+async def test_radius_below_max_no_issue(
+    hass: HomeAssistant,
+    mock_mqtt: MagicMock,
+) -> None:
+    """Test no repair issue is created when radius <= RADIUS_MAX."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            CONF_NAME: "Test Location",
+            CONF_LATITUDE: 50.0,
+            CONF_LONGITUDE: 10.0,
+            CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
+        },
+        unique_id="50.0-10.0-radius-safe",
+        version=6,
+        options={
+            CONF_RADIUS: RADIUS_MAX,
+            CONF_MAX_TRACKED_LIGHTNINGS: 100,
+            CONF_TIME_WINDOW: 10,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    assert entry.state is ConfigEntryState.LOADED
+    issue_id = f"radius_max_warning_{entry.entry_id}"
+    assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id) is None
+
+
+async def test_radius_issue_deleted_on_unload(
+    hass: HomeAssistant,
+    mock_mqtt: MagicMock,
+) -> None:
+    """Test repair issue is deleted when config entry is unloaded."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            CONF_NAME: "Test Location",
+            CONF_LATITUDE: 50.0,
+            CONF_LONGITUDE: 10.0,
+            CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
+        },
+        unique_id="50.0-10.0-radius-unload",
+        version=6,
+        options={
+            CONF_RADIUS: RADIUS_MAX + 1000,
+            CONF_MAX_TRACKED_LIGHTNINGS: 100,
+            CONF_TIME_WINDOW: 10,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    issue_id = f"radius_max_warning_{entry.entry_id}"
+    assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id) is not None
+
+    await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
+    assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id) is None
+
+
+async def test_radius_issue_deleted_when_options_reduced(
+    hass: HomeAssistant,
+    mock_mqtt: MagicMock,
+) -> None:
+    """Test repair issue is deleted when radius options are reduced."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            CONF_NAME: "Test Location",
+            CONF_LATITUDE: 50.0,
+            CONF_LONGITUDE: 10.0,
+            CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
+        },
+        unique_id="50.0-10.0-radius-reduce",
+        version=6,
+        options={
+            CONF_RADIUS: RADIUS_MAX + 1000,
+            CONF_MAX_TRACKED_LIGHTNINGS: 100,
+            CONF_TIME_WINDOW: 10,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    issue_id = f"radius_max_warning_{entry.entry_id}"
+    assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id) is not None
+
+    hass.config_entries.async_update_entry(
+        entry,
+        options={
+            CONF_RADIUS: RADIUS_MAX,
+            CONF_MAX_TRACKED_LIGHTNINGS: 100,
+            CONF_TIME_WINDOW: 10,
+        },
+    )
+    await hass.async_block_till_done()
+
+    assert entry.state is ConfigEntryState.LOADED
+    assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id) is None

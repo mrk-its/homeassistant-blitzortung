@@ -119,9 +119,9 @@
       "fix_flow": {
         "step": {
           "init": {
-            "description": "Large number of tracked lightnings ({max_tracked_lightnings}) may lead to bigger memory usage, unstable frontend or uncontrolled growth of the database.\n\nChoose whether you want to reduce the number of tracked lightnings to 500 or ignore the issue. You can also change the number of tracked lightnings yourself in the config entry options.",
+            "description": "Large number of tracked lightnings ({tracked_lightnings}) may lead to bigger memory usage, unstable frontend or uncontrolled growth of the database.\n\nChoose whether you want to reduce the number of tracked lightnings or ignore the issue. You can also change the number of tracked lightnings yourself in the config entry options.",
             "menu_options": {
-              "confirm": "Reduce to 500",
+              "confirm": "Reduce to {max_tracked_lightnings}",
               "ignore": "Ignore"
             }
           }
@@ -130,7 +130,24 @@
           "issue_ignored": "Issue ignored"
         }
       },
-      "title": "Large number of tracked lightnings"
+      "title": "{name}: large number of tracked lightnings"
+    },
+    "radius_max_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Large lightnings detection radius ({radius}) may lead to bigger memory usage, unstable frontend or uncontrolled growth of the database.\n\nChoose whether you want to reduce the radius or ignore this issue. You can also change the radius yourself in the config entry options.",
+            "menu_options": {
+              "confirm": "Reduce to {radius_max}",
+              "ignore": "Ignore"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Issue ignored"
+        }
+      },
+      "title": "{name}: large lightnings detection radius"
     }
   }
 }
