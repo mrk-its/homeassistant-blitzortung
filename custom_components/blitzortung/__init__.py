@@ -56,6 +56,7 @@ from .const import (
     PLATFORMS,
     RADIUS_MAX,
     SERVER_STATS,
+    TIME_WINDOW_MAX,
 )
 from .entity import BlitzortungEntity
 from .geohash_utils import geohash_overlap
@@ -91,7 +92,13 @@ def _async_delete_radius_max_issue(hass: HomeAssistant, entry_id: str) -> None:
     ir.async_delete_issue(hass, DOMAIN, issue_id)
 
 
-async def async_setup_entry(
+def _async_delete_time_window_max_issue(hass: HomeAssistant, entry_id: str) -> None:
+    """Delete the time window max issue if it exists."""
+    issue_id = f"time_window_max_warning_{entry_id}"
+    ir.async_delete_issue(hass, DOMAIN, issue_id)
+
+
+async def async_setup_entry(  # noqa: PLR0912
     hass: HomeAssistant, config_entry: BlitzortungConfigEntry
 ) -> bool:
     """Set up blitzortung from a config entry."""
@@ -152,6 +159,24 @@ async def async_setup_entry(
         )
     else:
         _async_delete_radius_max_issue(hass, config_entry.entry_id)
+
+    if time_window_seconds // 60 > TIME_WINDOW_MAX:
+        ir.async_create_issue(
+            hass,
+            DOMAIN,
+            f"time_window_max_warning_{config_entry.entry_id}",
+            is_fixable=True,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key="time_window_max_warning",
+            translation_placeholders={
+                "time_window": str(time_window_seconds // 60),
+                "time_window_max": str(TIME_WINDOW_MAX),
+                "name": config_entry.data[CONF_NAME],
+            },
+            data={"entry_id": config_entry.entry_id},
+        )
+    else:
+        _async_delete_time_window_max_issue(hass, config_entry.entry_id)
 
     if location_entity is not None:
         coordinates = get_coordinates_from_entity(hass, location_entity)
@@ -221,6 +246,7 @@ async def async_unload_entry(
 
     _async_delete_max_tracked_issue(hass, config_entry.entry_id)
     _async_delete_radius_max_issue(hass, config_entry.entry_id)
+    _async_delete_time_window_max_issue(hass, config_entry.entry_id)
 
     return await hass.config_entries.async_unload_platforms(config_entry, PLATFORMS)
 

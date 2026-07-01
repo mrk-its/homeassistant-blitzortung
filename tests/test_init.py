@@ -35,6 +35,7 @@ from custom_components.blitzortung.const import (
     DEFAULT_TIME_WINDOW,
     DOMAIN,
     RADIUS_MAX,
+    TIME_WINDOW_MAX,
 )
 from custom_components.blitzortung.mqtt import Message
 
@@ -1144,6 +1145,153 @@ async def test_radius_issue_deleted_when_options_reduced(
             CONF_RADIUS: RADIUS_MAX,
             CONF_MAX_TRACKED_LIGHTNINGS: 100,
             CONF_TIME_WINDOW: 10,
+        },
+    )
+    await hass.async_block_till_done()
+
+    assert entry.state is ConfigEntryState.LOADED
+    assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id) is None
+
+
+async def test_time_window_max_warning(
+    hass: HomeAssistant,
+    mock_mqtt: MagicMock,
+) -> None:
+    """Test issue created when time_window > TIME_WINDOW_MAX."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            CONF_NAME: "Test Location",
+            CONF_LATITUDE: 50.0,
+            CONF_LONGITUDE: 10.0,
+            CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
+        },
+        unique_id="50.0-10.0-time-window-warn",
+        version=6,
+        options={
+            CONF_RADIUS: 100,
+            CONF_MAX_TRACKED_LIGHTNINGS: 100,
+            CONF_TIME_WINDOW: TIME_WINDOW_MAX + 100,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    assert entry.state is ConfigEntryState.LOADED
+
+    issue_id = f"time_window_max_warning_{entry.entry_id}"
+    issue = ir.async_get(hass).async_get_issue(DOMAIN, issue_id)
+    assert issue is not None
+    assert issue.severity == "warning"
+    assert issue.is_fixable
+    assert issue.translation_key == "time_window_max_warning"
+    assert issue.translation_placeholders == {
+        "name": "Test Location",
+        "time_window": str(TIME_WINDOW_MAX + 100),
+        "time_window_max": str(TIME_WINDOW_MAX),
+    }
+
+
+async def test_time_window_below_max_no_issue(
+    hass: HomeAssistant,
+    mock_mqtt: MagicMock,
+) -> None:
+    """Test no repair issue is created when time_window <= TIME_WINDOW_MAX."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            CONF_NAME: "Test Location",
+            CONF_LATITUDE: 50.0,
+            CONF_LONGITUDE: 10.0,
+            CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
+        },
+        unique_id="50.0-10.0-time-window-safe",
+        version=6,
+        options={
+            CONF_RADIUS: 100,
+            CONF_MAX_TRACKED_LIGHTNINGS: 100,
+            CONF_TIME_WINDOW: TIME_WINDOW_MAX,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    assert entry.state is ConfigEntryState.LOADED
+    issue_id = f"time_window_max_warning_{entry.entry_id}"
+    assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id) is None
+
+
+async def test_time_window_issue_deleted_on_unload(
+    hass: HomeAssistant,
+    mock_mqtt: MagicMock,
+) -> None:
+    """Test repair issue is deleted when config entry is unloaded."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            CONF_NAME: "Test Location",
+            CONF_LATITUDE: 50.0,
+            CONF_LONGITUDE: 10.0,
+            CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
+        },
+        unique_id="50.0-10.0-time-window-unload",
+        version=6,
+        options={
+            CONF_RADIUS: 100,
+            CONF_MAX_TRACKED_LIGHTNINGS: 100,
+            CONF_TIME_WINDOW: TIME_WINDOW_MAX + 100,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    issue_id = f"time_window_max_warning_{entry.entry_id}"
+    assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id) is not None
+
+    await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
+    assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id) is None
+
+
+async def test_time_window_issue_deleted_when_options_reduced(
+    hass: HomeAssistant,
+    mock_mqtt: MagicMock,
+) -> None:
+    """Test repair issue is deleted when time_window options are reduced."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            CONF_NAME: "Test Location",
+            CONF_LATITUDE: 50.0,
+            CONF_LONGITUDE: 10.0,
+            CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
+        },
+        unique_id="50.0-10.0-time-window-reduce",
+        version=6,
+        options={
+            CONF_RADIUS: 100,
+            CONF_MAX_TRACKED_LIGHTNINGS: 100,
+            CONF_TIME_WINDOW: TIME_WINDOW_MAX + 100,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    issue_id = f"time_window_max_warning_{entry.entry_id}"
+    assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id) is not None
+
+    hass.config_entries.async_update_entry(
+        entry,
+        options={
+            CONF_RADIUS: 100,
+            CONF_MAX_TRACKED_LIGHTNINGS: 100,
+            CONF_TIME_WINDOW: TIME_WINDOW_MAX,
         },
     )
     await hass.async_block_till_done()

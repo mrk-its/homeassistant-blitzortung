@@ -148,6 +148,23 @@
         }
       },
       "title": "{name}: du\u017cy promie\u0144 wykrywania b\u0142yskawic"
+    },
+    "time_window_max_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Du\u017ce okno czasowe ({time_window}) mo\u017ce prowadzi\u0107 do wi\u0119kszego zu\u017cycia pami\u0119ci, niestabilnego interfejsu lub niekontrolowanego wzrostu bazy danych.\n\nWybierz, czy chcesz zmniejszy\u0107 okno czasowe, czy zignorowa\u0107 ten problem. Mo\u017cesz r\u00f3wnie\u017c samodzielnie zmieni\u0107 okno czasowe w opcjach wpisu konfiguracyjnego.",
+            "menu_options": {
+              "confirm": "Zmniejsz do {time_window_max}",
+              "ignore": "Ignoruj"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Problem zignorowany"
+        }
+      },
+      "title": "{name}: du\u017ce okno czasowe"
     }
   }
 }

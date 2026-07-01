@@ -148,6 +148,23 @@
         }
       },
       "title": "{name}: grand rayon de d\u00e9tection des \u00e9clairs"
+    },
+    "time_window_max_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Une grande fen\u00eatre de temps ({time_window}) peut entra\u00eener une utilisation plus importante de la m\u00e9moire, une interface instable ou une croissance non contr\u00f4l\u00e9e de la base de donn\u00e9es.\n\nChoisissez si vous souhaitez r\u00e9duire la fen\u00eatre de temps ou ignorer ce probl\u00e8me. Vous pouvez \u00e9galement modifier la fen\u00eatre de temps vous-m\u00eame dans les options de configuration.",
+            "menu_options": {
+              "confirm": "R\u00e9duire \u00e0 {time_window_max}",
+              "ignore": "Ignorer"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Probl\u00e8me ignor\u00e9"
+        }
+      },
+      "title": "{name}: grande fen\u00eatre de temps"
     }
   }
 }

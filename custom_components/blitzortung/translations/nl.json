@@ -148,6 +148,23 @@
         }
       },
       "title": "{name}: grote bliksemdetectiestraal"
+    },
+    "time_window_max_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Een groot tijdvenster ({time_window}) kan leiden tot een hoger geheugengebruik, een onstabiele interface of ongecontroleerde groei van de database.\n\nKies of u het tijdvenster wilt verkleinen of dit probleem wilt negeren. U kunt het tijdvenster ook zelf wijzigen in de configuratie-opties.",
+            "menu_options": {
+              "confirm": "Verminder naar {time_window_max}",
+              "ignore": "Negeren"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Probleem genegeerd"
+        }
+      },
+      "title": "{name}: groot tijdvenster"
     }
   }
 }

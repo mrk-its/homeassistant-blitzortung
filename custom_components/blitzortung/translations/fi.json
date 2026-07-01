@@ -148,6 +148,23 @@
         }
       },
       "title": "{name}: suuri salaman havaitsemiss\u00e4de"
+    },
+    "time_window_max_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Suuri aikaikkuna ({time_window}) voi johtaa suurempaan muistink\u00e4ytt\u00f6\u00f6n, ep\u00e4vakaaseen k\u00e4ytt\u00f6liittym\u00e4\u00e4n tai tietokannan hallitsemattomaan kasvuun.\n\nValitse, haluatko pienent\u00e4\u00e4 aikaikkunaa vai ohittaa t\u00e4m\u00e4n ongelman. Voit my\u00f6s muuttaa aikaikkunaa itse asetuksissa.",
+            "menu_options": {
+              "confirm": "V\u00e4henn\u00e4 arvoon {time_window_max}",
+              "ignore": "Ohita"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Ongelma ohitettu"
+        }
+      },
+      "title": "{name}: suuri aikaikkuna"
     }
   }
 }
