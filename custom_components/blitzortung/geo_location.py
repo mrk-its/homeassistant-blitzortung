@@ -114,9 +114,6 @@ class BlitzortungEvent(GeolocationEvent):
         if self._remove_signal_delete:
             self._remove_signal_delete()
             self._remove_signal_delete = None
-        entity_registry = er.async_get(self.hass)
-        if self.entity_id in entity_registry.entities:
-            entity_registry.async_remove(self.entity_id)
 
 
 class Strikes(list):
