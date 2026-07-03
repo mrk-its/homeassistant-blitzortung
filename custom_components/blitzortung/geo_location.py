@@ -8,7 +8,7 @@ from typing import Any
 
 from homeassistant.components.geo_location import DOMAIN as GEO_LOCATION_PLATFORM
 from homeassistant.components.geo_location import GeolocationEvent
-from homeassistant.const import UnitOfLength
+from homeassistant.const import MATCH_ALL, UnitOfLength
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.dispatcher import (
@@ -65,6 +65,7 @@ class BlitzortungEvent(GeolocationEvent):
     _attr_name = "Lightning Strike"
     _attr_should_poll = False
     _attr_source = DOMAIN
+    _unrecorded_attributes = frozenset({MATCH_ALL})
 
     def __init__(
         self,
@@ -113,9 +114,6 @@ class BlitzortungEvent(GeolocationEvent):
         if self._remove_signal_delete:
             self._remove_signal_delete()
             self._remove_signal_delete = None
-        entity_registry = er.async_get(self.hass)
-        if self.entity_id in entity_registry.entities:
-            entity_registry.async_remove(self.entity_id)
 
 
 class Strikes(list):
