@@ -148,6 +148,23 @@
         }
       },
       "title": "{name}: stor lyndeteksjonsradius"
+    },
+    "time_window_max_warning": {
+      "fix_flow": {
+        "step": {
+          "init": {
+            "description": "Stort tidsvindu ({time_window}) kan f\u00f8re til st\u00f8rre minnebruk, ustabilt grensesnitt eller ukontrollert vekst av databasen.\n\nVelg om du vil redusere tidsvinduet eller ignorere dette problemet. Du kan ogs\u00e5 endre tidsvinduet selv i konfigurasjonsalternativene.",
+            "menu_options": {
+              "confirm": "Reduser til {time_window_max}",
+              "ignore": "Ignorer"
+            }
+          }
+        },
+        "abort": {
+          "issue_ignored": "Problem ignorert"
+        }
+      },
+      "title": "{name}: stort tidsvindu"
     }
   }
 }
