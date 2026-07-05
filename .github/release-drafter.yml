@@ -55,7 +55,7 @@ version-resolver:
   default: patch
 
 template: |
-  [![Downloads for this release](https://img.shields.io/github/downloads/mrk-its/homeassistant-blitzortung/$RESOLVED_VERSION/total.svg)](https://github.com/mrk-its/homeassistant-blitzortung/releases/$RESOLVED_VERSION)
+  [![Downloads for this release](https://img.shields.io/github/downloads/mrk-its/homeassistant-blitzortung/v$RESOLVED_VERSION/total.svg)](https://github.com/mrk-its/homeassistant-blitzortung/releases/v$RESOLVED_VERSION)
 
   ## What's changed
 
