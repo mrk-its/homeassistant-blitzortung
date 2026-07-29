@@ -6,6 +6,7 @@ lint.select = ["ALL"]
 lint.ignore = [
     "ANN401",   # Dynamically typed expressions (typing.Any) are disallowed
     "COM812",   # Trailing comma missing
+    "CPY001",   # Missing copyright notice at top of file
     "D203",     # 1 blank line required before class docstring
     "D213",     # Multi-line docstring summary should start at the second line
     "EM101",    # Exception must not use a string literal, assign to variable first
@@ -15,6 +16,7 @@ lint.ignore = [
     "FBT003",   # Boolean positional value in function call
     "PLR0913",  # Too many arguments in function definition
     "PLR0915",  # Too many statements
+    "PLR0917",  # Too many positional arguments
     "TC002",    # Move third-party import into a type-checking block
     "TC003",    # Move standard library import into a type-checking block
     "TC006",    # Add quotes to type expression in `typing.cast()`
