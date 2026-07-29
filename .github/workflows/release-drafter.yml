@@ -14,12 +14,12 @@ jobs:
     name: Release Drafter
     steps:
       - name: Stable draft
-        uses: release-drafter/release-drafter@v7
+        uses: release-drafter/release-drafter@eada3c96a64734dd381cfbda23511034e328ddb0  # v7.6.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Beta draft
-        uses: release-drafter/release-drafter@v7
+        uses: release-drafter/release-drafter@eada3c96a64734dd381cfbda23511034e328ddb0  # v7.6.0
         with:
           config-name: release-drafter-beta.yml
         env:
