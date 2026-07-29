@@ -506,7 +506,7 @@ class BlitzortungCoordinator:
         for unsub in list(self._geohash_unsubscribers):
             try:
                 unsub()
-            except Exception:  # noqa: BLE001
+            except Exception:
                 _LOGGER.debug("Failed to remove geohash subscription", exc_info=True)
         self._geohash_unsubscribers.clear()
 
