@@ -238,7 +238,9 @@ async def async_setup_entry(
     # Migrate old service identifiers to new identifiers
     device_registry = dr.async_get(hass)
     old_ids = (DOMAIN, config_entry.title)
-    if device_entry := device_registry.async_get_device(identifiers={old_ids}):
+    if device_entry := device_registry.async_get_device_by_identifier(
+        old_ids, config_entry.entry_id
+    ):
         new_ids = (DOMAIN, unique_prefix)
         _LOGGER.debug(
             "Migrating service %s from old IDs '%s' to new IDs '%s'",
