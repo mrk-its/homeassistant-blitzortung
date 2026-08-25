@@ -1,3 +1,3 @@
-prek==0.4.13
-pytest-homeassistant-custom-component==0.13.356
-ruff==0.16.3
+prek==0.4.14
+pytest-homeassistant-custom-component==0.13.357
+ruff==0.16.4
