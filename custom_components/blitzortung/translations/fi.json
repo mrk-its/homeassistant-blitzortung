@@ -64,7 +64,7 @@
         "data_description": {
           "radius": "Ympyr\u00e4n s\u00e4de, jolla salamat havaitaan.",
           "time_window": "Seurattujen salamoiden elinaika minuuteissa.",
-          "max_tracked_lightnings": "Seurattujen salamoiden enimm\u00e4ism\u00e4\u00e4r\u00e4."
+          "max_tracked_lightnings": "Seurattujen salamoiden enimm\u00e4ism\u00e4\u00e4r\u00e4. Aseta 0, jos et halua salamaniskuentiteettej\u00e4 (anturit toimivat edelleen)."
         }
       }
     }

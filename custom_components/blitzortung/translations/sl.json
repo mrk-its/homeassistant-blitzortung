@@ -64,7 +64,7 @@
         "data_description": {
           "radius": "Polmer kroga, za katerega bodo zaznane strele.",
           "time_window": "\u017divljenjska doba sledenih strel v minutah.",
-          "max_tracked_lightnings": "Najve\u010dje \u0161tevilo sledenih strel."
+          "max_tracked_lightnings": "Najve\u010dje \u0161tevilo sledenih strel. Nastavite na 0, da se ne ustvarijo entitete udarov strel (senzorji \u0161e naprej delujejo)."
         }
       }
     }

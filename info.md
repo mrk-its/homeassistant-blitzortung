@@ -17,7 +17,7 @@ To configure the integration go to **Settings** >> **Devices & services** >> **A
 
 You can change the coordinates for an existing Blitzortung configuration using the reconfigure flow, go to **Settings** >> **Devices & services** >> **Blitzortung** >> **3 dot menu** >> **Reconfigure**.
 
-To change the detection radius, time window, and max tracked lightnings, go to **Settings** >> **Devices & services** >> **Blitzortung** >> **Configure**.
+To change the detection radius, time window, and max tracked lightnings, go to **Settings** >> **Devices & services** >> **Blitzortung** >> **Configure**. Setting max tracked lightnings to `0` disables the `geo_location` strike entities entirely; the distance, azimuth and counter sensors keep working.
 
 > [!IMPORTANT]
 > If you use a location entity as the coordinate source, the integration will use new coordinates if the location changes by more than 25% of the radius length.
