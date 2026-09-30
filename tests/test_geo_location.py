@@ -143,3 +143,58 @@ async def test_geo_location_delete_callback_no_warning(
     assert hass.states.get(second_entity_id) is not None
 
     assert "Unable to remove unknown dispatcher" not in caplog.text
+
+
+async def test_geo_location_disabled_when_max_tracked_is_zero(
+    hass: HomeAssistant,
+    mock_mqtt: MagicMock,
+) -> None:
+    """Zero tracked lightnings: no geo_location entities, sensors still update."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
+            "name": "Test",
+            "latitude": 50.0,
+            "longitude": 10.0,
+        },
+        unique_id="50.0-10.0-test",
+        version=6,
+        options={
+            CONF_RADIUS: 100,
+            CONF_MAX_TRACKED_LIGHTNINGS: 0,
+            CONF_TIME_WINDOW: 10,
+        },
+    )
+    entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert entry.state is ConfigEntryState.LOADED
+
+    coordinator = entry.runtime_data
+    payload = json_dumps(
+        {
+            "lat": 50.01,
+            "lon": 10.01,
+            "time": 1_000_000_000,
+            "status": 0,
+            "region": 0,
+        }
+    )
+    message = Message(
+        topic="blitzortung/1.1/u/3/3/#",
+        payload=payload,
+        qos=0,
+        retain=False,
+    )
+    await coordinator.on_mqtt_message(message)
+    await hass.async_block_till_done()
+
+    assert hass.states.async_entity_ids(GEO_LOCATION_DOMAIN) == []
+    counters = [
+        entity_id
+        for entity_id in hass.states.async_entity_ids("sensor")
+        if entity_id.endswith("lightning_counter")
+    ]
+    assert len(counters) == 1
+    assert hass.states.get(counters[0]).state == "1"
