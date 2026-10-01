@@ -64,7 +64,7 @@
         "data_description": {
           "radius": "Straal van de cirkel waarvoor bliksems worden gedetecteerd.",
           "time_window": "Levensduur van gevolgde bliksems in minuten.",
-          "max_tracked_lightnings": "Maximum aantal gevolgde bliksems."
+          "max_tracked_lightnings": "Maximum aantal gevolgde bliksems. Stel in op 0 om geen entiteiten voor blikseminslagen aan te maken (de sensoren blijven werken)."
         }
       }
     }

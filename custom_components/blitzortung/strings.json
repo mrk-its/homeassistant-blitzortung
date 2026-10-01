@@ -64,7 +64,7 @@
         "data_description": {
           "radius": "Radius of the circle for which lightnings will be detected.",
           "time_window": "Lifetime of tracked lightnings in minutes.",
-          "max_tracked_lightnings": "Maximum number of tracked lightnings."
+          "max_tracked_lightnings": "Maximum number of tracked lightnings. Set to 0 to create no lightning strike entities (the sensors keep working)."
         }
       }
     }

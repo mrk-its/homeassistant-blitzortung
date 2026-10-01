@@ -64,7 +64,7 @@
         "data_description": {
           "radius": "Radius p\u00e5 sirkelen for hvilke lyn vil bli oppdaget.",
           "time_window": "Levetid for sporede lyn i minutter.",
-          "max_tracked_lightnings": "Maksimalt antall sporede lyn."
+          "max_tracked_lightnings": "Maksimalt antall sporede lyn. Sett til 0 for \u00e5 ikke opprette lynnedslag-entiteter (sensorene fortsetter \u00e5 virke)."
         }
       }
     }

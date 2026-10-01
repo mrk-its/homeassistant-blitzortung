@@ -64,7 +64,7 @@
         "data_description": {
           "radius": "Rayon du cercle pour lequel les \u00e9clairs seront d\u00e9tect\u00e9s.",
           "time_window": "Dur\u00e9e de vie des \u00e9clairs suivis en minutes.",
-          "max_tracked_lightnings": "Nombre maximum d'\u00e9clairs suivis."
+          "max_tracked_lightnings": "Nombre maximum d'\u00e9clairs suivis. Mettez 0 pour ne cr\u00e9er aucune entit\u00e9 d'\u00e9clair (les capteurs continuent de fonctionner)."
         }
       }
     }
