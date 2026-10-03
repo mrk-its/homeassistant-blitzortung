@@ -6,8 +6,14 @@ from unittest.mock import MagicMock
 import pytest
 from homeassistant.components.geo_location import DOMAIN as GEO_LOCATION_DOMAIN
 from homeassistant.config_entries import ConfigEntryState
+from homeassistant.const import UnitOfLength
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.json import json_dumps
+from homeassistant.util.unit_system import (
+    METRIC_SYSTEM,
+    US_CUSTOMARY_SYSTEM,
+    UnitSystem,
+)
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.blitzortung.const import (
@@ -61,6 +67,41 @@ async def test_geo_location_entity_lifecycle(
 
     assert hass.states.get(entity_id) is None
     assert entity_id not in hass.states.async_entity_ids(GEO_LOCATION_DOMAIN)
+
+
+@pytest.mark.parametrize(
+    ("unit_system", "expected_state", "expected_unit"),
+    [
+        (METRIC_SYSTEM, "55.6", UnitOfLength.KILOMETERS),
+        (US_CUSTOMARY_SYSTEM, "34.5", UnitOfLength.MILES),
+    ],
+)
+async def test_geo_location_distance_unit(
+    hass: HomeAssistant,
+    mock_config_entry_coordinates: MockConfigEntry,
+    mock_mqtt: MagicMock,
+    unit_system: UnitSystem,
+    expected_state: str,
+    expected_unit: UnitOfLength,
+) -> None:
+    """Test geo location distance is converted to the configured unit system."""
+    hass.config.units = unit_system
+    await hass.config_entries.async_setup(mock_config_entry_coordinates.entry_id)
+    await hass.async_block_till_done()
+
+    payload = json_dumps(
+        {"lat": 50.5, "lon": 10.0, "time": 1_000_000_000, "status": 0, "region": 0}
+    )
+    await mock_config_entry_coordinates.runtime_data.on_mqtt_message(
+        Message(topic="blitzortung/1.1/u/3/3/#", payload=payload, qos=0, retain=False)
+    )
+    await hass.async_block_till_done()
+
+    geo_entity_ids = hass.states.async_entity_ids(GEO_LOCATION_DOMAIN)
+    assert len(geo_entity_ids) == 1
+    state = hass.states.get(geo_entity_ids[0])
+    assert state.state == expected_state
+    assert state.attributes["unit_of_measurement"] == expected_unit
 
 
 async def test_geo_location_delete_callback_no_warning(
