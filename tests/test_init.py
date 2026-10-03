@@ -16,6 +16,7 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import issue_registry as ir
+from homeassistant.helpers.dispatcher import DATA_DISPATCHER
 from homeassistant.helpers.json import json_dumps
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -37,7 +38,11 @@ from custom_components.blitzortung.const import (
     RADIUS_MAX,
     TIME_WINDOW_MAX,
 )
-from custom_components.blitzortung.mqtt import Message
+from custom_components.blitzortung.mqtt import (
+    MQTT_CONNECTED,
+    MQTT_DISCONNECTED,
+    Message,
+)
 
 
 async def test_async_setup_entry_coordinates(
@@ -69,6 +74,9 @@ async def test_async_setup_entry_not_ready_coordinates(
     await hass.async_block_till_done()
 
     assert mock_config_entry_coordinates.state is ConfigEntryState.SETUP_RETRY
+    assert not hass.data[DATA_DISPATCHER][MQTT_CONNECTED]
+    assert not hass.data[DATA_DISPATCHER][MQTT_DISCONNECTED]
+    mock_mqtt.return_value.async_disconnect.assert_awaited()
 
 
 async def test_async_setup_entry_location_entity(
@@ -110,6 +118,21 @@ async def test_async_setup_entry_not_ready_location_entity_mqtt_fails(
     await hass.async_block_till_done()
 
     assert mock_config_entry_location_entity.state is ConfigEntryState.SETUP_RETRY
+    assert not hass.data[DATA_DISPATCHER][MQTT_CONNECTED]
+    assert not hass.data[DATA_DISPATCHER][MQTT_DISCONNECTED]
+    mock_mqtt.return_value.async_disconnect.assert_awaited()
+
+    with patch.object(
+        BlitzortungCoordinator, "_async_refresh_geohash_subscriptions"
+    ) as refresh:
+        hass.states.async_set(
+            mock_location_entity,
+            STATE_HOME,
+            {ATTR_LATITUDE: 55.0, ATTR_LONGITUDE: 15.0},
+        )
+        await hass.async_block_till_done()
+
+    refresh.assert_not_called()
 
 
 @pytest.mark.parametrize(
