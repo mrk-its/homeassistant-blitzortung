@@ -17,6 +17,7 @@ from homeassistant.helpers.dispatcher import (
 )
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util.dt import utc_from_timestamp
+from homeassistant.util.unit_conversion import DistanceConverter
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 
 from . import BlitzortungConfigEntry
@@ -185,8 +186,14 @@ class BlitzortungEventManager:
     async def lightning_cb(self, lightning: dict[str, Any]) -> None:
         """Handle incoming lightning strike data."""
         _LOGGER.debug("geo_location lightning: %s", lightning)
+        distance = lightning["distance"]
+        if self._unit == UnitOfLength.MILES:
+            # Coordinator distances are always km.
+            distance = DistanceConverter.convert(
+                distance, UnitOfLength.KILOMETERS, UnitOfLength.MILES
+            )
         event = BlitzortungEvent(
-            lightning["distance"],
+            distance,
             lightning["lat"],
             lightning["lon"],
             self._unit,
