@@ -92,6 +92,9 @@ class BlitzortungSensor(BlitzortungEntity, SensorEntity):
 class LightningSensor(BlitzortungSensor):
     """Define a Blitzortung lightning sensor."""
 
+    # Per-strike coordinates would create a new recorder attributes row on every strike.
+    _unrecorded_attributes = frozenset({ATTR_LAT, ATTR_LON})
+
     INITIAL_STATE: int | None = None
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
