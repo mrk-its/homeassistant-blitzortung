@@ -215,6 +215,9 @@ async def async_setup_entry(  # noqa: PLR0912
     try:
         await config_entry.runtime_data.connect()
     except (HomeAssistantError, OSError) as err:
+        # HA does not call async_unload_entry after a failed setup, so listeners
+        # registered in the constructor would leak on every retry.
+        await config_entry.runtime_data.disconnect()
         raise ConfigEntryNotReady(
             translation_domain=DOMAIN,
             translation_key="mqtt_connect_not_ready",
