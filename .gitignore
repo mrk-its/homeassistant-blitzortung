@@ -138,3 +138,6 @@ home-assistant*
 # pre-commit
 !.pre-commit-config.yaml
 .ha_run.lock
+
+# omc
+.omc/
