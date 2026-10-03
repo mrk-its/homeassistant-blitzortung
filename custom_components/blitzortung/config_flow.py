@@ -3,7 +3,7 @@
 from typing import TYPE_CHECKING, Any
 
 import homeassistant.helpers.config_validation as cv
-import voluptuous as vol
+import probatio
 from homeassistant.components.device_tracker import DOMAIN as DEVICE_TRACKER_DOMAIN
 from homeassistant.components.person import DOMAIN as PERSON_DOMAIN
 from homeassistant.components.zone import DOMAIN as ZONE_DOMAIN
@@ -125,9 +125,9 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="user",
-            data_schema=vol.Schema(
+            data_schema=probatio.Schema(
                 {
-                    vol.Required(
+                    probatio.Required(
                         CONF_CONFIG_TYPE, default=CONFIG_TYPE_ENTITY
                     ): CONFIG_TYPE_SELECTOR,
                 }
@@ -169,8 +169,8 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="entity",
-            data_schema=vol.Schema(
-                {vol.Required(CONF_LOCATION_ENTITY): LOCATION_ENTITY_SELECTOR}
+            data_schema=probatio.Schema(
+                {probatio.Required(CONF_LOCATION_ENTITY): LOCATION_ENTITY_SELECTOR}
             ),
             errors=errors,
         )
@@ -202,17 +202,17 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="coordinates",
-            data_schema=vol.Schema(
+            data_schema=probatio.Schema(
                 {
-                    vol.Required(
+                    probatio.Required(
                         CONF_NAME,
                         default=self.hass.config.location_name,
                     ): str,
-                    vol.Required(
+                    probatio.Required(
                         CONF_LATITUDE,
                         default=self.hass.config.latitude,
                     ): cv.latitude,
-                    vol.Required(
+                    probatio.Required(
                         CONF_LONGITUDE,
                         default=self.hass.config.longitude,
                     ): cv.longitude,
@@ -245,13 +245,13 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="reconfigure",
             data_schema=self.add_suggested_values_to_schema(
-                data_schema=vol.Schema(
+                data_schema=probatio.Schema(
                     {
-                        vol.Required(
+                        probatio.Required(
                             CONF_LATITUDE,
                             default=self.hass.config.latitude,
                         ): cv.latitude,
-                        vol.Required(
+                        probatio.Required(
                             CONF_LONGITUDE,
                             default=self.hass.config.longitude,
                         ): cv.longitude,
@@ -281,15 +281,15 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
         # NumberSelector enforces min/max in the UI and on submit, but always
         # returns float (even with step=1). Coerce back to int — downstream
         # uses (Strikes capacity, slice indexing, time arithmetic) all assume
-        # integer values. The trailing vol.Range is backend defense-in-depth:
+        # integer values. The trailing probatio.Range is backend defense-in-depth:
         # the selector only guards the UI path, so a value submitted via YAML
         # import or the API (which bypasses the selector) is still bounded.
-        options_schema = vol.Schema(
+        options_schema = probatio.Schema(
             {
-                vol.Required(
+                probatio.Required(
                     CONF_RADIUS,
                     default=self.config_entry.options.get(CONF_RADIUS, DEFAULT_RADIUS),
-                ): vol.All(
+                ): probatio.All(
                     selector.NumberSelector(
                         selector.NumberSelectorConfig(
                             mode=selector.NumberSelectorMode.SLIDER,
@@ -301,16 +301,16 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
                             else UnitOfLength.KILOMETERS,
                         ),
                     ),
-                    vol.Coerce(int),
-                    vol.Range(min=RADIUS_MIN, max=RADIUS_MAX),
+                    probatio.Coerce(int),
+                    probatio.Range(min=RADIUS_MIN, max=RADIUS_MAX),
                 ),
-                vol.Optional(
+                probatio.Optional(
                     CONF_TIME_WINDOW,
                     default=self.config_entry.options.get(
                         CONF_TIME_WINDOW,
                         DEFAULT_TIME_WINDOW,
                     ),
-                ): vol.All(
+                ): probatio.All(
                     selector.NumberSelector(
                         selector.NumberSelectorConfig(
                             mode=selector.NumberSelectorMode.SLIDER,
@@ -320,16 +320,16 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
                             unit_of_measurement=UnitOfTime.MINUTES,
                         ),
                     ),
-                    vol.Coerce(int),
-                    vol.Range(min=TIME_WINDOW_MIN, max=TIME_WINDOW_MAX),
+                    probatio.Coerce(int),
+                    probatio.Range(min=TIME_WINDOW_MIN, max=TIME_WINDOW_MAX),
                 ),
-                vol.Optional(
+                probatio.Optional(
                     CONF_MAX_TRACKED_LIGHTNINGS,
                     default=self.config_entry.options.get(
                         CONF_MAX_TRACKED_LIGHTNINGS,
                         DEFAULT_MAX_TRACKED_LIGHTNINGS,
                     ),
-                ): vol.All(
+                ): probatio.All(
                     selector.NumberSelector(
                         selector.NumberSelectorConfig(
                             mode=selector.NumberSelectorMode.SLIDER,
@@ -338,8 +338,8 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
                             step=100,
                         ),
                     ),
-                    vol.Coerce(int),
-                    vol.Range(
+                    probatio.Coerce(int),
+                    probatio.Range(
                         min=MAX_TRACKED_LIGHTNINGS_MIN, max=MAX_TRACKED_LIGHTNINGS_MAX
                     ),
                 ),

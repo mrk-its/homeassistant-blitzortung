@@ -7,7 +7,7 @@ import time
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
-import voluptuous as vol
+import probatio
 from homeassistant.components.persistent_notification import (
     async_create as async_create_notification,
 )
@@ -66,9 +66,9 @@ from .version import __version__
 
 _LOGGER = logging.getLogger(__name__)
 
-CONFIG_SCHEMA = vol.Schema(
-    {DOMAIN: vol.Schema({vol.Optional(SERVER_STATS, default=False): bool})},
-    extra=vol.ALLOW_EXTRA,
+CONFIG_SCHEMA = probatio.Schema(
+    {DOMAIN: probatio.Schema({probatio.Optional(SERVER_STATS, default=False): bool})},
+    extra=probatio.ALLOW_EXTRA,
 )
 
 BlitzortungConfigEntry = ConfigEntry["BlitzortungCoordinator"]
