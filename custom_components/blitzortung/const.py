@@ -1,6 +1,6 @@
 """Constants for the Blitzortung integration."""
 
-import datetime
+import datetime as dt
 from dataclasses import dataclass
 from typing import Any
 
@@ -42,7 +42,7 @@ DEFAULT_IDLE_RESET_TIMEOUT = 120
 DEFAULT_RADIUS = 100
 DEFAULT_MAX_TRACKED_LIGHTNINGS = 100
 DEFAULT_TIME_WINDOW = 120
-DEFAULT_UPDATE_INTERVAL = datetime.timedelta(seconds=60)
+DEFAULT_UPDATE_INTERVAL = dt.timedelta(seconds=60)
 
 # Options bounds. Enforced by the options-flow schema so users can't accidentally
 # enter values that would explode memory, evict every strike on the next tick,
