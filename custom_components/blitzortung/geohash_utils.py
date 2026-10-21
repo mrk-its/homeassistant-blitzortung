@@ -58,9 +58,9 @@ def geohash_overlap(lat: float, lon: float, radius: int, _max_tiles: int = 9) ->
     result = set()
     for precision in range(1, 13):
         tiles = compute_geohash_tiles(lat, lon, radius, precision)
-        # Keep precision 1 even above 9 tiles: an empty set subscribes to
-        # nothing, which silently dropped every strike from ~5000 km up.
-        if len(tiles) <= 9 or not result:  # noqa: PLR2004
+        # Keep precision 1 even above _max_tiles: an empty set subscribes to
+        # nothing, so a large area (4000 km at 70°N) silently got no strikes.
+        if precision == 1 or len(tiles) <= _max_tiles:
             result = tiles
             precision += 1  # noqa: PLW2901
         else:
