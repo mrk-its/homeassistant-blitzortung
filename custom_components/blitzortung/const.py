@@ -48,11 +48,9 @@ DEFAULT_UPDATE_INTERVAL = dt.timedelta(seconds=60)
 # enter values that would explode memory, evict every strike on the next tick,
 # or otherwise put the integration in a degenerate state.
 RADIUS_MIN = 1
-# 4000 covers the actual usable upper bound regardless of unit. For metric
-# users that's 4000 km; for imperial that's 4000 mi = 6437 km. Both stay
-# under the geohash_overlap() empty-set cliff at most latitudes: above
-# ~6700 km the bounding box exceeds precision-1 tile coverage and the
-# function silently returns no subscriptions, so no strikes ever arrive.
+# 4000 in either unit: 4000 km, or 4000 mi = 6437 km. Above ~5000 km
+# geohash_overlap() needs more than 9 precision-1 tiles and subscribes to all
+# of them (10-16), so this bounds the proxy traffic of one entry.
 RADIUS_MAX = 4000
 TIME_WINDOW_MIN = 1  # minutes
 TIME_WINDOW_MAX = 1440  # 24 hours; longer than this churns the recorder hard.
