@@ -65,6 +65,22 @@
           "radius": "Straal van de cirkel waarvoor bliksems worden gedetecteerd.",
           "time_window": "Levensduur van gevolgde bliksems in minuten.",
           "max_tracked_lightnings": "Maximum aantal gevolgde bliksems. Stel in op 0 om geen entiteiten voor blikseminslagen aan te maken (de sensoren blijven werken)."
+        },
+        "sections": {
+          "map_area": {
+            "name": "Kaartkaarten",
+            "description": "Stuur blikseminslagen uit een groter gebied naar kaartkaarten, bijvoorbeeld de weerradarkaart. De integratie bewaart deze inslagen alleen in het geheugen. Ze maakt er geen entiteiten of databaserecords voor aan.",
+            "data": {
+              "map_radius": "Kaartradius",
+              "map_center_override": "Een ander middelpunt gebruiken",
+              "map_center": "Middelpunt van de kaart"
+            },
+            "data_description": {
+              "map_radius": "Straal van het gebied voor kaartkaarten. Stel in op 0 om de bliksemdetectie-radius te gebruiken.",
+              "map_center_override": "Gebruik de locatie hieronder als middelpunt van het kaartgebied. Indien uit, gebruikt het kaartgebied de ingestelde locatie.",
+              "map_center": "Alleen gebruikt als \"Een ander middelpunt gebruiken\" aan staat."
+            }
+          }
         }
       }
     }

@@ -21,6 +21,7 @@ from homeassistant.const import (
     UnitOfTime,
 )
 from homeassistant.core import HomeAssistant
+from homeassistant.data_entry_flow import section
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import selector
@@ -29,15 +30,21 @@ from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 from .const import (
     CONF_CONFIG_TYPE,
     CONF_LOCATION_ENTITY,
+    CONF_MAP_AREA,
+    CONF_MAP_CENTER,
+    CONF_MAP_CENTER_OVERRIDE,
+    CONF_MAP_RADIUS,
     CONF_MAX_TRACKED_LIGHTNINGS,
     CONF_RADIUS,
     CONF_TIME_WINDOW,
     CONFIG_TYPE_COORDINATES,
     CONFIG_TYPE_ENTITY,
+    DEFAULT_MAP_RADIUS,
     DEFAULT_MAX_TRACKED_LIGHTNINGS,
     DEFAULT_RADIUS,
     DEFAULT_TIME_WINDOW,
     DOMAIN,
+    MAP_RADIUS_MIN,
     MAX_TRACKED_LIGHTNINGS_MAX,
     MAX_TRACKED_LIGHTNINGS_MIN,
     RADIUS_MAX,
@@ -276,7 +283,15 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
     ) -> ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
-            return self.async_create_entry(data=user_input)
+            # The map area is a form section only; keep the stored options flat.
+            map_area = user_input.pop(CONF_MAP_AREA, {})
+            return self.async_create_entry(data={**user_input, **map_area})
+
+        distance_unit = (
+            UnitOfLength.MILES
+            if self.hass.config.units == IMPERIAL_SYSTEM
+            else UnitOfLength.KILOMETERS
+        )
 
         # NumberSelector enforces min/max in the UI and on submit, but always
         # returns float (even with step=1). Coerce back to int — downstream
@@ -296,9 +311,7 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
                             min=RADIUS_MIN,
                             max=RADIUS_MAX,
                             step=10,
-                            unit_of_measurement=UnitOfLength.MILES
-                            if self.hass.config.units == IMPERIAL_SYSTEM
-                            else UnitOfLength.KILOMETERS,
+                            unit_of_measurement=distance_unit,
                         ),
                     ),
                     probatio.Coerce(int),
@@ -343,6 +356,38 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
                         min=MAX_TRACKED_LIGHTNINGS_MIN, max=MAX_TRACKED_LIGHTNINGS_MAX
                     ),
                 ),
+                # No default: the frontend uses a section's default before the
+                # suggested values inside it, so saving would reset the map area.
+                probatio.Optional(CONF_MAP_AREA): section(
+                    probatio.Schema(
+                        {
+                            probatio.Optional(
+                                CONF_MAP_RADIUS, default=DEFAULT_MAP_RADIUS
+                            ): probatio.All(
+                                selector.NumberSelector(
+                                    selector.NumberSelectorConfig(
+                                        mode=selector.NumberSelectorMode.SLIDER,
+                                        min=MAP_RADIUS_MIN,
+                                        max=RADIUS_MAX,
+                                        step=10,
+                                        unit_of_measurement=distance_unit,
+                                    ),
+                                ),
+                                probatio.Coerce(int),
+                                probatio.Range(min=MAP_RADIUS_MIN, max=RADIUS_MAX),
+                            ),
+                            probatio.Optional(
+                                CONF_MAP_CENTER_OVERRIDE, default=False
+                            ): selector.BooleanSelector(),
+                            probatio.Optional(
+                                CONF_MAP_CENTER
+                            ): selector.LocationSelector(
+                                selector.LocationSelectorConfig(radius=False)
+                            ),
+                        }
+                    ),
+                    {"collapsed": True},
+                ),
             }
         )
 
@@ -368,6 +413,26 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
                 MAX_TRACKED_LIGHTNINGS_MIN,
                 MAX_TRACKED_LIGHTNINGS_MAX,
             ),
+            CONF_MAP_AREA: {
+                CONF_MAP_RADIUS: _clamp(
+                    opts.get(CONF_MAP_RADIUS, DEFAULT_MAP_RADIUS),
+                    MAP_RADIUS_MIN,
+                    RADIUS_MAX,
+                ),
+                CONF_MAP_CENTER_OVERRIDE: opts.get(CONF_MAP_CENTER_OVERRIDE, False),
+                # The picker always has a point; start it at the entry's location.
+                CONF_MAP_CENTER: opts.get(
+                    CONF_MAP_CENTER,
+                    {
+                        CONF_LATITUDE: self.config_entry.data.get(
+                            CONF_LATITUDE, self.hass.config.latitude
+                        ),
+                        CONF_LONGITUDE: self.config_entry.data.get(
+                            CONF_LONGITUDE, self.hass.config.longitude
+                        ),
+                    },
+                ),
+            },
         }
 
         return self.async_show_form(

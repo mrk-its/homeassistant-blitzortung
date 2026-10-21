@@ -5,6 +5,7 @@ import logging
 import math
 import time
 from collections.abc import Callable
+from functools import partial
 from typing import TYPE_CHECKING, Any
 
 import probatio
@@ -41,11 +42,15 @@ from .const import (
     CONF_CONFIG_TYPE,
     CONF_IDLE_RESET_TIMEOUT,
     CONF_LOCATION_ENTITY,
+    CONF_MAP_CENTER,
+    CONF_MAP_CENTER_OVERRIDE,
+    CONF_MAP_RADIUS,
     CONF_MAX_TRACKED_LIGHTNINGS,
     CONF_RADIUS,
     CONF_TIME_WINDOW,
     CONFIG_TYPE_COORDINATES,
     DEFAULT_IDLE_RESET_TIMEOUT,
+    DEFAULT_MAP_RADIUS,
     DEFAULT_MAX_TRACKED_LIGHTNINGS,
     DEFAULT_RADIUS,
     DEFAULT_TIME_WINDOW,
@@ -56,13 +61,16 @@ from .const import (
     PLATFORMS,
     RADIUS_MAX,
     SERVER_STATS,
+    STRIKE_BUFFER_MAX,
     TIME_WINDOW_MAX,
 )
 from .entity import BlitzortungEntity
 from .geohash_utils import geohash_overlap
 from .mqtt import MQTT, MQTT_CONNECTED, MQTT_DISCONNECTED, Message
+from .strike_buffer import StrikeBuffer, StrikeRecord
 from .utils import get_coordinates_from_entity
 from .version import __version__
+from .websocket_api import async_get_strike_stream, async_register_websocket_commands
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -77,6 +85,7 @@ BlitzortungConfigEntry = ConfigEntry["BlitzortungCoordinator"]
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Initialize basic config of blitzortung component."""
     hass.data[BLITZORTUNG_CONFIG] = config.get(DOMAIN) or {}
+    async_register_websocket_commands(hass)
     return True
 
 
@@ -115,6 +124,12 @@ async def async_setup_entry(  # noqa: PLR0912
         location_entity = config_entry.data[CONF_LOCATION_ENTITY]
 
     radius = config_entry.options[CONF_RADIUS]
+    map_radius = config_entry.options.get(CONF_MAP_RADIUS, DEFAULT_MAP_RADIUS)
+    map_center = None
+    if config_entry.options.get(CONF_MAP_CENTER_OVERRIDE) and (
+        center := config_entry.options.get(CONF_MAP_CENTER)
+    ):
+        map_center = (center[CONF_LATITUDE], center[CONF_LONGITUDE])
     max_tracked_lightnings = config_entry.options[CONF_MAX_TRACKED_LIGHTNINGS]
     time_window_seconds = config_entry.options[CONF_TIME_WINDOW] * 60
 
@@ -200,6 +215,9 @@ async def async_setup_entry(  # noqa: PLR0912
             radius, UnitOfLength.MILES, UnitOfLength.KILOMETERS
         )
         _LOGGER.info("Imperial system, %s mi -> %s km", radius_mi, radius)
+        map_radius = DistanceConverter.convert(
+            map_radius, UnitOfLength.MILES, UnitOfLength.KILOMETERS
+        )
 
     config_entry.runtime_data = BlitzortungCoordinator(
         hass,
@@ -210,6 +228,8 @@ async def async_setup_entry(  # noqa: PLR0912
         max_tracked_lightnings=max_tracked_lightnings,
         time_window_seconds=time_window_seconds,
         server_stats=config.get(SERVER_STATS),
+        map_radius=map_radius,
+        map_center=map_center,
     )
 
     try:
@@ -223,6 +243,14 @@ async def async_setup_entry(  # noqa: PLR0912
             translation_key="mqtt_connect_not_ready",
             translation_placeholders={"error": str(err)},
         ) from err
+
+    stream = async_get_strike_stream(hass)
+    config_entry.runtime_data.register_strike_receiver(
+        partial(stream.publish, config_entry.entry_id)
+    )
+    config_entry.async_on_unload(
+        stream.async_add_source(config_entry.entry_id, config_entry.runtime_data)
+    )
 
     await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
 
@@ -343,6 +371,9 @@ class BlitzortungCoordinator:
         max_tracked_lightnings: int,
         time_window_seconds: int,
         server_stats: bool = False,
+        *,
+        map_radius: float = DEFAULT_MAP_RADIUS,
+        map_center: tuple[float, float] | None = None,
     ) -> None:
         """Initialize."""
         self.hass = hass
@@ -354,10 +385,18 @@ class BlitzortungCoordinator:
         self.max_tracked_lightnings = max_tracked_lightnings
         self.time_window_seconds = time_window_seconds
         self.server_stats = server_stats
+        # Map cards get strikes from a wider area than the sensors and entities.
+        # 0 keeps it the same as the detection radius.
+        self.map_radius = max(map_radius, radius)
+        self.map_center = map_center
+        self.strikes = StrikeBuffer(
+            time_window_seconds * 1000 or None, STRIKE_BUFFER_MAX
+        )
         self.last_time = 0
         self.sensors = []
         self.callbacks = []
         self.lightning_callbacks = []
+        self.strike_callbacks: list[Callable[[StrikeRecord], None]] = []
         self.on_tick_callbacks = []
 
         self._disconnect_callbacks = []
@@ -372,32 +411,27 @@ class BlitzortungCoordinator:
                 assert self.latitude is not None
                 assert self.longitude is not None
 
-            self.geohash_overlap = geohash_overlap(
-                self.latitude, self.longitude, self.radius
-            )
+            self.geohash_overlap = self._compute_geohash_overlap()
         # If configured, initialize reference coordinates from entity.
         # If the entity has no state yet, lat/lon remain None and geohash_overlap
-        # stays empty — subscriptions will be set up once the entity reports.
+        # holds only a custom map area — the rest follows once the entity reports.
         else:
             self._apply_location_entity_state(
                 self.hass.states.get(self.location_entity)
             )
-            if self.latitude is not None and self.longitude is not None:
-                self.geohash_overlap = geohash_overlap(
-                    self.latitude, self.longitude, self.radius
-                )
-            else:
-                # No valid coordinates from entity yet; defer geohash setup.
-                self.geohash_overlap = set()
+            self.geohash_overlap = self._compute_geohash_overlap()
             self._location_unsubscribe = async_track_state_change_event(
                 self.hass, [self.location_entity], self._handle_location_entity_change
             )
 
         _LOGGER.info(
-            "lat: %s, lon: %s, radius: %skm, geohashes: %s",
+            "lat: %s, lon: %s, radius: %skm, map radius: %skm, map center: %s, "
+            "geohashes: %s",
             self.latitude,
             self.longitude,
             self.radius,
+            self.map_radius,
+            self.map_center,
             self.geohash_overlap,
         )
 
@@ -486,9 +520,7 @@ class BlitzortungCoordinator:
         """Recalculate geohash overlap and refresh MQTT subscriptions if needed."""
         if self.latitude is None or self.longitude is None:
             return
-        new_geohash_overlap = geohash_overlap(
-            self.latitude, self.longitude, self.radius
-        )
+        new_geohash_overlap = self._compute_geohash_overlap()
 
         if new_geohash_overlap == self.geohash_overlap:
             return
@@ -519,6 +551,42 @@ class BlitzortungCoordinator:
                 f"blitzortung/1.1/{geohash_part}/#", self.on_mqtt_message, qos=0
             )
             self._geohash_unsubscribers.append(unsub)
+
+    def _compute_geohash_overlap(self) -> set[str]:
+        """Return the geohash tiles covering the detection and map areas."""
+        tiles: set[str] = set()
+        # If the entity has no coordinates yet, the detection area waits until
+        # it reports.
+        if self.latitude is not None and self.longitude is not None:
+            tiles = geohash_overlap(self.latitude, self.longitude, self.radius)
+        if (center := self._map_area_center()) is not None and (
+            self.map_center is not None or self.map_radius > self.radius
+        ):
+            tiles |= geohash_overlap(center[0], center[1], self.map_radius)
+        # MQTT.async_subscribe calls back once per matching subscription, so a
+        # tile inside a larger tile from the other area would double strikes.
+        return {
+            tile
+            for tile in tiles
+            if not any(tile[:i] in tiles for i in range(1, len(tile)))
+        }
+
+    def _map_area_center(self) -> tuple[float, float] | None:
+        """Return the center of the map area, if known."""
+        if self.map_center is not None:
+            return self.map_center
+        if self.latitude is None or self.longitude is None:
+            return None
+        return (self.latitude, self.longitude)
+
+    def _in_map_area(self, lightning: dict[str, Any]) -> bool:
+        """Check if a strike outside the detection radius is in the map area."""
+        if self.map_center is None and self.map_radius <= self.radius:
+            return False
+        if (center := self._map_area_center()) is None:
+            return False
+        meters = distance(center[0], center[1], lightning["lat"], lightning["lon"])
+        return meters is not None and meters < self.map_radius * 1000
 
     def compute_polar_coords(self, lightning: dict[str, Any]) -> None:
         """Compute polar coordinates for the lightning strike."""
@@ -572,6 +640,7 @@ class BlitzortungCoordinator:
         self.sensors.clear()
         self.callbacks.clear()
         self.lightning_callbacks.clear()
+        self.strike_callbacks.clear()
         self.on_tick_callbacks.clear()
 
         if self._location_unsubscribe:
@@ -610,14 +679,28 @@ class BlitzortungCoordinator:
             cb(message)
         if message.topic.startswith("blitzortung/1.1"):
             lightning = json_loads_object(message.payload)
-            self.compute_polar_coords(lightning)
-            if lightning[ATTR_LIGHTNING_DISTANCE] < self.radius:
+            in_radius = False
+            if self.latitude is not None and self.longitude is not None:
+                self.compute_polar_coords(lightning)
+                in_radius = lightning[ATTR_LIGHTNING_DISTANCE] < self.radius
+            if in_radius:
                 _LOGGER.debug("Lightning data: %s", lightning)
                 self.last_time = time.time()
                 for cb in self.lightning_callbacks:
                     await cb(lightning)
                 for sensor in self.sensors:
                     sensor.update_lightning(lightning)
+            # Strikes in the map area only feed map cards, never the sensors
+            # or entities, so a wide map area adds no database writes.
+            if (in_radius or self._in_map_area(lightning)) and isinstance(
+                time_ns := lightning.get("time"), int
+            ):
+                record = self.strikes.append(
+                    lightning["lat"], lightning["lon"], time_ns // 1_000_000
+                )
+                if record is not None:
+                    for strike_cb in self.strike_callbacks:
+                        strike_cb(record)
 
     def register_sensor(self, sensor: BlitzortungEntity) -> None:
         """Register a sensor to be updated on each lightning strike."""
@@ -631,6 +714,12 @@ class BlitzortungCoordinator:
     def register_lightning_receiver(self, lightning_cb: Callable) -> None:
         """Register a callback to be called on each lightning strike."""
         self.lightning_callbacks.append(lightning_cb)
+
+    def register_strike_receiver(
+        self, strike_cb: Callable[[StrikeRecord], None]
+    ) -> None:
+        """Register a callback to be called on each strike for map cards."""
+        self.strike_callbacks.append(strike_cb)
 
     def register_on_tick(self, on_tick_cb: Callable) -> None:
         """Register a callback to be called on each tick."""
@@ -651,5 +740,6 @@ class BlitzortungCoordinator:
 
     async def _tick(self, *args: Any) -> None:  # noqa: ARG002
         """Call registered callbacks on each tick."""
+        self.strikes.expire(int(time.time() * 1000))
         for cb in self.on_tick_callbacks:
             cb()

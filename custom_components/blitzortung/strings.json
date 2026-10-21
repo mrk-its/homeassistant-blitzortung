@@ -65,6 +65,22 @@
           "radius": "Radius of the circle for which lightnings will be detected.",
           "time_window": "Lifetime of tracked lightnings in minutes.",
           "max_tracked_lightnings": "Maximum number of tracked lightnings. Set to 0 to create no lightning strike entities (the sensors keep working)."
+        },
+        "sections": {
+          "map_area": {
+            "name": "Map cards",
+            "description": "Send lightning strikes from a larger area to map cards, for example the weather radar card. The integration keeps these strikes in memory only. It does not make entities or database records for them.",
+            "data": {
+              "map_radius": "Map radius",
+              "map_center_override": "Use a different center",
+              "map_center": "Map center"
+            },
+            "data_description": {
+              "map_radius": "Radius of the area for map cards. Set to 0 to use the lightning detection radius.",
+              "map_center_override": "Use the location below as the center of the map area. When off, the map area uses the configured location.",
+              "map_center": "Used only when \"Use a different center\" is on."
+            }
+          }
         }
       }
     }

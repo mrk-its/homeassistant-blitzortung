@@ -65,6 +65,22 @@
           "radius": "Ympyr\u00e4n s\u00e4de, jolla salamat havaitaan.",
           "time_window": "Seurattujen salamoiden elinaika minuuteissa.",
           "max_tracked_lightnings": "Seurattujen salamoiden enimm\u00e4ism\u00e4\u00e4r\u00e4. Aseta 0, jos et halua salamaniskuentiteettej\u00e4 (anturit toimivat edelleen)."
+        },
+        "sections": {
+          "map_area": {
+            "name": "Karttakortit",
+            "description": "L\u00e4het\u00e4 salamaniskut laajemmalta alueelta karttakorteille, esimerkiksi s\u00e4\u00e4karttakortille. Integraatio s\u00e4ilytt\u00e4\u00e4 n\u00e4m\u00e4 iskut vain muistissa. Niist\u00e4 ei luoda entiteettej\u00e4 eik\u00e4 tietokantamerkint\u00f6j\u00e4.",
+            "data": {
+              "map_radius": "Kartan s\u00e4de",
+              "map_center_override": "K\u00e4yt\u00e4 eri keskipistett\u00e4",
+              "map_center": "Kartan keskipiste"
+            },
+            "data_description": {
+              "map_radius": "Karttakorttien alueen s\u00e4de. Aseta 0, jos haluat k\u00e4ytt\u00e4\u00e4 salamoiden havaintoalueen s\u00e4dett\u00e4.",
+              "map_center_override": "K\u00e4yt\u00e4 alla olevaa sijaintia kartta-alueen keskipisteen\u00e4. Kun asetus on pois p\u00e4\u00e4lt\u00e4, kartta-alue k\u00e4ytt\u00e4\u00e4 m\u00e4\u00e4ritetty\u00e4 sijaintia.",
+              "map_center": "K\u00e4ytet\u00e4\u00e4n vain, kun \"K\u00e4yt\u00e4 eri keskipistett\u00e4\" on p\u00e4\u00e4ll\u00e4."
+            }
+          }
         }
       }
     }

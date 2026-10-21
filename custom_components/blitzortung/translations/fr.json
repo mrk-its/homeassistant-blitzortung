@@ -65,6 +65,22 @@
           "radius": "Rayon du cercle pour lequel les \u00e9clairs seront d\u00e9tect\u00e9s.",
           "time_window": "Dur\u00e9e de vie des \u00e9clairs suivis en minutes.",
           "max_tracked_lightnings": "Nombre maximum d'\u00e9clairs suivis. Mettez 0 pour ne cr\u00e9er aucune entit\u00e9 d'\u00e9clair (les capteurs continuent de fonctionner)."
+        },
+        "sections": {
+          "map_area": {
+            "name": "Cartes",
+            "description": "Envoyer les \u00e9clairs d'une zone plus grande aux cartes, par exemple la carte radar m\u00e9t\u00e9o. L'int\u00e9gration garde ces \u00e9clairs en m\u00e9moire seulement. Elle ne cr\u00e9e pas d'entit\u00e9s ni d'enregistrements dans la base de donn\u00e9es pour eux.",
+            "data": {
+              "map_radius": "Rayon de la carte",
+              "map_center_override": "Utiliser un autre centre",
+              "map_center": "Centre de la carte"
+            },
+            "data_description": {
+              "map_radius": "Rayon de la zone pour les cartes. Mettez 0 pour utiliser le rayon de d\u00e9tection de la foudre.",
+              "map_center_override": "Utiliser l'emplacement ci-dessous comme centre de la zone de la carte. Si d\u00e9sactiv\u00e9, la zone utilise l'emplacement configur\u00e9.",
+              "map_center": "Utilis\u00e9 seulement si \"Utiliser un autre centre\" est activ\u00e9."
+            }
+          }
         }
       }
     }
