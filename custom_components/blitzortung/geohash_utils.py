@@ -62,7 +62,6 @@ def geohash_overlap(lat: float, lon: float, radius: int, _max_tiles: int = 9) ->
         # nothing, so a large area (4000 km at 70°N) silently got no strikes.
         if precision == 1 or len(tiles) <= _max_tiles:
             result = tiles
-            precision += 1  # noqa: PLW2901
         else:
             break
     return result
