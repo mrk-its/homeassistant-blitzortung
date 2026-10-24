@@ -65,6 +65,22 @@
           "radius": "Radius p\u00e5 sirkelen for hvilke lyn vil bli oppdaget.",
           "time_window": "Levetid for sporede lyn i minutter.",
           "max_tracked_lightnings": "Maksimalt antall sporede lyn. Sett til 0 for \u00e5 ikke opprette lynnedslag-entiteter (sensorene fortsetter \u00e5 virke)."
+        },
+        "sections": {
+          "map_area": {
+            "name": "Kartkort",
+            "description": "Send lynnedslag fra et st\u00f8rre omr\u00e5de til kartkort, for eksempel v\u00e6rradarkortet. Integrasjonen holder disse nedslagene bare i minnet. Den lager ikke entiteter eller databaseoppf\u00f8ringer for dem.",
+            "data": {
+              "map_radius": "Kartradius",
+              "map_center_override": "Bruk et annet sentrum",
+              "map_center": "Kartsentrum"
+            },
+            "data_description": {
+              "map_radius": "Radius p\u00e5 omr\u00e5det for kartkort. Sett til 0 for \u00e5 bruke lyndeteksjonsradiusen.",
+              "map_center_override": "Bruk posisjonen nedenfor som sentrum for kartomr\u00e5det. N\u00e5r av, bruker kartomr\u00e5det den konfigurerte posisjonen.",
+              "map_center": "Brukes bare n\u00e5r \"Bruk et annet sentrum\" er p\u00e5."
+            }
+          }
         }
       }
     }

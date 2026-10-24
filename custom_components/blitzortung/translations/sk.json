@@ -65,6 +65,22 @@
           "radius": "Polomer kruhu, pre ktor\u00fd sa bud\u00fa detekova\u0165 blesky.",
           "time_window": "\u017divotnos\u0165 sledovan\u00fdch bleskov v min\u00fatach.",
           "max_tracked_lightnings": "Maxim\u00e1lny po\u010det sledovan\u00fdch bleskov. Nastavte 0, ak nechcete vytv\u00e1ra\u0165 entity \u00faderov bleskov (senzory na\u010falej funguj\u00fa)."
+        },
+        "sections": {
+          "map_area": {
+            "name": "Mapov\u00e9 karty",
+            "description": "Posiela\u0165 \u00fadery bleskov z v\u00e4\u010d\u0161ej oblasti do mapov\u00fdch kariet, napr\u00edklad do karty meteorologick\u00e9ho radaru. Integr\u00e1cia uchov\u00e1va tieto \u00fadery iba v pam\u00e4ti. Nevytv\u00e1ra pre ne entity ani z\u00e1znamy v datab\u00e1ze.",
+            "data": {
+              "map_radius": "Polomer mapy",
+              "map_center_override": "Pou\u017ei\u0165 in\u00fd stred",
+              "map_center": "Stred mapy"
+            },
+            "data_description": {
+              "map_radius": "Polomer oblasti pre mapov\u00e9 karty. Nastavte 0 na pou\u017eitie polomeru detekcie bleskov.",
+              "map_center_override": "Pou\u017ei\u0165 polohu ni\u017e\u0161ie ako stred oblasti mapy. Ke\u010f je vypnut\u00e9, oblas\u0165 mapy pou\u017e\u00edva nakonfigurovan\u00fa polohu.",
+              "map_center": "Pou\u017e\u00edva sa iba vtedy, ke\u010f je zapnut\u00e9 \"Pou\u017ei\u0165 in\u00fd stred\"."
+            }
+          }
         }
       }
     }

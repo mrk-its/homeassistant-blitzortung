@@ -65,6 +65,22 @@
           "radius": "Radijus kruga za koji \u0107e gromovi biti otkriveni.",
           "time_window": "Vijek trajanja pra\u0107enih gromova u minutama.",
           "max_tracked_lightnings": "Maksimalan broj pra\u0107enih gromova. Postavite na 0 da se ne stvaraju entiteti udara groma (senzori i dalje rade)."
+        },
+        "sections": {
+          "map_area": {
+            "name": "Kartice karte",
+            "description": "\u0160alji udare groma s ve\u0107eg podru\u010dja karticama karte, na primjer kartici vremenskog radara. Integracija \u010duva te udare samo u memoriji. Za njih ne stvara entitete ni zapise u bazi podataka.",
+            "data": {
+              "map_radius": "Radijus karte",
+              "map_center_override": "Koristi drugo sredi\u0161te",
+              "map_center": "Sredi\u0161te karte"
+            },
+            "data_description": {
+              "map_radius": "Radijus podru\u010dja za kartice karte. Postavite na 0 za kori\u0161tenje radijusa otkrivanja groma.",
+              "map_center_override": "Koristi lokaciju ispod kao sredi\u0161te podru\u010dja karte. Kad je isklju\u010deno, podru\u010dje karte koristi konfiguriranu lokaciju.",
+              "map_center": "Koristi se samo kad je \"Koristi drugo sredi\u0161te\" uklju\u010deno."
+            }
+          }
         }
       }
     }

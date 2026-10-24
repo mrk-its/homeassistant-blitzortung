@@ -65,6 +65,22 @@
           "radius": "Polmer kroga, za katerega bodo zaznane strele.",
           "time_window": "\u017divljenjska doba sledenih strel v minutah.",
           "max_tracked_lightnings": "Najve\u010dje \u0161tevilo sledenih strel. Nastavite na 0, da se ne ustvarijo entitete udarov strel (senzorji \u0161e naprej delujejo)."
+        },
+        "sections": {
+          "map_area": {
+            "name": "Kartice zemljevida",
+            "description": "Po\u0161lji udare strel z ve\u010djega obmo\u010dja karticam zemljevida, na primer kartici vremenskega radarja. Integracija hrani te udare samo v pomnilniku. Zanje ne ustvari entitet ali zapisov v zbirki podatkov.",
+            "data": {
+              "map_radius": "Polmer zemljevida",
+              "map_center_override": "Uporabi drugo sredi\u0161\u010de",
+              "map_center": "Sredi\u0161\u010de zemljevida"
+            },
+            "data_description": {
+              "map_radius": "Polmer obmo\u010dja za kartice zemljevida. Nastavite na 0 za uporabo dosega zaznavanja strel.",
+              "map_center_override": "Uporabi spodnjo lokacijo kot sredi\u0161\u010de obmo\u010dja zemljevida. Ko je izklopljeno, obmo\u010dje zemljevida uporablja nastavljeno lokacijo.",
+              "map_center": "Uporablja se samo, ko je \"Uporabi drugo sredi\u0161\u010de\" vklopljeno."
+            }
+          }
         }
       }
     }

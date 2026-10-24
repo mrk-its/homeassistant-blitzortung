@@ -16,11 +16,17 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType, InvalidData
 from homeassistant.helpers import entity_registry as er
+from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant_custom_component.typing import ClientSessionGenerator
 
 from custom_components.blitzortung.const import (
     CONF_CONFIG_TYPE,
     CONF_LOCATION_ENTITY,
+    CONF_MAP_AREA,
+    CONF_MAP_CENTER,
+    CONF_MAP_CENTER_OVERRIDE,
+    CONF_MAP_RADIUS,
     CONF_MAX_TRACKED_LIGHTNINGS,
     CONF_RADIUS,
     CONF_TIME_WINDOW,
@@ -170,6 +176,170 @@ async def test_options_flow_success(
         CONF_RADIUS: 200,
         CONF_TIME_WINDOW: 300,
         CONF_MAX_TRACKED_LIGHTNINGS: 150,
+    }
+
+
+async def test_options_flow_map_area_stored_flat(
+    hass: HomeAssistant, mock_config_entry_coordinates: MockConfigEntry
+) -> None:
+    """The map area form section is stored as flat options."""
+    result = await hass.config_entries.options.async_init(
+        mock_config_entry_coordinates.entry_id, context={"source": "user"}
+    )
+    center = {CONF_LATITUDE: 27.5, CONF_LONGITUDE: -81.5}
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            CONF_RADIUS: 100,
+            CONF_TIME_WINDOW: 120,
+            CONF_MAX_TRACKED_LIGHTNINGS: 0,
+            CONF_MAP_AREA: {
+                CONF_MAP_RADIUS: 2000,
+                CONF_MAP_CENTER_OVERRIDE: True,
+                CONF_MAP_CENTER: center,
+            },
+        },
+    )
+
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["data"] == {
+        CONF_RADIUS: 100,
+        CONF_TIME_WINDOW: 120,
+        CONF_MAX_TRACKED_LIGHTNINGS: 0,
+        CONF_MAP_RADIUS: 2000,
+        CONF_MAP_CENTER_OVERRIDE: True,
+        CONF_MAP_CENTER: center,
+    }
+    assert mock_config_entry_coordinates.options == result["data"]
+
+
+@pytest.mark.parametrize("value", [-1, RADIUS_MAX + 1])
+async def test_options_flow_rejects_out_of_range_map_radius(
+    hass: HomeAssistant, mock_config_entry_coordinates: MockConfigEntry, value: int
+) -> None:
+    """Map radius has the same upper bound as the detection radius."""
+    result = await hass.config_entries.options.async_init(
+        mock_config_entry_coordinates.entry_id, context={"source": "user"}
+    )
+    with pytest.raises(InvalidData) as exc_info:
+        await hass.config_entries.options.async_configure(
+            result["flow_id"],
+            user_input={
+                CONF_RADIUS: 100,
+                CONF_TIME_WINDOW: 120,
+                CONF_MAX_TRACKED_LIGHTNINGS: 100,
+                CONF_MAP_AREA: {CONF_MAP_RADIUS: value},
+            },
+        )
+    assert exc_info.value.path == [CONF_MAP_AREA, CONF_MAP_RADIUS]
+
+
+def _map_area_suggestions(result: dict) -> dict:
+    """Return the suggested values rendered inside the map area section."""
+    section = next(
+        value
+        for marker, value in result["data_schema"].schema.items()
+        if marker.schema == CONF_MAP_AREA
+    )
+    return {
+        marker.schema: marker.description["suggested_value"]
+        for marker in section.schema.schema
+        if marker.description and "suggested_value" in marker.description
+    }
+
+
+async def test_options_flow_map_center_defaults_to_entry_location(
+    hass: HomeAssistant, mock_config_entry_coordinates: MockConfigEntry
+) -> None:
+    """The map center picker starts at the entry's coordinates."""
+    result = await hass.config_entries.options.async_init(
+        mock_config_entry_coordinates.entry_id, context={"source": "user"}
+    )
+
+    assert _map_area_suggestions(result) == {
+        CONF_MAP_RADIUS: 0,
+        CONF_MAP_CENTER_OVERRIDE: False,
+        CONF_MAP_CENTER: {CONF_LATITUDE: 50.0, CONF_LONGITUDE: 10.0},
+    }
+
+
+async def test_options_flow_map_center_defaults_to_home_for_entity_entry(
+    hass: HomeAssistant, mock_config_entry_location_entity: MockConfigEntry
+) -> None:
+    """An entity entry has no fixed coordinates, so the picker starts at home."""
+    hass.config.latitude = 41.0
+    hass.config.longitude = -73.0
+    result = await hass.config_entries.options.async_init(
+        mock_config_entry_location_entity.entry_id, context={"source": "user"}
+    )
+
+    assert _map_area_suggestions(result)[CONF_MAP_CENTER] == {
+        CONF_LATITUDE: 41.0,
+        CONF_LONGITUDE: -73.0,
+    }
+
+
+async def test_options_form_serializes_stored_map_area(
+    hass: HomeAssistant,
+    hass_client: ClientSessionGenerator,
+    mock_config_entry_coordinates: MockConfigEntry,
+) -> None:
+    """The form the frontend gets fills the map area from the stored options."""
+    center = {CONF_LATITUDE: 0.0, CONF_LONGITUDE: 20.0}
+    hass.config_entries.async_update_entry(
+        mock_config_entry_coordinates,
+        options={
+            **mock_config_entry_coordinates.options,
+            CONF_MAP_RADIUS: 4000,
+            CONF_MAP_CENTER_OVERRIDE: True,
+            CONF_MAP_CENTER: center,
+        },
+    )
+    assert await async_setup_component(hass, "config", {})
+    client = await hass_client()
+
+    resp = await client.post(
+        "/api/config/config_entries/options/flow",
+        json={"handler": mock_config_entry_coordinates.entry_id},
+    )
+    fields = (await resp.json())["data_schema"]
+
+    section = next(field for field in fields if field["name"] == CONF_MAP_AREA)
+    # The frontend takes a section's default before the suggested values in it.
+    assert "default" not in section
+    assert {
+        field["name"]: field["description"]["suggested_value"]
+        for field in section["schema"]
+    } == {
+        CONF_MAP_RADIUS: 4000,
+        CONF_MAP_CENTER_OVERRIDE: True,
+        CONF_MAP_CENTER: center,
+    }
+
+
+async def test_options_flow_map_area_shows_stored_values(
+    hass: HomeAssistant, mock_config_entry_coordinates: MockConfigEntry
+) -> None:
+    """Stored map options render back into the section."""
+    center = {CONF_LATITUDE: 27.5, CONF_LONGITUDE: -81.5}
+    hass.config_entries.async_update_entry(
+        mock_config_entry_coordinates,
+        options={
+            **mock_config_entry_coordinates.options,
+            CONF_MAP_RADIUS: 1500,
+            CONF_MAP_CENTER_OVERRIDE: True,
+            CONF_MAP_CENTER: center,
+        },
+    )
+    result = await hass.config_entries.options.async_init(
+        mock_config_entry_coordinates.entry_id, context={"source": "user"}
+    )
+
+    assert _map_area_suggestions(result) == {
+        CONF_MAP_RADIUS: 1500,
+        CONF_MAP_CENTER_OVERRIDE: True,
+        CONF_MAP_CENTER: center,
     }
 
 

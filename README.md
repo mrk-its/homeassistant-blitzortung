@@ -11,6 +11,7 @@ Blitzortung.org is a worldwide, real time, community collaborative lightning loc
 - distance and azimuth sensors of lightning strikes nearby
 - counter of lightning strikes
 - emits geo_location events for lightning strikes (visible on the map)
+- sends strikes from a larger area to map cards (for example the weather radar card) without entities or database records
 - data is realtime, with average delay of few seconds
 
 # Manual installation
@@ -28,6 +29,8 @@ You can change the coordinates for an existing Blitzortung configuration using t
 
 To change the detection radius, time window, and max tracked lightnings, go to **Settings** >> **Devices & services** >> **Blitzortung** >> **Configure**. Setting max tracked lightnings to `0` disables the `geo_location` strike entities entirely; the distance, azimuth and counter sensors keep working.
 
+In the **Map cards** section of the same dialog, you can set a larger area for map cards. Strikes from this area go only to map cards, through the websocket API below. They do not change the sensors, they make no entities and they write nothing to the database. The integration keeps them in memory for the time window, at approximately 16 bytes for each strike and 50,000 strikes at most (0.8 MB). When a map card connects, it gets all of these strikes at once, which needs up to approximately 4 MB more for a short time. Set **Map radius** to `0` to use the detection radius. Turn on **Use a different center** to put the map area at a different location.
+
 > [!IMPORTANT]
 > If you use a location entity as the coordinate source, the integration will use new coordinates if the location changes by more than 25% of the radius length.
 
@@ -39,6 +42,22 @@ To change the detection radius, time window, and max tracked lightnings, go to *
 >     domains:
 >       - geo_location
 > ```
+
+# Websocket API
+
+Map cards can subscribe to lightning strikes:
+
+```json
+{"type": "blitzortung/subscribe_strikes"}
+```
+
+Add `"entry_id"` to get the strikes of one config entry only. First, the integration sends the strikes that it keeps in memory. Then it sends the new strikes one time each second:
+
+```json
+{"time_window": 7200, "strikes": [[50.0123, 10.0456, 1760000000123]]}
+```
+
+Each strike is `[latitude, longitude, time]`, where `time` is in milliseconds since the Unix epoch. `time_window` (seconds) is in the first event and again when it changes. A card can get the same strike more than one time, for example after a reconnect, so remove duplicates by the full `[latitude, longitude, time]` value.
 
 # Reviews and How-Tos
 You can read and see (YouTube) how this component was used in the following community video.

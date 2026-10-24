@@ -65,6 +65,22 @@
           "radius": "Promie\u0144 okr\u0119gu, dla kt\u00f3rego b\u0119d\u0105 wykrywane b\u0142yskawice.",
           "time_window": "Czas \u017cycia \u015bledzonych b\u0142yskawic w minutach.",
           "max_tracked_lightnings": "Maksymalna liczba \u015bledzonych b\u0142yskawic. Ustaw 0, aby nie tworzy\u0107 encji wy\u0142adowa\u0144 (czujniki nadal dzia\u0142aj\u0105)."
+        },
+        "sections": {
+          "map_area": {
+            "name": "Karty map",
+            "description": "Wysy\u0142aj wy\u0142adowania z wi\u0119kszego obszaru do kart map, na przyk\u0142ad karty radaru pogodowego. Integracja przechowuje te wy\u0142adowania tylko w pami\u0119ci. Nie tworzy dla nich encji ani wpis\u00f3w w bazie danych.",
+            "data": {
+              "map_radius": "Promie\u0144 mapy",
+              "map_center_override": "U\u017cyj innego \u015brodka",
+              "map_center": "\u015arodek mapy"
+            },
+            "data_description": {
+              "map_radius": "Promie\u0144 obszaru dla kart map. Ustaw 0, aby u\u017cy\u0107 promienia wykrywania b\u0142yskawic.",
+              "map_center_override": "U\u017cyj poni\u017cszej lokalizacji jako \u015brodka obszaru mapy. Gdy wy\u0142\u0105czone, obszar mapy u\u017cywa skonfigurowanej lokalizacji.",
+              "map_center": "U\u017cywane tylko, gdy \"U\u017cyj innego \u015brodka\" jest w\u0142\u0105czone."
+            }
+          }
         }
       }
     }
