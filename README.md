@@ -1,7 +1,5 @@
 # Blitzortung.org lightning detector
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=for-the-badge)](https://github.com/hacs/integration)
-
 <a href="https://www.buymeacoffee.com/emrk" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" style="height: 34px !important;width: 144px !important;" ></a>
 
 Blitzortung.org is a worldwide, real time, community collaborative lightning location network. This component uses Blitzortung data and provides real time notifications about lightning strikes in a given area (by default within 100km radius of your home). Data is served through a public MQTT server (dedicated to serve requests for this component) - thanks to geohash-based topics and some other optimizations, it greatly reduces amount of data sent to clients comparing to direct websocket connection to Blitzortung servers (it is also required by Blitzortung data usage policy - third party apps must use their own servers to server data for their own clients).
@@ -13,11 +11,12 @@ Blitzortung.org is a worldwide, real time, community collaborative lightning loc
 - emits geo_location events for lightning strikes (visible on the map)
 - data is realtime, with average delay of few seconds
 
-# Manual installation
-Place `custom_components/blitzortung` directory inside custom_components dir and restart Home Assistant
+# Installation
+You can install this integration from the Home Assistant Marketplace (**Settings** >> **Marketplace**) or manually.
 
-# HACS installation
-This component is available on HACS default
+[![Open your Home Assistant instance and open a repository in the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=mrk-its&repository=homeassistant-blitzortung&category=integration)
+
+To install manually, place the `custom_components/blitzortung` directory inside the `custom_components` directory and restart Home Assistant.
 
 # Configuration
 To configure the integration go to **Settings** >> **Devices & services** >> **Add integration** and search for **Blitzortung**. During configuration there are two ways of providing the location:
