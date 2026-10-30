@@ -1,17 +1,20 @@
 version: 2
 enable-beta-ecosystems: true
 
+multi-ecosystem-groups:
+  dev:
+    schedule:
+      interval: "weekly"
+
 updates:
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "weekly"
     groups:
-      dev:
+      test:
         patterns:
-          - "prek"
           - "pytest-homeassistant-custom-component"
-          - "ruff"
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -28,3 +31,16 @@ updates:
     groups:
       pre-commit:
         patterns: ["*"]
+
+  - package-ecosystem: "pip"
+    directory: "/"
+    patterns:
+      - "prek"
+      - "ruff"
+    multi-ecosystem-group: "dev"
+
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    patterns:
+      - "*/astral-sh/ruff-pre-commit"
+    multi-ecosystem-group: "dev"
