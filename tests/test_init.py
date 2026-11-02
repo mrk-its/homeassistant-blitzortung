@@ -19,7 +19,7 @@ from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.dispatcher import DATA_DISPATCHER
 from homeassistant.helpers.json import json_dumps
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.blitzortung import BlitzortungCoordinator
 from custom_components.blitzortung.const import (

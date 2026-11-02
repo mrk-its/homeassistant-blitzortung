@@ -11,8 +11,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.json import json_dumps
 from homeassistant.util import dt as dt_util
-from pytest_homeassistant_custom_component.common import MockConfigEntry
-from pytest_homeassistant_custom_component.components.recorder.common import (
+from pytest_homeassistant.common import MockConfigEntry
+from pytest_homeassistant.components.recorder.common import (
     async_wait_recording_done,
 )
 
@@ -20,17 +20,11 @@ from custom_components.blitzortung.const import ATTR_LAT, ATTR_LON, DOMAIN
 from custom_components.blitzortung.mqtt import Message
 
 
-@pytest.fixture(autouse=True)
-def auto_enable_custom_integrations(
-    recorder_mock: Recorder, enable_custom_integrations: None
-) -> None:
-    """Order recorder_mock before hass, which the conftest autouse fixture creates."""
-
-
 @pytest.mark.parametrize("key", ["distance", "azimuth"])
 async def test_strike_coordinates_not_recorded(
     recorder_mock: Recorder,
     hass: HomeAssistant,
+    entity_registry: er.EntityRegistry,
     mock_config_entry_coordinates: MockConfigEntry,
     mock_mqtt: MagicMock,
     key: str,
@@ -50,7 +44,7 @@ async def test_strike_coordinates_not_recorded(
     await hass.async_block_till_done()
     await async_wait_recording_done(hass)
 
-    entity_id = er.async_get(hass).async_get_entity_id(
+    entity_id = entity_registry.async_get_entity_id(
         "sensor", DOMAIN, f"{mock_config_entry_coordinates.entry_id}-{key}"
     )
     assert entity_id is not None
