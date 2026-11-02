@@ -14,7 +14,12 @@ updates:
     groups:
       test:
         patterns:
-          - "pytest-homeassistant-custom-component"
+          - "pytest"
+          - "pytest-*"
+    # Bumped manually as a pair: homeassistant pin + pytest-home-assistant tag
+    ignore:
+      - dependency-name: "homeassistant"
+      - dependency-name: "pytest-home-assistant"
 
   - package-ecosystem: "github-actions"
     directory: "/"

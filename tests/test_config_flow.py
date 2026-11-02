@@ -16,7 +16,7 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType, InvalidData
 from homeassistant.helpers import entity_registry as er
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.blitzortung.const import (
     CONF_CONFIG_TYPE,
@@ -288,10 +288,11 @@ async def test_options_flow_clamps_render_of_legacy_value(
 
 @pytest.mark.parametrize("platform", [DEVICE_TRACKER_DOMAIN, PERSON_DOMAIN])
 @pytest.mark.asyncio
-async def test_user_flow_success_entity(hass: HomeAssistant, platform: str) -> None:
+async def test_user_flow_success_entity(
+    hass: HomeAssistant, entity_registry: er.EntityRegistry, platform: str
+) -> None:
     """Test successful user flow for location entity."""
     entity_id = f"{platform}.test_phone"
-    entity_registry = er.async_get(hass)
     entity_registry.async_get_or_create(
         platform,
         platform,
@@ -437,10 +438,11 @@ async def test_location_entity_without_unique_id(hass: HomeAssistant) -> None:
 
 
 @pytest.mark.asyncio
-async def test_location_entity_without_coordinates(hass: HomeAssistant) -> None:
+async def test_location_entity_without_coordinates(
+    hass: HomeAssistant, entity_registry: er.EntityRegistry
+) -> None:
     """Test the flow for location entity without coordinates."""
     entity_id = "device_tracker.test_phone"
-    entity_registry = er.async_get(hass)
     entity_registry.async_get_or_create(
         "device_tracker",
         "device_tracker",

@@ -5,19 +5,21 @@
 
 - `custom_components/blitzortung/` — the Home Assistant integration (main deliverable)
 - `ws_client/` — standalone CLI proxy/relay (separate deployable, shares version from `version.py`)
-- `tests/` — pytest tests using `pytest-homeassistant-custom-component`
+- `tests/` — pytest tests using `pytest-home-assistant` (official HA test plugin)
 
 ## Environment & setup
 
 ```sh
-python3.13 -m venv venv
-source venv/bin/activate
-pip install -r requirements-dev.txt
+uv venv --python 3.14 .venv
+source .venv/bin/activate
+uv pip install -r requirements-dev.txt --prerelease=allow
 prek install         # not `pre-commit`
 ```
 
 The toolchain is **prek** (not pre-commit), **ruff** for lint+format, **pytest** for tests.
-Pyproject target-version is `py313`. CI runs Python 3.14 with `uv`.
+Pyproject target-version is `py313`. The test plugin requires Python >=3.14.2. CI runs Python 3.14 with `uv`.
+
+- `pytest-home-assistant` is installed from the HA core git repo (`packages/pytest-home-assistant`, pinned in `requirements-dev.txt`). Bump it together with the `homeassistant` pin to the same HA tag; Dependabot ignores both.
 
 ### Lint & format
 
@@ -33,7 +35,7 @@ prek run end-of-file-fixer trailing-whitespace check-yaml check-json check-toml 
 pytest tests --cov=custom_components/blitzortung --cov-report=term-missing
 ```
 
-`pytest.ini` sets `asyncio_mode = auto` and `asyncio_default_fixture_loop_scope = function`.
+`pyproject.toml` (`[tool.pytest.ini_options]`) sets `asyncio_mode = auto`, `asyncio_default_fixture_loop_scope = function` and `addopts = "-p no:respx"` (HA must install its httpx alias before respx is imported).
 
 ## Ruff config
 
@@ -88,7 +90,9 @@ PR descriptions and responses to review comments must be written by a human, not
 - Fixtures: `mock_config_entry_coordinates`, `mock_config_entry_location_entity`, `mock_location_entity`
 - Config flow tests must cover: both config types, error cases (no unique ID, no coords), reconfigure, options flow, `zone.home` special case
 - Migration tests cover v1→v6 with edge cases for missing values and renamed keys
-- Tests use `MockConfigEntry` and `enable_custom_integrations` autouse fixture
+- Helpers come from `pytest_homeassistant.common` (e.g. `MockConfigEntry`); recorder helpers from `pytest_homeassistant.components.recorder.common`
+- The plugin provides `hass`, `entity_registry`, `recorder_mock`, `entity_registry_enabled_by_default` and `snapshot`, and enables custom integrations by default; do not redefine them in `conftest.py`
+- `recorder_mock` must be requested before `hass` (keep it first in the test signature)
 
 ## ws_client (separate package)
 

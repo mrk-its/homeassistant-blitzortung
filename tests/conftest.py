@@ -15,7 +15,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.blitzortung.const import (
     CONF_CONFIG_TYPE,
@@ -108,8 +108,3 @@ def mock_location_entity(hass: HomeAssistant) -> str:
     hass.states.async_set(entity_id, STATE_HOME, attrs)
 
     return entity_id
-
-
-@pytest.fixture(autouse=True)
-def auto_enable_custom_integrations(enable_custom_integrations: bool) -> None:
-    """Enable custom integrations."""
