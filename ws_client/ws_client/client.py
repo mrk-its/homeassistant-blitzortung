@@ -123,7 +123,5 @@ def main():
     parser.add_argument("-j", "--json", action="store_true")
 
     args = parser.parse_args()
-
     logging.basicConfig(level=args.log_level)
-
-    asyncio.get_event_loop().run_until_complete(run(args))
+    asyncio.run(run(args))
