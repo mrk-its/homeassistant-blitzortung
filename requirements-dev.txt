@@ -1,7 +1,6 @@
-# homeassistant and pytest-home-assistant are bumped manually as a pair:
-# the plugin is not on PyPI, it ships inside the HA core repo at the same tag.
-homeassistant==2026.11.0b1
+# pytest-homeassistant pins homeassistant to its own version: bump only the plugin
+homeassistant
 prek==0.5.9
 pytest-cov==7.1.0
-pytest-home-assistant @ git+https://github.com/home-assistant/core.git@6cfd47af9851a1552ad6f58c926b5814689a9f1d#subdirectory=packages/pytest-home-assistant
+pytest-homeassistant==2026.11.0
 ruff==0.17.3

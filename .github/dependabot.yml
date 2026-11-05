@@ -12,14 +12,15 @@ updates:
     schedule:
       interval: "weekly"
     groups:
+      hass:
+        patterns:
+          - "pytest-homeassistant"
       test:
         patterns:
           - "pytest"
           - "pytest-*"
-    # Bumped manually as a pair: homeassistant pin + pytest-home-assistant tag
-    ignore:
-      - dependency-name: "homeassistant"
-      - dependency-name: "pytest-home-assistant"
+        exclude-patterns:
+          - "pytest-homeassistant"
 
   - package-ecosystem: "github-actions"
     directory: "/"

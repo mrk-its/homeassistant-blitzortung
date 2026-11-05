@@ -5,7 +5,7 @@
 
 - `custom_components/blitzortung/` — the Home Assistant integration (main deliverable)
 - `ws_client/` — standalone CLI proxy/relay (separate deployable, shares version from `version.py`)
-- `tests/` — pytest tests using `pytest-home-assistant` (official HA test plugin)
+- `tests/` — pytest tests using `pytest-homeassistant` (official HA test plugin)
 
 ## Environment & setup
 
@@ -19,7 +19,7 @@ prek install         # not `pre-commit`
 The toolchain is **prek** (not pre-commit), **ruff** for lint+format, **pytest** for tests.
 Pyproject target-version is `py313`. The test plugin requires Python >=3.14.2. CI runs Python 3.14 with `uv`.
 
-- `pytest-home-assistant` is installed from the HA core git repo (`packages/pytest-home-assistant`, pinned in `requirements-dev.txt`). Bump it together with the `homeassistant` pin to the same HA tag; Dependabot ignores both.
+- Only `pytest-homeassistant` is pinned in `requirements-dev.txt`; it pins `homeassistant` to its own version, so bump the plugin alone (Dependabot does it in the `hass` group).
 
 ### Lint & format
 
