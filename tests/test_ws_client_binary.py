@@ -6,7 +6,11 @@ from pathlib import Path
 from homeassistant.core import HomeAssistant
 
 from custom_components.blitzortung import BlitzortungCoordinator
-from custom_components.blitzortung.const import BINARY_STRIKE, BINARY_TOPIC_PREFIX
+from custom_components.blitzortung.const import (
+    BINARY_STRIKE,
+    BINARY_TOPIC_GEOHASH_LEN,
+    BINARY_TOPIC_PREFIX,
+)
 from custom_components.blitzortung.mqtt import Message
 
 # Loaded by path: importing the ws_client package pulls in websockets and geohash.
@@ -32,6 +36,7 @@ def test_constants_match_integration() -> None:
     """Test producer and consumer use the same topic prefix and layout."""
     assert ws_binary.TOPIC_PREFIX == BINARY_TOPIC_PREFIX
     assert ws_binary.STRIKE.format == BINARY_STRIKE.format
+    assert ws_binary.TOPIC_GEOHASH_LEN == BINARY_TOPIC_GEOHASH_LEN
 
 
 async def test_integration_decodes_ws_client_payload(hass: HomeAssistant) -> None:
@@ -46,7 +51,7 @@ async def test_integration_decodes_ws_client_payload(hass: HomeAssistant) -> Non
 
     await coordinator.on_mqtt_message(
         Message(
-            topic=f"{ws_binary.TOPIC_PREFIX}/u/3/3/c",
+            topic=f"{ws_binary.TOPIC_PREFIX}/u/3/3/c/x/y",
             payload=ws_binary.encode(50.12345, 10.54321, 1_730_900_000_123_456_789),
             qos=0,
             retain=False,

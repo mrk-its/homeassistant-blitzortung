@@ -4,7 +4,11 @@ import pytest
 from homeassistant.const import UnitOfLength
 from homeassistant.util.unit_conversion import DistanceConverter
 
-from custom_components.blitzortung.const import RADIUS_MAX
+from custom_components.blitzortung.const import (
+    BINARY_TOPIC_GEOHASH_LEN,
+    RADIUS_MAX,
+    RADIUS_MIN,
+)
 from custom_components.blitzortung.geohash_utils import (
     compute_geohash_tiles,
     geohash_overlap,
@@ -30,3 +34,18 @@ def test_largest_radius_still_subscribes(lat: float, unit: UnitOfLength) -> None
 
     assert tiles
     assert tiles == compute_geohash_tiles(lat, 10.0, radius_km, 1)
+
+
+def test_precision_capped_at_topic_geohash_length() -> None:
+    """Subscriptions never go deeper than the geohash levels in strike topics."""
+    tiles = geohash_overlap(50.0, 10.0, RADIUS_MIN, _max_tiles=10**6)
+
+    assert {len(tile) for tile in tiles} == {BINARY_TOPIC_GEOHASH_LEN}
+
+
+@pytest.mark.parametrize("lat", [0.0, 50.0, 70.0, -70.0])
+def test_min_radius_fits_topic_geohash_length(lat: float) -> None:
+    """RADIUS_MIN needs no more levels than the topic carries, so the cap is a no-op."""
+    tiles = geohash_overlap(lat, 10.0, RADIUS_MIN)
+
+    assert len(next(iter(tiles))) < BINARY_TOPIC_GEOHASH_LEN

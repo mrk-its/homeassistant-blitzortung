@@ -4,6 +4,8 @@ import struct
 
 # Bump the version on any payload change, so old clients don't misparse new messages.
 TOPIC_PREFIX = "b/1"
+# Clients never subscribe deeper; the exact position is in the payload anyway.
+TOPIC_GEOHASH_LEN = 6
 
 # lat, lon (float32, ~1 m precision), strike time in ns since epoch
 STRIKE = struct.Struct("<ffq")

@@ -88,9 +88,8 @@ async def run(args):
                     sig = data.pop("sig", ())
                     data["sig_num"] = len(sig)
                     if userdata.is_connected:
-                        geohash_part = "/".join(
-                            geohash.encode(data["lat"], data["lon"])
-                        )
+                        strike_geohash = geohash.encode(data["lat"], data["lon"])
+                        geohash_part = "/".join(strike_geohash)
                         logger.debug("received: %r", data)
                         if args.json:
                             topic = "blitzortung/1.1/{}".format(geohash_part)
@@ -99,7 +98,10 @@ async def run(args):
                             mqtt_client.publish(topic, payload)
                             logger.info("topic: %s: %r", topic, payload)
                         if args.binary:
-                            new_topic = "{}/{}".format(binary.TOPIC_PREFIX, geohash_part)
+                            new_topic = "{}/{}".format(
+                                binary.TOPIC_PREFIX,
+                                "/".join(strike_geohash[: binary.TOPIC_GEOHASH_LEN]),
+                            )
                             new_payload = binary.encode(data["lat"], data["lon"], data["time"])
                             mqtt_client.publish(new_topic, new_payload)
                             logger.info("topic: %s: %r", new_topic, new_payload)

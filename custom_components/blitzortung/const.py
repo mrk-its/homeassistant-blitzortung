@@ -21,6 +21,8 @@ SW_VERSION = __version__
 
 # Must match ws_client/ws_client/binary.py, which publishes these messages.
 BINARY_TOPIC_PREFIX = "b/1"
+# Geohash levels in the topic; a deeper subscription would never match.
+BINARY_TOPIC_GEOHASH_LEN = 6
 # lat, lon (float32), strike time in ns since epoch
 BINARY_STRIKE = struct.Struct("<ffq")
 # float32 noise starts below ~1 m; rounding keeps the lat/lon attributes readable.

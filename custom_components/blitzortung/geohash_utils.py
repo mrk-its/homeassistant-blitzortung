@@ -4,6 +4,7 @@ import math
 from collections import namedtuple
 
 from . import geohash
+from .const import BINARY_TOPIC_GEOHASH_LEN
 
 Box = namedtuple("Box", ["s", "w", "n", "e"])  # noqa: PYI024
 
@@ -56,7 +57,7 @@ def compute_geohash_tiles(lat: float, lon: float, radius: int, precision: int) -
 def geohash_overlap(lat: float, lon: float, radius: int, _max_tiles: int = 9) -> set:
     """Find geohash tiles that overlap with a given radius around a point."""
     result = set()
-    for precision in range(1, 13):
+    for precision in range(1, BINARY_TOPIC_GEOHASH_LEN + 1):
         tiles = compute_geohash_tiles(lat, lon, radius, precision)
         # Keep precision 1 even above _max_tiles: an empty set subscribes to
         # nothing, so a large area (4000 km at 70°N) silently got no strikes.
