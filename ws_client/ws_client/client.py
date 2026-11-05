@@ -13,7 +13,6 @@ import websockets
 import paho.mqtt.client as mqtt
 import socket
 import argparse
-from . import component_version
 
 logger = logging.getLogger(__name__)
 
@@ -67,12 +66,6 @@ async def run(args):
     def mqtt_on_connect(client, userdata, flags, result_code: int):
         userdata.is_connected = True
         logger.info("connected to mqtt server")
-
-    def publish_latest_version(self, client):
-        latest_version = component_version.__version__
-        client.publish("component/hello", json.dumps({
-            "latest_version": latest_version,
-        }), retain=True)
 
     mqtt_client.on_disconnect = mqtt_on_disconnect
     mqtt_client.on_connect = mqtt_on_connect
