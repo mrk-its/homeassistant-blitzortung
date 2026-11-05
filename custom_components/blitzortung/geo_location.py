@@ -75,13 +75,9 @@ class BlitzortungEvent(GeolocationEvent):
         longitude: float,
         unit: str,
         time: int,
-        status: int,
-        region: int,
     ) -> None:
         """Initialize entity with data provided."""
         self._time = time
-        self._status = status
-        self._region = region
         self._publication_date = time / 1e9
         self._remove_signal_delete = None
         self._strike_id = str(uuid.uuid4()).replace("-", "")
@@ -198,8 +194,6 @@ class BlitzortungEventManager:
             lightning["lon"],
             self._unit,
             lightning["time"],
-            lightning["status"],
-            lightning["region"],
         )
         to_delete = self._strikes.insort(event)
         self._async_add_entities([event])

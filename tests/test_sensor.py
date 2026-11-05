@@ -9,7 +9,6 @@ from homeassistant.components.recorder.history import get_significant_states
 from homeassistant.const import ATTR_UNIT_OF_MEASUREMENT
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
-from homeassistant.helpers.json import json_dumps
 from homeassistant.util import dt as dt_util
 from pytest_homeassistant.common import MockConfigEntry
 from pytest_homeassistant.components.recorder.common import (
@@ -17,7 +16,8 @@ from pytest_homeassistant.components.recorder.common import (
 )
 
 from custom_components.blitzortung.const import ATTR_LAT, ATTR_LON, DOMAIN
-from custom_components.blitzortung.mqtt import Message
+
+from .common import strike_message
 
 
 @pytest.mark.parametrize("key", ["distance", "azimuth"])
@@ -34,12 +34,7 @@ async def test_strike_coordinates_not_recorded(
     await hass.config_entries.async_setup(mock_config_entry_coordinates.entry_id)
     await hass.async_block_till_done()
 
-    payload = json_dumps(
-        {"lat": 50.01, "lon": 10.01, "time": 1_000_000_000, "status": 0, "region": 0}
-    )
-    message = Message(
-        topic="blitzortung/1.1/u/3/3/#", payload=payload, qos=0, retain=False
-    )
+    message = strike_message(50.01, 10.01)
     await mock_config_entry_coordinates.runtime_data.on_mqtt_message(message)
     await hass.async_block_till_done()
     await async_wait_recording_done(hass)
