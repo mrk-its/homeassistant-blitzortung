@@ -1,14 +1,17 @@
 """Tests for the Blitzortung config flow."""
 
+from typing import Any
+
 import pytest
 from homeassistant.components.device_tracker import DOMAIN as DEVICE_TRACKER_DOMAIN
 from homeassistant.components.person import DOMAIN as PERSON_DOMAIN
-from homeassistant.config_entries import SOURCE_USER
+from homeassistant.config_entries import SOURCE_USER, ConfigFlowResult
 from homeassistant.const import (
     ATTR_FRIENDLY_NAME,
     ATTR_LATITUDE,
     ATTR_LONGITUDE,
     CONF_LATITUDE,
+    CONF_LOCATION,
     CONF_LONGITUDE,
     CONF_NAME,
     STATE_HOME,
@@ -27,6 +30,7 @@ from custom_components.blitzortung.const import (
     CONFIG_TYPE_COORDINATES,
     CONFIG_TYPE_ENTITY,
     DOMAIN,
+    DONATE_URL,
     MAX_TRACKED_LIGHTNINGS_MAX,
     MAX_TRACKED_LIGHTNINGS_MIN,
     RADIUS_MAX,
@@ -37,6 +41,15 @@ from custom_components.blitzortung.const import (
 )
 
 
+def _suggested_values(result: ConfigFlowResult) -> dict[str, Any]:
+    """Return the suggested values rendered into a form's schema."""
+    return {
+        marker.schema: marker.description["suggested_value"]
+        for marker in result["data_schema"].schema
+        if marker.description and "suggested_value" in marker.description
+    }
+
+
 @pytest.mark.asyncio
 async def test_user_flow_success_coordinates(hass: HomeAssistant) -> None:
     """Test successful user flow for coordinates."""
@@ -45,6 +58,7 @@ async def test_user_flow_success_coordinates(hass: HomeAssistant) -> None:
     )
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "user"
+    assert result["description_placeholders"] == {"donate_url": DONATE_URL}
 
     # Step 1: choose config type
     result = await hass.config_entries.flow.async_configure(
@@ -59,8 +73,7 @@ async def test_user_flow_success_coordinates(hass: HomeAssistant) -> None:
         result["flow_id"],
         user_input={
             CONF_NAME: "Test Location",
-            CONF_LATITUDE: 50.0,
-            CONF_LONGITUDE: 10.0,
+            CONF_LOCATION: {CONF_LATITUDE: 50.0, CONF_LONGITUDE: 10.0},
         },
     )
 
@@ -113,8 +126,7 @@ async def test_user_flow_already_configured_coordinates(hass: HomeAssistant) -> 
         result["flow_id"],
         user_input={
             CONF_NAME: "Test Location",
-            CONF_LATITUDE: 50.0,
-            CONF_LONGITUDE: 10.0,
+            CONF_LOCATION: {CONF_LATITUDE: 50.0, CONF_LONGITUDE: 10.0},
         },
     )
 
@@ -130,19 +142,71 @@ async def test_reconfigure_flow_success(
     result = await mock_config_entry_coordinates.start_reconfigure_flow(hass)
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "reconfigure"
+    assert _suggested_values(result)[CONF_LOCATION] == {
+        CONF_LATITUDE: 50.0,
+        CONF_LONGITUDE: 10.0,
+    }
 
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"],
-        user_input={
-            CONF_LATITUDE: 51.0,
-            CONF_LONGITUDE: 11.0,
-        },
+        user_input={CONF_LOCATION: {CONF_LATITUDE: 51.0, CONF_LONGITUDE: 11.0}},
     )
 
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "reconfigure_successful"
-    assert mock_config_entry_coordinates.data[CONF_LATITUDE] == 51.0
-    assert mock_config_entry_coordinates.data[CONF_LONGITUDE] == 11.0
+    assert mock_config_entry_coordinates.unique_id == "51.0-11.0"
+    assert mock_config_entry_coordinates.data == {
+        CONF_NAME: "Test Location",
+        CONF_LATITUDE: 51.0,
+        CONF_LONGITUDE: 11.0,
+        CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
+    }
+
+
+@pytest.mark.asyncio
+async def test_coordinates_form_suggests_home_location(hass: HomeAssistant) -> None:
+    """Test the coordinates form suggests the configured home location."""
+    await hass.config.async_update(latitude=52.1, longitude=21.0)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        user_input={CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES},
+    )
+
+    assert result["step_id"] == "coordinates"
+    assert _suggested_values(result)[CONF_LOCATION] == {
+        CONF_LATITUDE: 52.1,
+        CONF_LONGITUDE: 21.0,
+    }
+
+
+@pytest.mark.parametrize(
+    ("latitude", "longitude"), [(100.0, 10.0), (-100.0, 10.0), (50.0, 200.0)]
+)
+@pytest.mark.asyncio
+async def test_coordinates_flow_rejects_invalid_location(
+    hass: HomeAssistant, latitude: float, longitude: float
+) -> None:
+    """Test out-of-range coordinates are rejected."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        user_input={CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES},
+    )
+
+    with pytest.raises(InvalidData):
+        await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            user_input={
+                CONF_NAME: "Test Location",
+                CONF_LOCATION: {CONF_LATITUDE: latitude, CONF_LONGITUDE: longitude},
+            },
+        )
 
 
 @pytest.mark.asyncio
@@ -272,12 +336,10 @@ async def test_options_flow_clamps_render_of_legacy_value(
     assert result["type"] is FlowResultType.FORM
 
     # The value rendered into the slider is clamped to the cap...
-    suggested = {
-        marker.schema: marker.description["suggested_value"]
-        for marker in result["data_schema"].schema
-        if marker.description and "suggested_value" in marker.description
-    }
-    assert suggested[CONF_MAX_TRACKED_LIGHTNINGS] == MAX_TRACKED_LIGHTNINGS_MAX
+    assert (
+        _suggested_values(result)[CONF_MAX_TRACKED_LIGHTNINGS]
+        == MAX_TRACKED_LIGHTNINGS_MAX
+    )
 
     # ...but the stored config still holds the original out-of-range value,
     # because merely opening the form must not rewrite it.

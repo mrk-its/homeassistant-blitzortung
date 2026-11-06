@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "S\u00e9lectionnez le type de configuration pour l'int\u00e9gration Blitzortung",
+        "description": "S\u00e9lectionnez le type de configuration pour l'int\u00e9gration Blitzortung.\n\nLes donn\u00e9es de cette int\u00e9gration proviennent d'un serveur MQTT public exploit\u00e9 sp\u00e9cialement pour ce projet. Ses co\u00fbts de fonctionnement sont couverts par la communaut\u00e9 ; si vous trouvez l'int\u00e9gration utile, pensez \u00e0 la soutenir sur [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Type de configuration"
         },
@@ -21,24 +21,20 @@
       "coordinates": {
         "data": {
           "name": "Nom de l'instance de cette int\u00e9gration",
-          "latitude": "Latitude",
-          "longitude": "Longitude"
+          "location": "Emplacement"
         },
         "data_description": {
           "name": "Le nom que l'int\u00e9gration utilisera pour cette configuration.",
-          "latitude": "Un nombre d\u00e9cimal repr\u00e9sentant la latitude.",
-          "longitude": "Un nombre d\u00e9cimal repr\u00e9sentant la longitude."
+          "location": "L'emplacement pour lequel les \u00e9clairs seront d\u00e9tect\u00e9s."
         }
       },
       "reconfigure": {
         "description": "Mettre \u00e0 jour la configuration pour {name}.",
         "data": {
-          "latitude": "Latitude",
-          "longitude": "Longitude"
+          "location": "Emplacement"
         },
         "data_description": {
-          "latitude": "Un nombre d\u00e9cimal repr\u00e9sentant la latitude.",
-          "longitude": "Un nombre d\u00e9cimal repr\u00e9sentant la longitude."
+          "location": "L'emplacement pour lequel les \u00e9clairs seront d\u00e9tect\u00e9s."
         }
       }
     },

@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Odaberite vrstu konfiguracije za integraciju Blitzortung",
+        "description": "Odaberite vrstu konfiguracije za integraciju Blitzortung.\n\nPodatke za ovu integraciju poslu\u017euje javni MQTT poslu\u017eitelj pokrenut posebno za ovaj projekt. Tro\u0161kove njegovog rada pokriva zajednica, pa ako vam je integracija korisna, razmislite o podr\u0161ci na [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Vrsta konfiguracije"
         },
@@ -21,24 +21,20 @@
       "coordinates": {
         "data": {
           "name": "Naziv instance integracije",
-          "latitude": "Zemljopisna \u0161irina",
-          "longitude": "Zemljopisna du\u017eina"
+          "location": "Lokacija"
         },
         "data_description": {
           "name": "Ime koje \u0107e integracija koristiti za ovu konfiguraciju.",
-          "latitude": "Decimalni broj koji predstavlja zemljopisnu \u0161irinu.",
-          "longitude": "Decimalni broj koji predstavlja zemljopisnu du\u017einu."
+          "location": "Lokacija za koju \u0107e se otkrivati munje."
         }
       },
       "reconfigure": {
         "description": "A\u017euriraj konfiguraciju za {name}.",
         "data": {
-          "latitude": "Zemljopisna \u0161irina",
-          "longitude": "Zemljopisna du\u017eina"
+          "location": "Lokacija"
         },
         "data_description": {
-          "latitude": "Decimalni broj koji predstavlja zemljopisnu \u0161irinu.",
-          "longitude": "Decimalni broj koji predstavlja zemljopisnu du\u017einu."
+          "location": "Lokacija za koju \u0107e se otkrivati munje."
         }
       }
     },

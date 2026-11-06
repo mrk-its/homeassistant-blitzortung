@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Selecteer het configuratietype voor de Blitzortung-integratie",
+        "description": "Selecteer het configuratietype voor de Blitzortung-integratie.\n\nDe gegevens voor deze integratie komen van een publieke MQTT-server die speciaal voor dit project wordt gedraaid. De kosten worden gedragen door de community, dus als je de integratie nuttig vindt, overweeg dan om deze te steunen via [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Configuratietype"
         },
@@ -21,24 +21,20 @@
       "coordinates": {
         "data": {
           "name": "Naam van de integratie-instantie",
-          "latitude": "Breedtegraad",
-          "longitude": "Lengtegraad"
+          "location": "Locatie"
         },
         "data_description": {
           "name": "De naam die de integratie voor deze configuratie zal gebruiken.",
-          "latitude": "Een decimaal getal dat de breedtegraad vertegenwoordigt.",
-          "longitude": "Een decimaal getal dat de lengtegraad vertegenwoordigt."
+          "location": "De locatie waarvoor bliksem wordt gedetecteerd."
         }
       },
       "reconfigure": {
         "description": "Configuratie bijwerken voor {name}.",
         "data": {
-          "latitude": "Breedtegraad",
-          "longitude": "Lengtegraad"
+          "location": "Locatie"
         },
         "data_description": {
-          "latitude": "Een decimaal getal dat de breedtegraad vertegenwoordigt.",
-          "longitude": "Een decimaal getal dat de lengtegraad vertegenwoordigt."
+          "location": "De locatie waarvoor bliksem wordt gedetecteerd."
         }
       }
     },
