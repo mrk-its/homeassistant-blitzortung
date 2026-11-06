@@ -4,6 +4,9 @@
 
 Blitzortung.org is a worldwide, real time, community collaborative lightning location network. This component uses Blitzortung data and provides real time notifications about lightning strikes in a given area (by default within 100km radius of your home). Data is served through a public MQTT server (dedicated to serve requests for this component) - thanks to geohash-based topics and some other optimizations, it greatly reduces amount of data sent to clients comparing to direct websocket connection to Blitzortung servers (it is also required by Blitzortung data usage policy - third party apps must use their own servers to server data for their own clients).
 
+# Supporting the project
+The public MQTT server that feeds this integration is run specifically for this project, and keeping it online costs real money every month. To keep those costs under control, the maximum detection radius is limited to 1000 km (1000 mi for imperial setups). If you find the integration useful, please consider supporting the server upkeep at [buymeacoffee.com/emrk](https://buymeacoffee.com/emrk). Thank you!
+
 
 # Features
 - distance and azimuth sensors of lightning strikes nearby

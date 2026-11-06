@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "S\u00e9lectionnez le type de configuration pour l'int\u00e9gration Blitzortung",
+        "description": "S\u00e9lectionnez le type de configuration pour l'int\u00e9gration Blitzortung.\n\nLes donn\u00e9es de cette int\u00e9gration sont fournies par un serveur MQTT public exploit\u00e9 sp\u00e9cialement pour ce projet. Ses co\u00fbts de fonctionnement sont pris en charge par la communaut\u00e9 ; si l'int\u00e9gration vous est utile, pensez \u00e0 soutenir le projet sur [buymeacoffee.com/emrk](https://buymeacoffee.com/emrk).",
         "data": {
           "config_type": "Type de configuration"
         },
