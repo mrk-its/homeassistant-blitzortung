@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Wybierz typ konfiguracji dla integracji Blitzortung",
+        "description": "Wybierz typ konfiguracji dla integracji Blitzortung.\n\nDane dla tej integracji s\u0105 dostarczane przez publiczny serwer MQTT uruchomiony specjalnie na potrzeby tego projektu. Koszty jego utrzymania pokrywa spo\u0142eczno\u015b\u0107, wi\u0119c je\u015bli integracja jest dla Ciebie przydatna, rozwa\u017c jej wsparcie na [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Typ konfiguracji"
         },
@@ -21,24 +21,20 @@
       "coordinates": {
         "data": {
           "name": "Nazwa instancji integracji",
-          "latitude": "Szeroko\u015b\u0107 geograficzna",
-          "longitude": "D\u0142ugo\u015b\u0107 geograficzna"
+          "location": "Lokalizacja"
         },
         "data_description": {
           "name": "Nazwa, kt\u00f3rej integracja b\u0119dzie u\u017cywa\u0107 dla tej konfiguracji.",
-          "latitude": "Liczba dziesi\u0119tna reprezentuj\u0105ca szeroko\u015b\u0107 geograficzn\u0105.",
-          "longitude": "Liczba dziesi\u0119tna reprezentuj\u0105ca d\u0142ugo\u015b\u0107 geograficzn\u0105."
+          "location": "Lokalizacja, dla kt\u00f3rej b\u0119d\u0105 wykrywane wy\u0142adowania."
         }
       },
       "reconfigure": {
         "description": "Zaktualizuj konfiguracj\u0119 dla {name}.",
         "data": {
-          "latitude": "Szeroko\u015b\u0107 geograficzna",
-          "longitude": "D\u0142ugo\u015b\u0107 geograficzna"
+          "location": "Lokalizacja"
         },
         "data_description": {
-          "latitude": "Liczba dziesi\u0119tna reprezentuj\u0105ca szeroko\u015b\u0107 geograficzn\u0105.",
-          "longitude": "Liczba dziesi\u0119tna reprezentuj\u0105ca d\u0142ugo\u015b\u0107 geograficzn\u0105."
+          "location": "Lokalizacja, dla kt\u00f3rej b\u0119d\u0105 wykrywane wy\u0142adowania."
         }
       }
     },

@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Select the configuration type for Blitzortung integration",
+        "description": "Select the configuration type for Blitzortung integration.\n\nData for this integration is served by a public MQTT server run specifically for this project. Its running costs are covered by the community, so if you find the integration useful, please consider supporting it at [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Configuration type"
         },
@@ -21,24 +21,20 @@
       "coordinates": {
         "data": {
           "name": "Name of the integration instance",
-          "latitude": "Latitude",
-          "longitude": "Longitude"
+          "location": "Location"
         },
         "data_description": {
           "name": "The name the integration will use for this configuration.",
-          "latitude": "A decimal number representing latitude.",
-          "longitude": "A decimal number representing longitude."
+          "location": "The location for which lightnings will be detected."
         }
       },
       "reconfigure": {
         "description": "Update configuration for {name}.",
         "data": {
-          "latitude": "Latitude",
-          "longitude": "Longitude"
+          "location": "Location"
         },
         "data_description": {
-          "latitude": "A decimal number representing latitude.",
-          "longitude": "A decimal number representing longitude."
+          "location": "The location for which lightnings will be detected."
         }
       }
     },

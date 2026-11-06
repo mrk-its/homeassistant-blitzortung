@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Valitse Blitzortung-integraation konfigurointityyppi",
+        "description": "Valitse Blitzortung-integraation konfigurointityyppi.\n\nT\u00e4m\u00e4n integraation data tulee julkiselta MQTT-palvelimelta, jota yll\u00e4pidet\u00e4\u00e4n erityisesti t\u00e4t\u00e4 projektia varten. Sen k\u00e4ytt\u00f6kustannukset kattaa yhteis\u00f6, joten jos integraatio on sinulle hy\u00f6dyllinen, harkitse sen tukemista osoitteessa [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Konfigurointityyppi"
         },
@@ -21,24 +21,20 @@
       "coordinates": {
         "data": {
           "name": "Integraation instanssin nimi",
-          "latitude": "Leveysaste",
-          "longitude": "Pituusaste"
+          "location": "Sijainti"
         },
         "data_description": {
           "name": "Nimi, jota integraatio k\u00e4ytt\u00e4\u00e4 t\u00e4lle konfiguraatiolle.",
-          "latitude": "Desimaaliluku, joka edustaa leveysastetta.",
-          "longitude": "Desimaaliluku, joka edustaa pituusastetta."
+          "location": "Sijainti, jonka alueella salamat havaitaan."
         }
       },
       "reconfigure": {
         "description": "P\u00e4ivit\u00e4 konfiguraatio {name}:lle.",
         "data": {
-          "latitude": "Leveysaste",
-          "longitude": "Pituusaste"
+          "location": "Sijainti"
         },
         "data_description": {
-          "latitude": "Desimaaliluku, joka edustaa leveysastetta.",
-          "longitude": "Desimaaliluku, joka edustaa pituusastetta."
+          "location": "Sijainti, jonka alueella salamat havaitaan."
         }
       }
     },

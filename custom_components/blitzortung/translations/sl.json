@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Izberite vrsto konfiguracije za integracijo Blitzortung",
+        "description": "Izberite vrsto konfiguracije za integracijo Blitzortung.\n\nPodatke za to integracijo zagotavlja javni stre\u017enik MQTT, ki deluje posebej za ta projekt. Stro\u0161ke njegovega delovanja krije skupnost, zato \u010de se vam zdi integracija uporabna, razmislite o podpori na [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Vrsta konfiguracije"
         },
@@ -21,24 +21,20 @@
       "coordinates": {
         "data": {
           "name": "Ime integracije",
-          "latitude": "Zemljepisna \u0161irina",
-          "longitude": "Zemljepisna dol\u017eina"
+          "location": "Lokacija"
         },
         "data_description": {
           "name": "Ime, ki ga bo integracija uporabila za to konfiguracijo.",
-          "latitude": "Decimalno \u0161tevilo, ki predstavlja zemljepisno \u0161irino.",
-          "longitude": "Decimalno \u0161tevilo, ki predstavlja zemljepisno dol\u017eino."
+          "location": "Lokacija, za katero bodo zaznane strele."
         }
       },
       "reconfigure": {
         "description": "Posodobi konfiguracijo za {name}.",
         "data": {
-          "latitude": "Zemljepisna \u0161irina",
-          "longitude": "Zemljepisna dol\u017eina"
+          "location": "Lokacija"
         },
         "data_description": {
-          "latitude": "Decimalno \u0161tevilo, ki predstavlja zemljepisno \u0161irino.",
-          "longitude": "Decimalno \u0161tevilo, ki predstavlja zemljepisno dol\u017eino."
+          "location": "Lokacija, za katero bodo zaznane strele."
         }
       }
     },

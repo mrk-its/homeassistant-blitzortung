@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Velg konfigurasjonstype for Blitzortung-integrasjonen",
+        "description": "Velg konfigurasjonstype for Blitzortung-integrasjonen.\n\nData for denne integrasjonen leveres av en offentlig MQTT-server som drives spesielt for dette prosjektet. Driftskostnadene dekkes av fellesskapet, s\u00e5 hvis du finner integrasjonen nyttig, vurder \u00e5 st\u00f8tte den p\u00e5 [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Konfigurasjonstype"
         },
@@ -21,24 +21,20 @@
       "coordinates": {
         "data": {
           "name": "Navnet p\u00e5 integrasjonsforekomsten",
-          "latitude": "Breddegrad",
-          "longitude": "Lengdegrad"
+          "location": "Plassering"
         },
         "data_description": {
           "name": "Navnet integrasjonen vil bruke for denne konfigurasjonen.",
-          "latitude": "Et desimaltall som representerer breddegraden.",
-          "longitude": "Et desimaltall som representerer lengdegraden."
+          "location": "Plasseringen som lyn skal oppdages for."
         }
       },
       "reconfigure": {
         "description": "Oppdater konfigurasjonen for {name}.",
         "data": {
-          "latitude": "Breddegrad",
-          "longitude": "Lengdegrad"
+          "location": "Plassering"
         },
         "data_description": {
-          "latitude": "Et desimaltall som representerer breddegraden.",
-          "longitude": "Et desimaltall som representerer lengdegraden."
+          "location": "Plasseringen som lyn skal oppdages for."
         }
       }
     },
