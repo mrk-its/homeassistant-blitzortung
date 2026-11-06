@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Selecteer het configuratietype voor de Blitzortung-integratie.\n\nDe gegevens voor deze integratie worden geleverd door een openbare MQTT-server die speciaal voor dit project draait. De kosten voor het beheer ervan worden door de community gedragen, dus als je de integratie nuttig vindt, overweeg dan om het project te steunen via [buymeacoffee.com/emrk]({donate_url}).",
+        "description": "Selecteer het configuratietype voor de Blitzortung-integratie.\n\nDe gegevens voor deze integratie worden geleverd door een openbare MQTT-server die speciaal voor dit project draait. Deze online houden kost elke maand echt geld, dus als je de integratie nuttig vindt, overweeg dan om het onderhoud van de server te steunen via [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Configuratietype"
         },

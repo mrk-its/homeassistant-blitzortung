@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Valitse Blitzortung-integraation konfigurointityyppi.\n\nT\u00e4m\u00e4n integraation tiedot tarjoaa julkinen MQTT-palvelin, joka on otettu k\u00e4ytt\u00f6\u00f6n erityisesti t\u00e4t\u00e4 projektia varten. Sen yll\u00e4pitokustannukset kattaa yhteis\u00f6, joten jos integraatio on sinulle hy\u00f6dyllinen, harkitse projektin tukemista osoitteessa [buymeacoffee.com/emrk]({donate_url}).",
+        "description": "Valitse Blitzortung-integraation konfigurointityyppi.\n\nT\u00e4m\u00e4n integraation tiedot tarjoaa julkinen MQTT-palvelin, joka on otettu k\u00e4ytt\u00f6\u00f6n erityisesti t\u00e4t\u00e4 projektia varten. Sen pit\u00e4minen verkossa maksaa oikeaa rahaa joka kuukausi, joten jos integraatio on sinulle hy\u00f6dyllinen, harkitse palvelimen yll\u00e4pidon tukemista osoitteessa [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Konfigurointityyppi"
         },

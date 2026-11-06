@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Select the configuration type for Blitzortung integration.\n\nData for this integration is served by a public MQTT server run specifically for this project. Its running costs are covered by the community, so if you find the integration useful, please consider supporting it at [buymeacoffee.com/emrk]({donate_url}).",
+        "description": "Select the configuration type for Blitzortung integration.\n\nData for this integration is served by a public MQTT server run specifically for this project. Keeping it online costs real money every month, so if you find the integration useful, please consider supporting the server upkeep at [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Configuration type"
         },

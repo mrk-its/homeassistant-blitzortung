@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Odaberite vrstu konfiguracije za integraciju Blitzortung.\n\nPodatke za ovu integraciju isporu\u010duje javni MQTT poslu\u017eitelj pokrenut posebno za potrebe ovog projekta. Tro\u0161kove njegova odr\u017eavanja pokriva zajednica, pa ako vam je integracija korisna, razmislite o podr\u0161ci projektu na [buymeacoffee.com/emrk]({donate_url}).",
+        "description": "Odaberite vrstu konfiguracije za integraciju Blitzortung.\n\nPodatke za ovu integraciju isporu\u010duje javni MQTT poslu\u017eitelj pokrenut posebno za potrebe ovog projekta. Odr\u017eavanje ga na mre\u017ei svakog mjeseca ko\u0161ta pravi novac, pa ako vam je integracija korisna, razmislite o podr\u0161ci odr\u017eavanju poslu\u017eitelja na [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Vrsta konfiguracije"
         },

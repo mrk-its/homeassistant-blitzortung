@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Wybierz typ konfiguracji dla integracji Blitzortung.\n\nDane dla tej integracji dostarcza publiczny serwer MQTT uruchomiony specjalnie na potrzeby tego projektu. Koszty jego utrzymania pokrywa spo\u0142eczno\u015b\u0107, wi\u0119c je\u015bli integracja jest dla Ciebie przydatna, rozwa\u017c wsparcie projektu na [buymeacoffee.com/emrk]({donate_url}).",
+        "description": "Wybierz typ konfiguracji dla integracji Blitzortung.\n\nDane dla tej integracji dostarcza publiczny serwer MQTT uruchomiony specjalnie na potrzeby tego projektu. Utrzymanie go online co miesi\u0105c kosztuje realne pieni\u0105dze, wi\u0119c je\u015bli integracja jest dla Ciebie przydatna, rozwa\u017c wsparcie utrzymania serwera na [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Typ konfiguracji"
         },

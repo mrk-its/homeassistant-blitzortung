@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Vyberte typ konfigur\u00e1cie pre integr\u00e1ciu Blitzortung.\n\nD\u00e1ta pre t\u00fato integr\u00e1ciu poskytuje verejn\u00fd MQTT server prev\u00e1dzkovan\u00fd \u0161peci\u00e1lne pre tento projekt. N\u00e1klady na jeho prev\u00e1dzku hrad\u00ed komunita, tak\u017ee ak je pre v\u00e1s integr\u00e1cia u\u017eito\u010dn\u00e1, zv\u00e1\u017ete podporu projektu na [buymeacoffee.com/emrk]({donate_url}).",
+        "description": "Vyberte typ konfigur\u00e1cie pre integr\u00e1ciu Blitzortung.\n\nD\u00e1ta pre t\u00fato integr\u00e1ciu poskytuje verejn\u00fd MQTT server prev\u00e1dzkovan\u00fd \u0161peci\u00e1lne pre tento projekt. Jeho prev\u00e1dzka stoj\u00ed ka\u017ed\u00fd mesiac skuto\u010dn\u00e9 peniaze, tak\u017ee ak je pre v\u00e1s integr\u00e1cia u\u017eito\u010dn\u00e1, zv\u00e1\u017ete podporu prev\u00e1dzky servera na [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Typ konfigur\u00e1cie"
         },
