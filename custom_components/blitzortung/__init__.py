@@ -372,6 +372,7 @@ class BlitzortungCoordinator:
         self.unloading = False
 
         self._geohash_unsubscribers: list[Callable[[], None]] = []
+        self._geohash_lock = asyncio.Lock()
         self._location_unsubscribe: Callable[[], None] | None = None
         self._pending_refresh_task: asyncio.Task[None] | None = None
 
@@ -516,23 +517,26 @@ class BlitzortungCoordinator:
 
     async def _async_subscribe_geohash_topics(self) -> None:
         """Replace geohash subscriptions with ones matching the current overlap."""
-        for unsub in list(self._geohash_unsubscribers):
-            try:
-                unsub()
-            except Exception:
-                _LOGGER.debug("Failed to remove geohash subscription", exc_info=True)
-        self._geohash_unsubscribers.clear()
+        # Serialized because subscribing yields while connected, so connect() and a
+        # location refresh could otherwise interleave and leave stale tiles behind.
+        async with self._geohash_lock:
+            for unsub in list(self._geohash_unsubscribers):
+                try:
+                    unsub()
+                except Exception:
+                    _LOGGER.debug(
+                        "Failed to remove geohash subscription", exc_info=True
+                    )
+            self._geohash_unsubscribers.clear()
 
-        await self._async_subscribe_geohashes()
-
-    async def _async_subscribe_geohashes(self) -> None:
-        """Subscribe to strike topics of all overlapping geohash tiles."""
-        for geohash_code in self.geohash_overlap:
-            geohash_part = "/".join(geohash_code)
-            unsub = await self.mqtt_client.async_subscribe(
-                f"{BINARY_TOPIC_PREFIX}/{geohash_part}/#", self.on_mqtt_message, qos=0
-            )
-            self._geohash_unsubscribers.append(unsub)
+            for geohash_code in self.geohash_overlap:
+                geohash_part = "/".join(geohash_code)
+                unsub = await self.mqtt_client.async_subscribe(
+                    f"{BINARY_TOPIC_PREFIX}/{geohash_part}/#",
+                    self.on_mqtt_message,
+                    qos=0,
+                )
+                self._geohash_unsubscribers.append(unsub)
 
     def compute_polar_coords(self, lightning: dict[str, Any]) -> None:
         """Compute polar coordinates for the lightning strike."""

@@ -1,6 +1,8 @@
 """Tests for the Blitzortung __init__.py module."""
 
+import asyncio
 import time
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -1153,6 +1155,35 @@ async def test_connect_does_not_duplicate_geohash_subscriptions(
         )
 
         await coordinator.disconnect()
+
+
+async def test_connect_and_refresh_do_not_leave_stale_geohash_subscriptions(
+    hass: HomeAssistant,
+) -> None:
+    """Test that concurrent subscribe and refresh leave only the new tiles."""
+    coordinator = BlitzortungCoordinator(hass, 50.0, 10.0, None, 100, 100, 600, False)
+    mqtt_client = coordinator.mqtt_client
+    mqtt_client.connected = True
+
+    async def yielding_subscribe(*args: Any, **kwargs: Any) -> None:
+        await asyncio.sleep(0)
+
+    async def move_and_refresh() -> None:
+        coordinator.latitude = 55.0
+        await coordinator._async_refresh_geohash_subscriptions()
+
+    with (
+        patch.object(
+            mqtt_client, "_async_perform_subscription", side_effect=yielding_subscribe
+        ),
+        patch.object(mqtt_client, "_async_unsubscribe", new_callable=AsyncMock),
+    ):
+        await asyncio.gather(
+            coordinator._async_subscribe_geohash_topics(), move_and_refresh()
+        )
+
+    topics = [sub.topic for sub in mqtt_client.subscriptions]
+    assert sorted(topics) == sorted(_geohash_topics(coordinator))
 
 
 def test_register_message_receiver(hass: HomeAssistant) -> None:
