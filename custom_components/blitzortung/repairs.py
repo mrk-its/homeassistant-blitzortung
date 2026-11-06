@@ -10,6 +10,7 @@ from homeassistant.components.repairs import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry as ir
+from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 
 from .const import (
     CONF_MAX_TRACKED_LIGHTNINGS,
@@ -17,8 +18,8 @@ from .const import (
     CONF_TIME_WINDOW,
     DOMAIN,
     MAX_TRACKED_LIGHTNINGS_WARNING,
-    RADIUS_MAX,
     TIME_WINDOW_MAX,
+    radius_max,
 )
 
 
@@ -98,7 +99,7 @@ class RadiusMaxRepairFlow(BlitzortungRepairFlow):
 
     @property
     def _option_update(self) -> dict[str, int]:
-        return {CONF_RADIUS: RADIUS_MAX}
+        return {CONF_RADIUS: radius_max(self.hass.config.units == IMPERIAL_SYSTEM)}
 
     async def async_step_init(
         self,

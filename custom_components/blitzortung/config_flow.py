@@ -41,11 +41,11 @@ from .const import (
     DONATE_URL,
     MAX_TRACKED_LIGHTNINGS_MAX,
     MAX_TRACKED_LIGHTNINGS_MIN,
-    RADIUS_MAX,
     RADIUS_MIN,
     TIME_WINDOW_MAX,
     TIME_WINDOW_MIN,
     ZONE_HOME,
+    radius_max,
 )
 from .utils import get_coordinates_from_entity
 
@@ -280,6 +280,8 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
         if user_input is not None:
             return self.async_create_entry(data=user_input)
 
+        imperial = self.hass.config.units == IMPERIAL_SYSTEM
+        max_radius = radius_max(imperial)
         # NumberSelector enforces min/max in the UI and on submit, but always
         # returns float (even with step=1). Coerce back to int — downstream
         # uses (Strikes capacity, slice indexing, time arithmetic) all assume
@@ -296,15 +298,15 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
                         selector.NumberSelectorConfig(
                             mode=selector.NumberSelectorMode.SLIDER,
                             min=RADIUS_MIN,
-                            max=RADIUS_MAX,
+                            max=max_radius,
                             step=10,
                             unit_of_measurement=UnitOfLength.MILES
-                            if self.hass.config.units == IMPERIAL_SYSTEM
+                            if imperial
                             else UnitOfLength.KILOMETERS,
                         ),
                     ),
                     probatio.Coerce(int),
-                    probatio.Range(min=RADIUS_MIN, max=RADIUS_MAX),
+                    probatio.Range(min=RADIUS_MIN, max=max_radius),
                 ),
                 probatio.Optional(
                     CONF_TIME_WINDOW,
@@ -358,7 +360,7 @@ class BlitzortungOptionsFlowHandler(OptionsFlow):
         opts = self.config_entry.options
         suggested = {
             CONF_RADIUS: _clamp(
-                opts.get(CONF_RADIUS, DEFAULT_RADIUS), RADIUS_MIN, RADIUS_MAX
+                opts.get(CONF_RADIUS, DEFAULT_RADIUS), RADIUS_MIN, max_radius
             ),
             CONF_TIME_WINDOW: _clamp(
                 opts.get(CONF_TIME_WINDOW, DEFAULT_TIME_WINDOW),

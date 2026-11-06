@@ -6,7 +6,7 @@ Blitzortung.org is a worldwide, real time, community collaborative lightning loc
 
 ## Supporting the project
 
-The public MQTT server that feeds this integration is run specifically for this project, and keeping it online costs real money every month. To keep those costs under control, the maximum detection radius is limited to 1000 km (1000 mi for imperial setups). If you find the integration useful, please consider supporting the server upkeep at [buymeacoffee.com/emrk](https://buymeacoffee.com/emrk). Thank you!
+The public MQTT server that feeds this integration is run specifically for this project, and keeping it online costs real money every month. To keep those costs under control, the maximum detection radius is limited to 1000 km (620 mi for imperial setups). If you find the integration useful, please consider supporting the server upkeep at [buymeacoffee.com/emrk](https://buymeacoffee.com/emrk). Thank you!
 
 ## Features
 
