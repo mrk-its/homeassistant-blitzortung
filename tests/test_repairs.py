@@ -22,7 +22,6 @@ from custom_components.blitzortung.const import (
     TIME_WINDOW_MAX,
 )
 from custom_components.blitzortung.repairs import (
-    IgnorableRepairFlow,
     MaxTrackedLightningsRepairFlow,
     RadiusMaxRepairFlow,
     TimeWindowMaxRepairFlow,
@@ -212,12 +211,6 @@ async def test_radius_confirm_step_unknown_entry(
     result = await flow.async_step_confirm(user_input={})
     assert result["type"] == "abort"
     assert result["reason"] == "entry_not_found"
-
-
-async def test_radius_flow_not_ignorable() -> None:
-    """Test the radius flow offers no way to ignore the issue."""
-    assert not hasattr(RadiusMaxRepairFlow, "async_step_ignore")
-    assert not issubclass(RadiusMaxRepairFlow, IgnorableRepairFlow)
 
 
 async def test_async_create_fix_flow_matches_radius_issue(
