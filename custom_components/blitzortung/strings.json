@@ -21,24 +21,20 @@
       "coordinates": {
         "data": {
           "name": "Name of the integration instance",
-          "latitude": "Latitude",
-          "longitude": "Longitude"
+          "location": "Location"
         },
         "data_description": {
           "name": "The name the integration will use for this configuration.",
-          "latitude": "A decimal number representing latitude.",
-          "longitude": "A decimal number representing longitude."
+          "location": "The location for which lightnings will be detected."
         }
       },
       "reconfigure": {
         "description": "Update configuration for {name}.",
         "data": {
-          "latitude": "Latitude",
-          "longitude": "Longitude"
+          "location": "Location"
         },
         "data_description": {
-          "latitude": "A decimal number representing latitude.",
-          "longitude": "A decimal number representing longitude."
+          "location": "The location for which lightnings will be detected."
         }
       }
     },

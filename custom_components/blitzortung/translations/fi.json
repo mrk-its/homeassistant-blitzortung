@@ -21,24 +21,20 @@
       "coordinates": {
         "data": {
           "name": "Integraation instanssin nimi",
-          "latitude": "Leveysaste",
-          "longitude": "Pituusaste"
+          "location": "Sijainti"
         },
         "data_description": {
           "name": "Nimi, jota integraatio k\u00e4ytt\u00e4\u00e4 t\u00e4lle konfiguraatiolle.",
-          "latitude": "Desimaaliluku, joka edustaa leveysastetta.",
-          "longitude": "Desimaaliluku, joka edustaa pituusastetta."
+          "location": "Sijainti, jonka alueella salamat havaitaan."
         }
       },
       "reconfigure": {
         "description": "P\u00e4ivit\u00e4 konfiguraatio {name}:lle.",
         "data": {
-          "latitude": "Leveysaste",
-          "longitude": "Pituusaste"
+          "location": "Sijainti"
         },
         "data_description": {
-          "latitude": "Desimaaliluku, joka edustaa leveysastetta.",
-          "longitude": "Desimaaliluku, joka edustaa pituusastetta."
+          "location": "Sijainti, jonka alueella salamat havaitaan."
         }
       }
     },

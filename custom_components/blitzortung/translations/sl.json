@@ -21,24 +21,20 @@
       "coordinates": {
         "data": {
           "name": "Ime integracije",
-          "latitude": "Zemljepisna \u0161irina",
-          "longitude": "Zemljepisna dol\u017eina"
+          "location": "Lokacija"
         },
         "data_description": {
           "name": "Ime, ki ga bo integracija uporabila za to konfiguracijo.",
-          "latitude": "Decimalno \u0161tevilo, ki predstavlja zemljepisno \u0161irino.",
-          "longitude": "Decimalno \u0161tevilo, ki predstavlja zemljepisno dol\u017eino."
+          "location": "Lokacija, za katero bodo zaznane strele."
         }
       },
       "reconfigure": {
         "description": "Posodobi konfiguracijo za {name}.",
         "data": {
-          "latitude": "Zemljepisna \u0161irina",
-          "longitude": "Zemljepisna dol\u017eina"
+          "location": "Lokacija"
         },
         "data_description": {
-          "latitude": "Decimalno \u0161tevilo, ki predstavlja zemljepisno \u0161irino.",
-          "longitude": "Decimalno \u0161tevilo, ki predstavlja zemljepisno dol\u017eino."
+          "location": "Lokacija, za katero bodo zaznane strele."
         }
       }
     },
