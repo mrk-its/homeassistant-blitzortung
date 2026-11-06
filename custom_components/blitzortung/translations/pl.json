@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Wybierz typ konfiguracji dla integracji Blitzortung.\n\nDane dla tej integracji dostarcza publiczny serwer MQTT uruchomiony specjalnie na potrzeby tego projektu. Koszty jego utrzymania pokrywa spo\u0142eczno\u015b\u0107, wi\u0119c je\u015bli integracja jest dla Ciebie przydatna, rozwa\u017c wsparcie projektu na [buymeacoffee.com/emrk](https://buymeacoffee.com/emrk).",
+        "description": "Wybierz typ konfiguracji dla integracji Blitzortung.\n\nDane dla tej integracji dostarcza publiczny serwer MQTT uruchomiony specjalnie na potrzeby tego projektu. Koszty jego utrzymania pokrywa spo\u0142eczno\u015b\u0107, wi\u0119c je\u015bli integracja jest dla Ciebie przydatna, rozwa\u017c wsparcie projektu na [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Typ konfiguracji"
         },
@@ -136,7 +136,7 @@
       "fix_flow": {
         "step": {
           "confirm": {
-            "description": "Skonfigurowany promie\u0144 wykrywania b\u0142yskawic ({radius}) przekracza maksimum wynosz\u0105ce {radius_max}. Dane dla tej integracji dostarcza publiczny serwer MQTT, kt\u00f3rego koszty utrzymania rosn\u0105 wraz z obszarem subskrybowanym przez ka\u017cdego u\u017cytkownika. Aby us\u0142uga mog\u0142a dalej dzia\u0142a\u0107, maksymalny promie\u0144 zosta\u0142 obni\u017cony do {radius_max}.\n\nZatwierd\u017a, aby zmniejszy\u0107 promie\u0144 do {radius_max}, lub zmie\u0144 go samodzielnie w opcjach wpisu konfiguracyjnego. Tego problemu nie mo\u017cna zignorowa\u0107 i b\u0119dzie wraca\u0142 po ka\u017cdym restarcie, dop\u00f3ki promie\u0144 nie b\u0119dzie wynosi\u0142 {radius_max} lub mniej.\n\nJe\u015bli chcesz pom\u00f3c pokry\u0107 koszty serwera, mo\u017cesz wesprze\u0107 projekt na [buymeacoffee.com/emrk](https://buymeacoffee.com/emrk).",
+            "description": "Skonfigurowany promie\u0144 wykrywania b\u0142yskawic ({radius}) przekracza maksimum wynosz\u0105ce {radius_max}. Dane dla tej integracji dostarcza publiczny serwer MQTT, kt\u00f3rego koszty utrzymania rosn\u0105 wraz z obszarem subskrybowanym przez ka\u017cdego u\u017cytkownika. Aby us\u0142uga mog\u0142a dalej dzia\u0142a\u0107, maksymalny promie\u0144 zosta\u0142 obni\u017cony do {radius_max}.\n\nZatwierd\u017a, aby zmniejszy\u0107 promie\u0144 do {radius_max}, lub zmie\u0144 go samodzielnie w opcjach wpisu konfiguracyjnego. Tego problemu nie mo\u017cna zignorowa\u0107 i b\u0119dzie wraca\u0142 po ka\u017cdym restarcie, dop\u00f3ki promie\u0144 nie b\u0119dzie wynosi\u0142 {radius_max} lub mniej.\n\nJe\u015bli chcesz pom\u00f3c pokry\u0107 koszty serwera, mo\u017cesz wesprze\u0107 projekt na [buymeacoffee.com/emrk]({donate_url}).",
             "submit": "Zmniejsz promie\u0144"
           }
         }

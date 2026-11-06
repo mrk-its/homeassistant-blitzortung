@@ -73,5 +73,7 @@ ATTR_EXTERNAL_ID = "external_id"
 ATTR_PUBLICATION_DATE = "publication_date"
 
 BLIZORTUNG_URL = "https://map.blitzortung.org/#10/{lat}/{lon}"
+# Passed as a translation placeholder: hassfest rejects URLs inside strings.
+DONATE_URL = "https://buymeacoffee.com/emrk"
 
 ZONE_HOME = "zone.home"

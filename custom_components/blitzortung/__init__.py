@@ -55,6 +55,7 @@ from .const import (
     DEFAULT_TIME_WINDOW,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
+    DONATE_URL,
     MAX_TRACKED_LIGHTNINGS_WARNING,
     MIN_LOCATION_CHANGE_MULTIPLIER,
     PLATFORMS,
@@ -159,6 +160,7 @@ async def async_setup_entry(  # noqa: PLR0912
                 "radius": str(radius),
                 "radius_max": str(RADIUS_MAX),
                 "name": config_entry.data[CONF_NAME],
+                "donate_url": DONATE_URL,
             },
             data={"entry_id": config_entry.entry_id},
         )

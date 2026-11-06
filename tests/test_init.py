@@ -35,6 +35,7 @@ from custom_components.blitzortung.const import (
     DEFAULT_MAX_TRACKED_LIGHTNINGS,
     DEFAULT_TIME_WINDOW,
     DOMAIN,
+    DONATE_URL,
     RADIUS_MAX,
     TIME_WINDOW_MAX,
 )
@@ -1151,6 +1152,7 @@ async def test_radius_max_warning(
         "name": "Test Location",
         "radius": str(RADIUS_MAX + 1000),
         "radius_max": str(RADIUS_MAX),
+        "donate_url": DONATE_URL,
     }
 
 

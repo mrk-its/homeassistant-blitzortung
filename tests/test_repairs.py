@@ -16,6 +16,7 @@ from custom_components.blitzortung.const import (
     CONF_RADIUS,
     CONF_TIME_WINDOW,
     DOMAIN,
+    DONATE_URL,
     MAX_TRACKED_LIGHTNINGS_WARNING,
     RADIUS_MAX,
     TIME_WINDOW_MAX,
@@ -187,6 +188,7 @@ async def test_radius_fix_flow_shows_form_then_reduces_value(
         "name": "Test Location",
         "radius": str(RADIUS_MAX + 1000),
         "radius_max": str(RADIUS_MAX),
+        "donate_url": DONATE_URL,
     }
     assert entry.options[CONF_RADIUS] == RADIUS_MAX + 1000
 

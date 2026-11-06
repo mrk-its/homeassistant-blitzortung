@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Izberite vrsto konfiguracije za integracijo Blitzortung.\n\nPodatke za to integracijo zagotavlja javni stre\u017enik MQTT, ki deluje posebej za ta projekt. Stro\u0161ke njegovega delovanja krije skupnost, zato \u010de se vam zdi integracija uporabna, razmislite o podpori projekta na [buymeacoffee.com/emrk](https://buymeacoffee.com/emrk).",
+        "description": "Izberite vrsto konfiguracije za integracijo Blitzortung.\n\nPodatke za to integracijo zagotavlja javni stre\u017enik MQTT, ki deluje posebej za ta projekt. Stro\u0161ke njegovega delovanja krije skupnost, zato \u010de se vam zdi integracija uporabna, razmislite o podpori projekta na [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Vrsta konfiguracije"
         },
@@ -136,7 +136,7 @@
       "fix_flow": {
         "step": {
           "confirm": {
-            "description": "Nastavljeni polmer zaznavanja strel ({radius}) presega najvi\u0161jo vrednost {radius_max}. Podatke za to integracijo zagotavlja javni stre\u017enik MQTT, katerega stro\u0161ki delovanja nara\u0161\u010dajo s povr\u0161ino, na katero je naro\u010den posamezni uporabnik. Da bi storitev ostala vzdr\u017ena, je bil najve\u010dji polmer zni\u017ean na {radius_max}.\n\nPotrdite, da zmanj\u0161ate polmer na {radius_max}, ali ga spremenite sami v mo\u017enostih konfiguracije. Te te\u017eave ni mogo\u010de prezreti in se bo vrnila po vsakem ponovnem zagonu, dokler polmer ne bo {radius_max} ali manj.\n\n\u010ce \u017eelite pomagati pokriti stro\u0161ke stre\u017enika, lahko projekt podprete na [buymeacoffee.com/emrk](https://buymeacoffee.com/emrk).",
+            "description": "Nastavljeni polmer zaznavanja strel ({radius}) presega najvi\u0161jo vrednost {radius_max}. Podatke za to integracijo zagotavlja javni stre\u017enik MQTT, katerega stro\u0161ki delovanja nara\u0161\u010dajo s povr\u0161ino, na katero je naro\u010den posamezni uporabnik. Da bi storitev ostala vzdr\u017ena, je bil najve\u010dji polmer zni\u017ean na {radius_max}.\n\nPotrdite, da zmanj\u0161ate polmer na {radius_max}, ali ga spremenite sami v mo\u017enostih konfiguracije. Te te\u017eave ni mogo\u010de prezreti in se bo vrnila po vsakem ponovnem zagonu, dokler polmer ne bo {radius_max} ali manj.\n\n\u010ce \u017eelite pomagati pokriti stro\u0161ke stre\u017enika, lahko projekt podprete na [buymeacoffee.com/emrk]({donate_url}).",
             "submit": "Zmanj\u0161aj polmer"
           }
         }

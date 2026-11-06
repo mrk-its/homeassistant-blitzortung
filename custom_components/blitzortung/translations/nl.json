@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Selecteer het configuratietype voor de Blitzortung-integratie.\n\nDe gegevens voor deze integratie worden geleverd door een openbare MQTT-server die speciaal voor dit project draait. De kosten voor het beheer ervan worden door de community gedragen, dus als je de integratie nuttig vindt, overweeg dan om het project te steunen via [buymeacoffee.com/emrk](https://buymeacoffee.com/emrk).",
+        "description": "Selecteer het configuratietype voor de Blitzortung-integratie.\n\nDe gegevens voor deze integratie worden geleverd door een openbare MQTT-server die speciaal voor dit project draait. De kosten voor het beheer ervan worden door de community gedragen, dus als je de integratie nuttig vindt, overweeg dan om het project te steunen via [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Configuratietype"
         },
@@ -136,7 +136,7 @@
       "fix_flow": {
         "step": {
           "confirm": {
-            "description": "De ingestelde bliksemdetectiestraal ({radius}) overschrijdt het maximum van {radius_max}. De gegevens voor deze integratie worden geleverd door een openbare MQTT-server waarvan de beheerkosten toenemen met het gebied waarop elke gebruiker zich abonneert. Om de dienst houdbaar te houden, is de maximale straal verlaagd naar {radius_max}.\n\nVerzend om de straal te verkleinen naar {radius_max}, of wijzig deze zelf in de configuratie-opties. Dit probleem kan niet worden genegeerd en komt na elke herstart terug totdat de straal {radius_max} of kleiner is.\n\nAls u wilt helpen de serverkosten te dekken, kunt u het project steunen via [buymeacoffee.com/emrk](https://buymeacoffee.com/emrk).",
+            "description": "De ingestelde bliksemdetectiestraal ({radius}) overschrijdt het maximum van {radius_max}. De gegevens voor deze integratie worden geleverd door een openbare MQTT-server waarvan de beheerkosten toenemen met het gebied waarop elke gebruiker zich abonneert. Om de dienst houdbaar te houden, is de maximale straal verlaagd naar {radius_max}.\n\nVerzend om de straal te verkleinen naar {radius_max}, of wijzig deze zelf in de configuratie-opties. Dit probleem kan niet worden genegeerd en komt na elke herstart terug totdat de straal {radius_max} of kleiner is.\n\nAls u wilt helpen de serverkosten te dekken, kunt u het project steunen via [buymeacoffee.com/emrk]({donate_url}).",
             "submit": "Verklein de straal"
           }
         }

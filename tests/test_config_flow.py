@@ -27,6 +27,7 @@ from custom_components.blitzortung.const import (
     CONFIG_TYPE_COORDINATES,
     CONFIG_TYPE_ENTITY,
     DOMAIN,
+    DONATE_URL,
     MAX_TRACKED_LIGHTNINGS_MAX,
     MAX_TRACKED_LIGHTNINGS_MIN,
     RADIUS_MAX,
@@ -45,6 +46,7 @@ async def test_user_flow_success_coordinates(hass: HomeAssistant) -> None:
     )
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "user"
+    assert result["description_placeholders"] == {"donate_url": DONATE_URL}
 
     # Step 1: choose config type
     result = await hass.config_entries.flow.async_configure(

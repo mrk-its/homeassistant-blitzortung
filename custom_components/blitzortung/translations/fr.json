@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "S\u00e9lectionnez le type de configuration pour l'int\u00e9gration Blitzortung.\n\nLes donn\u00e9es de cette int\u00e9gration sont fournies par un serveur MQTT public exploit\u00e9 sp\u00e9cialement pour ce projet. Ses co\u00fbts de fonctionnement sont pris en charge par la communaut\u00e9 ; si l'int\u00e9gration vous est utile, pensez \u00e0 soutenir le projet sur [buymeacoffee.com/emrk](https://buymeacoffee.com/emrk).",
+        "description": "S\u00e9lectionnez le type de configuration pour l'int\u00e9gration Blitzortung.\n\nLes donn\u00e9es de cette int\u00e9gration sont fournies par un serveur MQTT public exploit\u00e9 sp\u00e9cialement pour ce projet. Ses co\u00fbts de fonctionnement sont pris en charge par la communaut\u00e9 ; si l'int\u00e9gration vous est utile, pensez \u00e0 soutenir le projet sur [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Type de configuration"
         },
@@ -136,7 +136,7 @@
       "fix_flow": {
         "step": {
           "confirm": {
-            "description": "Le rayon de d\u00e9tection des \u00e9clairs configur\u00e9 ({radius}) d\u00e9passe le maximum de {radius_max}. Les donn\u00e9es de cette int\u00e9gration sont fournies par un serveur MQTT public dont les co\u00fbts de fonctionnement augmentent avec la zone \u00e0 laquelle chaque utilisateur s'abonne. Pour garder le service viable, le rayon maximal a \u00e9t\u00e9 abaiss\u00e9 \u00e0 {radius_max}.\n\nValidez pour r\u00e9duire le rayon \u00e0 {radius_max}, ou modifiez-le vous-m\u00eame dans les options de configuration. Ce probl\u00e8me ne peut pas \u00eatre ignor\u00e9 et reviendra apr\u00e8s chaque red\u00e9marrage tant que le rayon ne sera pas inf\u00e9rieur ou \u00e9gal \u00e0 {radius_max}.\n\nSi vous souhaitez aider \u00e0 couvrir les co\u00fbts du serveur, vous pouvez soutenir le projet sur [buymeacoffee.com/emrk](https://buymeacoffee.com/emrk).",
+            "description": "Le rayon de d\u00e9tection des \u00e9clairs configur\u00e9 ({radius}) d\u00e9passe le maximum de {radius_max}. Les donn\u00e9es de cette int\u00e9gration sont fournies par un serveur MQTT public dont les co\u00fbts de fonctionnement augmentent avec la zone \u00e0 laquelle chaque utilisateur s'abonne. Pour garder le service viable, le rayon maximal a \u00e9t\u00e9 abaiss\u00e9 \u00e0 {radius_max}.\n\nValidez pour r\u00e9duire le rayon \u00e0 {radius_max}, ou modifiez-le vous-m\u00eame dans les options de configuration. Ce probl\u00e8me ne peut pas \u00eatre ignor\u00e9 et reviendra apr\u00e8s chaque red\u00e9marrage tant que le rayon ne sera pas inf\u00e9rieur ou \u00e9gal \u00e0 {radius_max}.\n\nSi vous souhaitez aider \u00e0 couvrir les co\u00fbts du serveur, vous pouvez soutenir le projet sur [buymeacoffee.com/emrk]({donate_url}).",
             "submit": "R\u00e9duire le rayon"
           }
         }
