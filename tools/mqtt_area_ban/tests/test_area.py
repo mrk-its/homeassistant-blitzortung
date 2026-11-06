@@ -2,7 +2,14 @@
 
 import pytest
 
-from mqtt_area_ban.area import client_area, client_family, ip_usage, parse_filter
+from mqtt_area_ban.area import (
+    client_area,
+    client_family,
+    client_feeds,
+    feed_summary,
+    ip_usage,
+    parse_filter,
+)
 from mqtt_area_ban.state import Session
 
 
@@ -119,3 +126,27 @@ def test_feeds_add_up_and_dedupe_separately() -> None:
     both = ["blitzortung/1.1/u/#", "b/1/u/#"]
     assert client_area(both) == pytest.approx(2 / 32)
     assert client_area([*both, "b/1/u/3/#", "b/1/#"]) == pytest.approx(1 / 32 + 1)
+
+
+def test_client_feeds() -> None:
+    """Each feed a client receives from is named once; # receives both."""
+    assert client_feeds(["blitzortung/1.1/u/#", "blitzortung/1.1/s/#"]) == {"json"}
+    assert client_feeds(["b/1/u/#", "component/hello"]) == {"binary"}
+    assert client_feeds(["#"]) == {"json", "binary"}
+    assert client_feeds(["component/hello", "blitzortung/1/#"]) == set()
+
+
+def test_feed_summary() -> None:
+    """Clients count per feed combination; clients without strikes are left out."""
+    sessions = {
+        "old": Session(
+            "203.0.113.1", {"component/hello", "blitzortung/1.1/u/#"}, ha=True
+        ),
+        "new": Session("203.0.113.2", {"component/hello", "b/1/u/#"}, ha=True),
+        "bot": Session("203.0.113.3", {"b/1/s/#"}),
+        "all": Session("203.0.113.4", {"#"}),
+        "idle": Session("203.0.113.5", {"component/hello"}, ha=True),
+    }
+    assert feed_summary(sessions) == (
+        "feeds: json 1 (HA 1), binary 2 (HA 1), both 1 (HA 0)"
+    )

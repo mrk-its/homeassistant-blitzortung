@@ -14,6 +14,7 @@ ROOTS: dict[tuple[str, ...], int] = {
     ("blitzortung", "1.1"): 12,  # JSON
     ("b", "1"): 6,  # binary
 }
+FEED_NAMES = {("blitzortung", "1.1"): "json", ("b", "1"): "binary"}
 GEOHASH_CHARS = frozenset("0123456789bcdefghjkmnpqrstuvwxyz")
 HELLO_TOPIC = "component/hello"
 _FAMILY_SUFFIX = re.compile(r"[-_]?[0-9a-fA-F]{6,}.*$|[-_]?\d{6,}$")
@@ -91,6 +92,28 @@ def client_area(topics: Iterable[str]) -> float:
             continue
         total += p.area
     return total
+
+
+def client_feeds(topics: Iterable[str]) -> frozenset[str]:
+    """Names of the strike feeds a client's subscriptions receive."""
+    return frozenset(FEED_NAMES[p.root] for t in topics for p in parse_filter(t))
+
+
+def feed_summary(sessions: Mapping[str, SessionLike]) -> str:
+    """One line: clients per feed combination, with the Home Assistant share."""
+    clients: Counter[str] = Counter()
+    ha: Counter[str] = Counter()
+    for session in sessions.values():
+        feeds = client_feeds(session.topics)
+        if not feeds:
+            continue
+        key = "both" if len(feeds) > 1 else next(iter(feeds))
+        clients[key] += 1
+        ha[key] += session.ha
+    parts = [
+        f"{key} {clients[key]} (HA {ha[key]})" for key in ("json", "binary", "both")
+    ]
+    return "feeds: " + ", ".join(parts)
 
 
 def client_family(client_id: str) -> str:

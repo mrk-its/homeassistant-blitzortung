@@ -13,7 +13,7 @@ from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from .area import IpUsage, ip_usage
+from .area import IpUsage, feed_summary, ip_usage
 from .logfiles import LogFollower, NeedsReplayError
 from .logparse import parse_line
 from .nft import (
@@ -197,6 +197,7 @@ def render(decisions: list[Decision], state: State, limit: int) -> str:
         f"{len(decisions)} with strike area, {acting} to ban, "
         f"{len(state.bans)} bans active"
     )
+    rows.append(feed_summary(state.sessions))
     return "\n".join(rows) + "\n"
 
 
