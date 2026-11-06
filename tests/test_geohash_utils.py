@@ -27,13 +27,12 @@ def test_small_radius_uses_finest_precision_with_nine_tiles() -> None:
 @pytest.mark.parametrize("unit", [UnitOfLength.KILOMETERS, UnitOfLength.MILES])
 @pytest.mark.parametrize("lat", [0.0, 20.0, 38.0, 50.0, 60.0, 70.0, 80.0, -70.0])
 def test_largest_radius_still_subscribes(lat: float, unit: UnitOfLength) -> None:
-    """RADIUS_MAX gets all its precision-1 tiles, also when there are more than 9."""
+    """RADIUS_MAX always yields a non-empty tile set within the 9-tile budget."""
     radius_km = DistanceConverter.convert(RADIUS_MAX, unit, UnitOfLength.KILOMETERS)
 
     tiles = geohash_overlap(lat, 10.0, radius_km)
 
-    assert tiles
-    assert tiles == compute_geohash_tiles(lat, 10.0, radius_km, 1)
+    assert 0 < len(tiles) <= 9
 
 
 def test_precision_capped_at_topic_geohash_length() -> None:

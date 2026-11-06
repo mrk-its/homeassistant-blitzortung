@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Selecteer het configuratietype voor de Blitzortung-integratie",
+        "description": "Selecteer het configuratietype voor de Blitzortung-integratie.\n\nDe gegevens voor deze integratie worden geleverd door een openbare MQTT-server die speciaal voor dit project draait. Deze online houden kost elke maand echt geld, dus als je de integratie nuttig vindt, overweeg dan om het onderhoud van de server te steunen via [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Configuratietype"
         },
@@ -135,16 +135,10 @@
     "radius_max_warning": {
       "fix_flow": {
         "step": {
-          "init": {
-            "description": "Een grote bliksemdetectiestraal ({radius}) kan leiden tot een hoger geheugengebruik, een onstabiele interface of ongecontroleerde groei van de database.\n\nKies of u de straal wilt verkleinen of dit probleem wilt negeren. U kunt de straal ook zelf wijzigen in de configuratie-opties.",
-            "menu_options": {
-              "confirm": "Verminder naar {radius_max}",
-              "ignore": "Negeren"
-            }
+          "confirm": {
+            "description": "De ingestelde bliksemdetectiestraal ({radius}) overschrijdt het maximum van {radius_max}. De gegevens voor deze integratie worden geleverd door een openbare MQTT-server waarvan de beheerkosten toenemen met het gebied waarop elke gebruiker zich abonneert. Om de dienst houdbaar te houden, is de maximale straal verlaagd naar {radius_max}.\n\nVerzend om de straal te verkleinen naar {radius_max}, of wijzig deze zelf in de configuratie-opties. Dit probleem kan niet worden genegeerd en komt na elke herstart terug totdat de straal {radius_max} of kleiner is.\n\nAls u wilt helpen de serverkosten te dekken, kunt u het project steunen via [buymeacoffee.com/emrk]({donate_url}).",
+            "submit": "Verklein de straal"
           }
-        },
-        "abort": {
-          "issue_ignored": "Probleem genegeerd"
         }
       },
       "title": "{name}: grote bliksemdetectiestraal"

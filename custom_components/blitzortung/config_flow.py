@@ -38,6 +38,7 @@ from .const import (
     DEFAULT_RADIUS,
     DEFAULT_TIME_WINDOW,
     DOMAIN,
+    DONATE_URL,
     MAX_TRACKED_LIGHTNINGS_MAX,
     MAX_TRACKED_LIGHTNINGS_MIN,
     RADIUS_MAX,
@@ -132,6 +133,7 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
                     ): CONFIG_TYPE_SELECTOR,
                 }
             ),
+            description_placeholders={"donate_url": DONATE_URL},
         )
 
     async def async_step_entity(

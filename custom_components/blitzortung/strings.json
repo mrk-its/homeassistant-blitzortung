@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Select the configuration type for Blitzortung integration",
+        "description": "Select the configuration type for Blitzortung integration.\n\nData for this integration is served by a public MQTT server run specifically for this project. Keeping it online costs real money every month, so if you find the integration useful, please consider supporting the server upkeep at [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Configuration type"
         },
@@ -135,16 +135,10 @@
     "radius_max_warning": {
       "fix_flow": {
         "step": {
-          "init": {
-            "description": "Large lightnings detection radius ({radius}) may lead to bigger memory usage, unstable frontend or uncontrolled growth of the database.\n\nChoose whether you want to reduce the radius or ignore this issue. You can also change the radius yourself in the config entry options.",
-            "menu_options": {
-              "confirm": "Reduce to {radius_max}",
-              "ignore": "Ignore"
-            }
+          "confirm": {
+            "description": "The configured lightning detection radius ({radius}) exceeds the maximum of {radius_max}. Data for this integration is served by a public MQTT server whose running costs grow with the area each user subscribes to. To keep the service sustainable, the maximum radius has been lowered to {radius_max}.\n\nSubmit to reduce the radius to {radius_max}, or change it yourself in the config entry options. This issue cannot be ignored and will come back after every restart until the radius is {radius_max} or less.\n\nIf you want to help cover the server costs, you can support the project at [buymeacoffee.com/emrk]({donate_url}).",
+            "submit": "Reduce radius"
           }
-        },
-        "abort": {
-          "issue_ignored": "Issue ignored"
         }
       },
       "title": "{name}: large lightnings detection radius"

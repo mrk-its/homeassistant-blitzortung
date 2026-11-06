@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Odaberite vrstu konfiguracije za integraciju Blitzortung",
+        "description": "Odaberite vrstu konfiguracije za integraciju Blitzortung.\n\nPodatke za ovu integraciju isporu\u010duje javni MQTT poslu\u017eitelj pokrenut posebno za potrebe ovog projekta. Odr\u017eavanje ga na mre\u017ei svakog mjeseca ko\u0161ta pravi novac, pa ako vam je integracija korisna, razmislite o podr\u0161ci odr\u017eavanju poslu\u017eitelja na [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Vrsta konfiguracije"
         },
@@ -135,16 +135,10 @@
     "radius_max_warning": {
       "fix_flow": {
         "step": {
-          "init": {
-            "description": "Veliki radijus otkrivanja gromova ({radius}) mo\u017ee dovesti do ve\u0107e potro\u0161nje memorije, nestabilnog su\u010delja ili nekontroliranog rasta baze podataka.\n\nOdaberite \u017eelite li smanjiti radijus ili zanemariti ovaj problem. Tako\u0111er mo\u017eete sami promijeniti radijus u opcijama konfiguracije.",
-            "menu_options": {
-              "confirm": "Smanji na {radius_max}",
-              "ignore": "Zanemari"
-            }
+          "confirm": {
+            "description": "Konfigurirani radijus otkrivanja gromova ({radius}) prema\u0161uje maksimum od {radius_max}. Podatke za ovu integraciju isporu\u010duje javni MQTT poslu\u017eitelj \u010diji tro\u0161kovi rada rastu s povr\u0161inom na koju se pojedini korisnik pretplati. Kako bi usluga ostala odr\u017eiva, najve\u0107i radijus smanjen je na {radius_max}.\n\nPo\u0161aljite za smanjenje radijusa na {radius_max} ili ga sami promijenite u opcijama konfiguracije. Ovaj se problem ne mo\u017ee zanemariti i vra\u0107at \u0107e se nakon svakog ponovnog pokretanja dok radijus ne bude {radius_max} ili manji.\n\nAko \u017eelite pomo\u0107i u pokrivanju tro\u0161kova poslu\u017eitelja, projekt mo\u017eete podr\u017eati na [buymeacoffee.com/emrk]({donate_url}).",
+            "submit": "Smanji radijus"
           }
-        },
-        "abort": {
-          "issue_ignored": "Problem zanemaren"
         }
       },
       "title": "{name}: veliki radijus otkrivanja gromova"

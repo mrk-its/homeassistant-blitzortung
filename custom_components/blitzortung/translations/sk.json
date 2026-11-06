@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Vyberte typ konfigur\u00e1cie pre integr\u00e1ciu Blitzortung",
+        "description": "Vyberte typ konfigur\u00e1cie pre integr\u00e1ciu Blitzortung.\n\nD\u00e1ta pre t\u00fato integr\u00e1ciu poskytuje verejn\u00fd MQTT server prev\u00e1dzkovan\u00fd \u0161peci\u00e1lne pre tento projekt. Jeho prev\u00e1dzka stoj\u00ed ka\u017ed\u00fd mesiac skuto\u010dn\u00e9 peniaze, tak\u017ee ak je pre v\u00e1s integr\u00e1cia u\u017eito\u010dn\u00e1, zv\u00e1\u017ete podporu prev\u00e1dzky servera na [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Typ konfigur\u00e1cie"
         },
@@ -135,16 +135,10 @@
     "radius_max_warning": {
       "fix_flow": {
         "step": {
-          "init": {
-            "description": "Ve\u013ek\u00fd polomer detekcie bleskov ({radius}) m\u00f4\u017ee vies\u0165 k v\u00e4\u010d\u0161ej spotrebe pam\u00e4te, nestabiln\u00e9mu rozhraniu alebo nekontrolovan\u00e9mu rastu datab\u00e1zy.\n\nVyberte, \u010di chcete zmen\u0161i\u0165 polomer alebo ignorova\u0165 tento probl\u00e9m. Polomer m\u00f4\u017eete tie\u017e zmeni\u0165 sami v mo\u017enostiach konfigur\u00e1cie.",
-            "menu_options": {
-              "confirm": "Zn\u00ed\u017ei\u0165 na {radius_max}",
-              "ignore": "Ignorova\u0165"
-            }
+          "confirm": {
+            "description": "Nastaven\u00fd polomer detekcie bleskov ({radius}) presahuje maximum {radius_max}. D\u00e1ta pre t\u00fato integr\u00e1ciu poskytuje verejn\u00fd MQTT server, ktor\u00e9ho prev\u00e1dzkov\u00e9 n\u00e1klady rast\u00fa s oblas\u0165ou, ktor\u00fa ka\u017ed\u00fd pou\u017e\u00edvate\u013e odober\u00e1. Aby bola slu\u017eba udr\u017eate\u013en\u00e1, maxim\u00e1lny polomer bol zn\u00ed\u017een\u00fd na {radius_max}.\n\nOdo\u0161lite na zmen\u0161enie polomeru na {radius_max} alebo ho zme\u0148te sami v mo\u017enostiach konfigur\u00e1cie. Tento probl\u00e9m sa ned\u00e1 ignorova\u0165 a vr\u00e1ti sa po ka\u017edom re\u0161tarte, k\u00fdm nebude polomer {radius_max} alebo men\u0161\u00ed.\n\nAk chcete pom\u00f4c\u0165 pokry\u0165 n\u00e1klady na server, m\u00f4\u017eete projekt podpori\u0165 na [buymeacoffee.com/emrk]({donate_url}).",
+            "submit": "Zmen\u0161i\u0165 polomer"
           }
-        },
-        "abort": {
-          "issue_ignored": "Probl\u00e9m ignorovan\u00fd"
         }
       },
       "title": "{name}: ve\u013ek\u00fd polomer detekcie bleskov"

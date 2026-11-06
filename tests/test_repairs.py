@@ -2,10 +2,12 @@
 
 from unittest.mock import MagicMock, patch
 
+from homeassistant.components.repairs import repairs_flow_manager
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry as ir
+from homeassistant.setup import async_setup_component
 from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.blitzortung.const import (
@@ -14,6 +16,7 @@ from custom_components.blitzortung.const import (
     CONF_RADIUS,
     CONF_TIME_WINDOW,
     DOMAIN,
+    DONATE_URL,
     MAX_TRACKED_LIGHTNINGS_WARNING,
     RADIUS_MAX,
     TIME_WINDOW_MAX,
@@ -142,11 +145,11 @@ async def test_async_create_fix_flow_matches_warning_issue(
     assert isinstance(flow, MaxTrackedLightningsRepairFlow)
 
 
-async def test_radius_init_shows_menu(
+async def test_radius_fix_flow_shows_form_then_reduces_value(
     hass: HomeAssistant,
     mock_mqtt: MagicMock,
 ) -> None:
-    """Test the radius init step shows a menu with confirm and ignore options."""
+    """Test the radius fix flow run by HA shows a confirm form, then reduces."""
     entry = MockConfigEntry(
         domain=DOMAIN,
         data={
@@ -155,7 +158,7 @@ async def test_radius_init_shows_menu(
             CONF_LONGITUDE: 10.0,
             CONF_CONFIG_TYPE: "coordinates",
         },
-        unique_id="50.0-10.0-radius-menu",
+        unique_id="50.0-10.0-radius-flow",
         version=6,
         options={
             CONF_RADIUS: RADIUS_MAX + 1000,
@@ -164,42 +167,33 @@ async def test_radius_init_shows_menu(
         },
     )
     entry.add_to_hass(hass)
-    flow = await _setup_radius_flow(hass, entry)
+    assert await async_setup_component(hass, "repairs", {})
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    issue_id = f"radius_max_warning_{entry.entry_id}"
+    assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id) is not None
 
-    result = await flow.async_step_init()
-    assert result["type"] == "menu"
-    assert result["menu_options"] == ["confirm", "ignore"]
-
-
-async def test_radius_confirm_step_reduces_value(
-    hass: HomeAssistant,
-    mock_mqtt: MagicMock,
-) -> None:
-    """Test radius confirm step sets radius to RADIUS_MAX."""
-    entry = MockConfigEntry(
-        domain=DOMAIN,
-        data={
-            CONF_NAME: "Test Location",
-            CONF_LATITUDE: 50.0,
-            CONF_LONGITUDE: 10.0,
-            CONF_CONFIG_TYPE: "coordinates",
-        },
-        unique_id="50.0-10.0-radius-confirm",
-        version=6,
-        options={
-            CONF_RADIUS: RADIUS_MAX + 1000,
-            CONF_MAX_TRACKED_LIGHTNINGS: 100,
-            CONF_TIME_WINDOW: 10,
-        },
+    # HA hands {"issue_id": ...} to the first step, so the flow must not treat
+    # that as the user's submit and reduce the radius without showing the form.
+    manager = repairs_flow_manager(hass)
+    assert manager is not None
+    result = await manager.async_init(
+        DOMAIN, context={"source": "user"}, data={"issue_id": issue_id}
     )
-    entry.add_to_hass(hass)
-    flow = await _setup_radius_flow(hass, entry)
-    issue_id = flow.issue_id
+    assert result["type"] == "form"
+    assert result["step_id"] == "confirm"
+    assert not result["data_schema"].schema
+    assert result["description_placeholders"] == {
+        "name": "Test Location",
+        "radius": str(RADIUS_MAX + 1000),
+        "radius_max": str(RADIUS_MAX),
+        "donate_url": DONATE_URL,
+    }
+    assert entry.options[CONF_RADIUS] == RADIUS_MAX + 1000
 
-    result = await flow.async_step_confirm(user_input={})
+    result = await manager.async_configure(result["flow_id"], {})
+    await hass.async_block_till_done()
     assert result["type"] == "create_entry"
-    assert result["data"] == {}
-
     assert entry.options[CONF_RADIUS] == RADIUS_MAX
     assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id) is None
 
@@ -217,40 +211,6 @@ async def test_radius_confirm_step_unknown_entry(
     result = await flow.async_step_confirm(user_input={})
     assert result["type"] == "abort"
     assert result["reason"] == "entry_not_found"
-
-
-async def test_radius_ignore_step(
-    hass: HomeAssistant,
-    mock_mqtt: MagicMock,
-) -> None:
-    """Test the radius ignore step calls async_ignore_issue and aborts."""
-    entry = MockConfigEntry(
-        domain=DOMAIN,
-        data={
-            CONF_NAME: "Test Location",
-            CONF_LATITUDE: 50.0,
-            CONF_LONGITUDE: 10.0,
-            CONF_CONFIG_TYPE: "coordinates",
-        },
-        unique_id="50.0-10.0-radius-ignore",
-        version=6,
-        options={
-            CONF_RADIUS: RADIUS_MAX + 1000,
-            CONF_MAX_TRACKED_LIGHTNINGS: 100,
-            CONF_TIME_WINDOW: 10,
-        },
-    )
-    entry.add_to_hass(hass)
-    flow = await _setup_radius_flow(hass, entry)
-
-    with patch(
-        "custom_components.blitzortung.repairs.ir.async_ignore_issue"
-    ) as mock_ignore:
-        result = await flow.async_step_ignore(user_input={})
-
-    mock_ignore.assert_called_once_with(hass, DOMAIN, flow.issue_id, True)
-    assert result["type"] == "abort"
-    assert result["reason"] == "issue_ignored"
 
 
 async def test_async_create_fix_flow_matches_radius_issue(

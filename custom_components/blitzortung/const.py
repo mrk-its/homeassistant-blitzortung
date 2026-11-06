@@ -58,11 +58,7 @@ DEFAULT_UPDATE_INTERVAL = dt.timedelta(seconds=60)
 # enter values that would explode memory, evict every strike on the next tick,
 # or otherwise put the integration in a degenerate state.
 RADIUS_MIN = 1
-# 4000 in either unit: 4000 km, or 4000 mi = 6437 km. A large radius can need
-# more than 9 precision-1 tiles (4000 km at 70°N, 5000 km at 38°N), and
-# geohash_overlap() then subscribes to all of them (10-16), so this bounds the
-# proxy traffic of one entry.
-RADIUS_MAX = 4000
+RADIUS_MAX = 1000  # 1000 in either unit (km or mi)
 TIME_WINDOW_MIN = 1  # minutes
 TIME_WINDOW_MAX = 1440  # 24 hours; longer than this churns the recorder hard.
 MAX_TRACKED_LIGHTNINGS_MIN = 0  # 0 = sensors only, no geo_location entities
@@ -77,5 +73,7 @@ ATTR_EXTERNAL_ID = "external_id"
 ATTR_PUBLICATION_DATE = "publication_date"
 
 BLIZORTUNG_URL = "https://map.blitzortung.org/#10/{lat}/{lon}"
+# Passed as a translation placeholder: hassfest rejects URLs inside strings.
+DONATE_URL = "https://buymeacoffee.com/emrk"
 
 ZONE_HOME = "zone.home"

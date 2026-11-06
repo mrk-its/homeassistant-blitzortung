@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Velg konfigurasjonstype for Blitzortung-integrasjonen",
+        "description": "Velg konfigurasjonstype for Blitzortung-integrasjonen.\n\nData til denne integrasjonen leveres av en offentlig MQTT-server som drives spesielt for dette prosjektet. \u00c5 holde den i drift koster ekte penger hver m\u00e5ned, s\u00e5 hvis du synes integrasjonen er nyttig, kan du vurdere \u00e5 st\u00f8tte driften av serveren p\u00e5 [buymeacoffee.com/emrk]({donate_url}).",
         "data": {
           "config_type": "Konfigurasjonstype"
         },
@@ -135,16 +135,10 @@
     "radius_max_warning": {
       "fix_flow": {
         "step": {
-          "init": {
-            "description": "Stor lyndeteksjonsradius ({radius}) kan f\u00f8re til st\u00f8rre minnebruk, ustabilt grensesnitt eller ukontrollert vekst av databasen.\n\nVelg om du vil redusere radiusen eller ignorere dette problemet. Du kan ogs\u00e5 endre radiusen selv i konfigurasjonsalternativene.",
-            "menu_options": {
-              "confirm": "Reduser til {radius_max}",
-              "ignore": "Ignorer"
-            }
+          "confirm": {
+            "description": "Den konfigurerte lyndeteksjonsradiusen ({radius}) overstiger maksimumet p\u00e5 {radius_max}. Dataene til denne integrasjonen leveres av en offentlig MQTT-server hvis driftskostnader \u00f8ker med omr\u00e5det hver bruker abonnerer p\u00e5. For \u00e5 holde tjenesten b\u00e6rekraftig er maksimal radius senket til {radius_max}.\n\nSend inn for \u00e5 redusere radiusen til {radius_max}, eller endre den selv i konfigurasjonsalternativene. Dette problemet kan ikke ignoreres og kommer tilbake etter hver omstart helt til radiusen er {radius_max} eller mindre.\n\nHvis du vil hjelpe til med \u00e5 dekke serverkostnadene, kan du st\u00f8tte prosjektet p\u00e5 [buymeacoffee.com/emrk]({donate_url}).",
+            "submit": "Reduser radiusen"
           }
-        },
-        "abort": {
-          "issue_ignored": "Problem ignorert"
         }
       },
       "title": "{name}: stor lyndeteksjonsradius"
