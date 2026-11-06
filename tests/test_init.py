@@ -44,6 +44,8 @@ from custom_components.blitzortung.mqtt import (
     Message,
 )
 
+from .common import strike_message
+
 
 async def test_async_setup_entry_coordinates(
     hass: HomeAssistant,
@@ -721,13 +723,7 @@ async def test_on_mqtt_message_lightning_within_radius(
     message_cb = MagicMock()
     coordinator.callbacks.append(message_cb)
 
-    payload = json_dumps({"lat": 50.01, "lon": 10.01})
-    message = Message(
-        topic="blitzortung/1.1/u/3/3/#",
-        payload=payload,
-        qos=0,
-        retain=False,
-    )
+    message = strike_message(50.01, 10.01)
 
     await coordinator.on_mqtt_message(message)
 
@@ -746,13 +742,7 @@ async def test_on_mqtt_message_lightning_outside_radius(
     coordinator.lightning_callbacks.append(lightning_cb)
 
     # Very far away
-    payload = json_dumps({"lat": 0.0, "lon": 0.0})
-    message = Message(
-        topic="blitzortung/1.1/s/0/0/#",
-        payload=payload,
-        qos=0,
-        retain=False,
-    )
+    message = strike_message(0.0, 0.0, topic="s/0/0")
 
     await coordinator.on_mqtt_message(message)
 
@@ -778,6 +768,100 @@ async def test_on_mqtt_message_non_lightning_topic(
     await coordinator.on_mqtt_message(message)
 
     message_cb.assert_called_once_with(message)
+
+
+async def test_on_mqtt_message_decodes_binary_strike(
+    hass: HomeAssistant,
+) -> None:
+    """Test that a binary strike is decoded with float32 noise rounded away."""
+    coordinator = BlitzortungCoordinator(hass, 50.0, 10.0, None, 100, 100, 600, False)
+    lightning_cb = AsyncMock()
+    coordinator.lightning_callbacks.append(lightning_cb)
+
+    await coordinator.on_mqtt_message(
+        strike_message(50.01, 10.01, 1_730_900_000_123_456_789)
+    )
+
+    lightning = lightning_cb.await_args.args[0]
+    assert lightning["lat"] == 50.01
+    assert lightning["lon"] == 10.01
+    assert lightning["time"] == 1_730_900_000_123_456_789
+
+
+@pytest.mark.parametrize("payload", [b"", b"\x00" * 15, b"\x00" * 17, "text"])
+async def test_on_mqtt_message_invalid_binary_payload(
+    hass: HomeAssistant,
+    payload: bytes | str,
+) -> None:
+    """Test that a malformed binary payload is skipped without raising."""
+    coordinator = BlitzortungCoordinator(hass, 50.0, 10.0, None, 100, 100, 600, False)
+    lightning_cb = AsyncMock()
+    coordinator.lightning_callbacks.append(lightning_cb)
+
+    await coordinator.on_mqtt_message(
+        Message(topic="b/1/u/3/3", payload=payload, qos=0, retain=False)
+    )
+
+    lightning_cb.assert_not_awaited()
+
+
+async def test_on_mqtt_message_ignores_json_topic(
+    hass: HomeAssistant,
+) -> None:
+    """Test that the legacy JSON topic no longer produces lightnings."""
+    coordinator = BlitzortungCoordinator(hass, 50.0, 10.0, None, 100, 100, 600, False)
+    lightning_cb = AsyncMock()
+    coordinator.lightning_callbacks.append(lightning_cb)
+
+    payload = json_dumps({"lat": 50.01, "lon": 10.01, "time": 1_000_000_000})
+    await coordinator.on_mqtt_message(
+        Message(topic="blitzortung/1.1/u/3/3", payload=payload, qos=0, retain=False)
+    )
+
+    lightning_cb.assert_not_awaited()
+
+
+async def test_connect_subscribes_to_binary_topics(
+    hass: HomeAssistant,
+) -> None:
+    """Test that connect subscribes to versioned binary strike topics."""
+    coordinator = BlitzortungCoordinator(hass, 50.0, 10.0, None, 100, 100, 600, False)
+    coordinator.mqtt_client = MagicMock(
+        async_connect=AsyncMock(),
+        async_subscribe=AsyncMock(return_value=MagicMock()),
+        async_disconnect=AsyncMock(),
+    )
+
+    await coordinator.connect()
+
+    topics = {
+        call.args[0] for call in coordinator.mqtt_client.async_subscribe.call_args_list
+    }
+    expected = {f"b/1/{'/'.join(code)}/#" for code in coordinator.geohash_overlap}
+    assert expected
+    assert expected <= topics
+    assert not any(t.startswith("blitzortung/1.1") for t in topics)
+
+    await coordinator.disconnect()
+
+
+async def test_refresh_geohash_subscriptions_binary_topics(
+    hass: HomeAssistant,
+) -> None:
+    """Test that refreshing subscriptions uses versioned binary strike topics."""
+    coordinator = BlitzortungCoordinator(hass, 50.0, 10.0, None, 100, 100, 600, False)
+    coordinator.mqtt_client = MagicMock(
+        connected=True,
+        async_subscribe=AsyncMock(return_value=MagicMock()),
+    )
+
+    coordinator.latitude = 55.0
+    await coordinator._async_refresh_geohash_subscriptions()
+
+    topics = {
+        call.args[0] for call in coordinator.mqtt_client.async_subscribe.call_args_list
+    }
+    assert topics == {f"b/1/{'/'.join(code)}/#" for code in coordinator.geohash_overlap}
 
 
 def test_register_sensor(hass: HomeAssistant) -> None:

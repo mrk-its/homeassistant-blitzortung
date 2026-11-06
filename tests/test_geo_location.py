@@ -8,7 +8,6 @@ from homeassistant.components.geo_location import DOMAIN as GEO_LOCATION_DOMAIN
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import UnitOfLength
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.json import json_dumps
 from homeassistant.util.unit_system import (
     METRIC_SYSTEM,
     US_CUSTOMARY_SYSTEM,
@@ -24,7 +23,8 @@ from custom_components.blitzortung.const import (
     CONFIG_TYPE_COORDINATES,
     DOMAIN,
 )
-from custom_components.blitzortung.mqtt import Message
+
+from .common import strike_message
 
 
 async def test_geo_location_entity_lifecycle(
@@ -39,21 +39,7 @@ async def test_geo_location_entity_lifecycle(
 
     coordinator = mock_config_entry_coordinates.runtime_data
 
-    payload = json_dumps(
-        {
-            "lat": 50.01,
-            "lon": 10.01,
-            "time": 1_000_000_000,
-            "status": 0,
-            "region": 0,
-        }
-    )
-    message = Message(
-        topic="blitzortung/1.1/u/3/3/#",
-        payload=payload,
-        qos=0,
-        retain=False,
-    )
+    message = strike_message(50.01, 10.01)
     await coordinator.on_mqtt_message(message)
     await hass.async_block_till_done()
 
@@ -89,11 +75,8 @@ async def test_geo_location_distance_unit(
     await hass.config_entries.async_setup(mock_config_entry_coordinates.entry_id)
     await hass.async_block_till_done()
 
-    payload = json_dumps(
-        {"lat": 50.5, "lon": 10.0, "time": 1_000_000_000, "status": 0, "region": 0}
-    )
     await mock_config_entry_coordinates.runtime_data.on_mqtt_message(
-        Message(topic="blitzortung/1.1/u/3/3/#", payload=payload, qos=0, retain=False)
+        strike_message(50.5, 10.0)
     )
     await hass.async_block_till_done()
 
@@ -135,21 +118,7 @@ async def test_geo_location_delete_callback_no_warning(
 
     coordinator = entry.runtime_data
 
-    payload1 = json_dumps(
-        {
-            "lat": 50.01,
-            "lon": 10.01,
-            "time": 1_000_000_000,
-            "status": 0,
-            "region": 0,
-        }
-    )
-    message1 = Message(
-        topic="blitzortung/1.1/u/3/3/#",
-        payload=payload1,
-        qos=0,
-        retain=False,
-    )
+    message1 = strike_message(50.01, 10.01)
     await coordinator.on_mqtt_message(message1)
     await hass.async_block_till_done()
 
@@ -157,21 +126,7 @@ async def test_geo_location_delete_callback_no_warning(
     assert len(geo_entity_ids) == 1
     first_entity_id = geo_entity_ids[0]
 
-    payload2 = json_dumps(
-        {
-            "lat": 50.02,
-            "lon": 10.02,
-            "time": 2_000_000_000,
-            "status": 0,
-            "region": 0,
-        }
-    )
-    message2 = Message(
-        topic="blitzortung/1.1/u/3/3/#",
-        payload=payload2,
-        qos=0,
-        retain=False,
-    )
+    message2 = strike_message(50.02, 10.02, 2_000_000_000)
     await coordinator.on_mqtt_message(message2)
     await hass.async_block_till_done()
 
@@ -213,21 +168,7 @@ async def test_geo_location_disabled_when_max_tracked_is_zero(
     assert entry.state is ConfigEntryState.LOADED
 
     coordinator = entry.runtime_data
-    payload = json_dumps(
-        {
-            "lat": 50.01,
-            "lon": 10.01,
-            "time": 1_000_000_000,
-            "status": 0,
-            "region": 0,
-        }
-    )
-    message = Message(
-        topic="blitzortung/1.1/u/3/3/#",
-        payload=payload,
-        qos=0,
-        retain=False,
-    )
+    message = strike_message(50.01, 10.01)
     await coordinator.on_mqtt_message(message)
     await hass.async_block_till_done()
 

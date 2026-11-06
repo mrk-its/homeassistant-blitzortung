@@ -3,6 +3,7 @@
 import asyncio
 import logging
 import math
+import struct
 import time
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
@@ -37,6 +38,9 @@ from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 from .const import (
     ATTR_LIGHTNING_AZIMUTH,
     ATTR_LIGHTNING_DISTANCE,
+    BINARY_COORD_DECIMALS,
+    BINARY_STRIKE,
+    BINARY_TOPIC_PREFIX,
     BLITZORTUNG_CONFIG,
     CONF_CONFIG_TYPE,
     CONF_IDLE_RESET_TIMEOUT,
@@ -513,10 +517,14 @@ class BlitzortungCoordinator:
                 _LOGGER.debug("Failed to remove geohash subscription", exc_info=True)
         self._geohash_unsubscribers.clear()
 
+        await self._async_subscribe_geohashes()
+
+    async def _async_subscribe_geohashes(self) -> None:
+        """Subscribe to strike topics of all overlapping geohash tiles."""
         for geohash_code in self.geohash_overlap:
             geohash_part = "/".join(geohash_code)
             unsub = await self.mqtt_client.async_subscribe(
-                f"blitzortung/1.1/{geohash_part}/#", self.on_mqtt_message, qos=0
+                f"{BINARY_TOPIC_PREFIX}/{geohash_part}/#", self.on_mqtt_message, qos=0
             )
             self._geohash_unsubscribers.append(unsub)
 
@@ -539,12 +547,7 @@ class BlitzortungCoordinator:
         """Connect to MQTT broker."""
         await self.mqtt_client.async_connect()
         _LOGGER.info("Connected to Blitzortung proxy mqtt server")
-        for geohash_code in self.geohash_overlap:
-            geohash_part = "/".join(geohash_code)
-            unsub = await self.mqtt_client.async_subscribe(
-                f"blitzortung/1.1/{geohash_part}/#", self.on_mqtt_message, qos=0
-            )
-            self._geohash_unsubscribers.append(unsub)
+        await self._async_subscribe_geohashes()
         if self.server_stats:
             await self.mqtt_client.async_subscribe(
                 "$SYS/broker/#", self.on_mqtt_message, qos=0
@@ -608,8 +611,19 @@ class BlitzortungCoordinator:
         """Handle incoming MQTT messages."""
         for cb in self.callbacks:
             cb(message)
-        if message.topic.startswith("blitzortung/1.1"):
-            lightning = json_loads_object(message.payload)
+        if message.topic.startswith(f"{BINARY_TOPIC_PREFIX}/"):
+            try:
+                lat, lon, strike_time = BINARY_STRIKE.unpack(message.payload)
+            except (struct.error, TypeError):
+                _LOGGER.debug(
+                    "Invalid strike payload on %s: %r", message.topic, message.payload
+                )
+                return
+            lightning = {
+                "lat": round(lat, BINARY_COORD_DECIMALS),
+                "lon": round(lon, BINARY_COORD_DECIMALS),
+                "time": strike_time,
+            }
             self.compute_polar_coords(lightning)
             if lightning[ATTR_LIGHTNING_DISTANCE] < self.radius:
                 _LOGGER.debug("Lightning data: %s", lightning)

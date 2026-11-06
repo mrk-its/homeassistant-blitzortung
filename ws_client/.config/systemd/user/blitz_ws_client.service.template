@@ -2,7 +2,7 @@
 Description=Blitzortung mqtt proxy
 
 [Service]
-ExecStart=/home/ubuntu/venv/bin/ws-client -u blitzortung -p MQTT_RW_PASSWORD
+ExecStart=/home/ubuntu/venv/bin/ws-client -j -b mqtt://blitzortung:MQTT_RW_PASSWORD@localhost:1883
 Restart=on-failure
 RestartSec=5s
 
