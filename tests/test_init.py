@@ -1090,19 +1090,67 @@ def test_coordinator_init_tracker_no_state(
 async def test_refresh_geohash_subscriptions_disconnected(
     hass: HomeAssistant,
 ) -> None:
-    """Test that refresh skips MQTT re-subscribe when disconnected."""
+    """Test that refresh replaces subscriptions even when disconnected."""
     coordinator = BlitzortungCoordinator(hass, 50.0, 10.0, None, 100, 100, 600, False)
+    old_unsub = MagicMock()
+    coordinator._geohash_unsubscribers = [old_unsub]
     coordinator.mqtt_client = MagicMock(
         connected=False,
-        async_subscribe=AsyncMock(),
+        async_subscribe=AsyncMock(return_value=MagicMock()),
     )
 
-    # Move far enough to change geohash overlap
     coordinator.latitude = 55.0
     await coordinator._async_refresh_geohash_subscriptions()
 
-    # Geohash overlap should update but no MQTT subscriptions
-    coordinator.mqtt_client.async_subscribe.assert_not_awaited()
+    old_unsub.assert_called_once()
+    assert coordinator.mqtt_client.async_subscribe.await_count == len(
+        coordinator.geohash_overlap
+    )
+
+
+def _geohash_topics(coordinator: BlitzortungCoordinator) -> set[str]:
+    return {
+        f"blitzortung/1.1/{'/'.join(code)}/#" for code in coordinator.geohash_overlap
+    }
+
+
+async def test_offline_move_updates_mqtt_wrapper_subscriptions(
+    hass: HomeAssistant,
+) -> None:
+    """Test that a move while offline leaves only new topics for reconnect."""
+    coordinator = BlitzortungCoordinator(hass, 50.0, 10.0, None, 100, 100, 600, False)
+    assert not coordinator.mqtt_client.connected
+    await coordinator._async_subscribe_geohash_topics()
+    old_topics = _geohash_topics(coordinator)
+
+    coordinator.latitude = 55.0
+    await coordinator._async_refresh_geohash_subscriptions()
+
+    new_topics = _geohash_topics(coordinator)
+    assert new_topics.isdisjoint(old_topics)
+    topics = [sub.topic for sub in coordinator.mqtt_client.subscriptions]
+    assert sorted(topics) == sorted(new_topics)
+
+
+async def test_connect_does_not_duplicate_geohash_subscriptions(
+    hass: HomeAssistant,
+) -> None:
+    """Test that connect replaces geohash subscriptions made by a refresh."""
+    coordinator = BlitzortungCoordinator(hass, 50.0, 10.0, None, 100, 100, 600, False)
+    await coordinator._async_subscribe_geohash_topics()
+
+    with (
+        patch.object(coordinator.mqtt_client, "async_connect"),
+        patch.object(coordinator.mqtt_client, "async_disconnect"),
+    ):
+        await coordinator.connect()
+
+        topics = [sub.topic for sub in coordinator.mqtt_client.subscriptions]
+        assert sorted(topics) == sorted(
+            [*_geohash_topics(coordinator), "component/hello"]
+        )
+
+        await coordinator.disconnect()
 
 
 def test_register_message_receiver(hass: HomeAssistant) -> None:

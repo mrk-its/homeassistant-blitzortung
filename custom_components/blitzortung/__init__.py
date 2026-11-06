@@ -510,10 +510,12 @@ class BlitzortungCoordinator:
             self.geohash_overlap,
         )
 
-        # If connected, re-subscribe to the new geohash topics.
-        if not self.is_connected:
-            return
+        # Also needed when offline: the MQTT wrapper restores its subscription
+        # list on reconnect, so stale topics must be removed from it now.
+        await self._async_subscribe_geohash_topics()
 
+    async def _async_subscribe_geohash_topics(self) -> None:
+        """Replace geohash subscriptions with ones matching the current overlap."""
         for unsub in list(self._geohash_unsubscribers):
             try:
                 unsub()
@@ -551,7 +553,9 @@ class BlitzortungCoordinator:
         """Connect to MQTT broker."""
         await self.mqtt_client.async_connect()
         _LOGGER.info("Connected to Blitzortung proxy mqtt server")
-        await self._async_subscribe_geohashes()
+        # A refresh may have subscribed while async_connect() was awaited; replacing
+        # instead of appending avoids duplicate subscriptions and double counting.
+        await self._async_subscribe_geohash_topics()
         if self.server_stats:
             await self.mqtt_client.async_subscribe(
                 "$SYS/broker/#", self.on_mqtt_message, qos=0
