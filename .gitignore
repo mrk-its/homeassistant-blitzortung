@@ -141,3 +141,6 @@ home-assistant*
 
 # omc
 .omc/
+
+# Server allowlist for mqtt-area-ban: holds private network ranges
+tools/mqtt_area_ban/deploy/allow.txt

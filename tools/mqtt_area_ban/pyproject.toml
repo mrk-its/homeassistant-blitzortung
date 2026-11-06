@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mqtt-area-ban"
+version = "0.1.0"
+description = "Ban IPs whose MQTT subscriptions cover a large part of the globe"
+requires-python = ">=3.13"
+dependencies = []
+
+[project.scripts]
+mqtt-area-ban = "mqtt_area_ban.cli:main"
+
+[tool.setuptools]
+packages = ["mqtt_area_ban"]
+
+[tool.ruff]
+extend = "../../pyproject.toml"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "ARG001",   # Unused function argument
+    "INP001",   # Implicit namespace package
+    "PLR2004",  # Magic value used in comparison
+    "S101",     # Use of `assert` detected
+    "SLF001",   # Private member accessed
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-p no:respx -p no:pytest_homeassistant"

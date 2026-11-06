@@ -1,0 +1,8 @@
+# /etc/cron.d/mqtt-area-ban
+# Midday keeps the run away from logrotate (00:00-01:00 UTC), so at most one rotation
+# happens between two runs. The 47h TTL ends a ban an hour before the run two days
+# later, so a client that is still watching a large area is seen and banned again.
+# Output (report table and errors) goes to the journal: journalctl -t mqtt-area-ban
+PYTHONPATH=/opt/mqtt-area-ban
+0 12 * * * root python3 -m mqtt_area_ban run --apply --exclude-ha --min-area 0.5 --ttl 47h --allow /etc/mqtt-area-ban/allow.txt 2>&1 | logger -t mqtt-area-ban
+@reboot root sleep 30 && python3 -m mqtt_area_ban restore 2>&1 | logger -t mqtt-area-ban

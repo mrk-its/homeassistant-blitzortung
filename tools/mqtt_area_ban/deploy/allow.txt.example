@@ -1,0 +1,8 @@
+# Never banned by mqtt-area-ban: one IP or CIDR per line, '#' starts a comment.
+# Copy to allow.txt (ignored by git) and add your own networks. tools/deploy.sh installs
+# it as /etc/mqtt-area-ban/allow.txt; without allow.txt it keeps the file already on the
+# server, or installs this example on a first deploy.
+# Loopback and the host's own addresses are always allowed and don't need a line.
+
+# 198.51.100.0/24   # e.g. your home network
+# 2001:db8::/48     # IPv6 works too
