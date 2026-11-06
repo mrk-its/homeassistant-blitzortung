@@ -1154,6 +1154,49 @@ async def test_radius_max_warning(
     }
 
 
+async def test_radius_issue_unignored_on_setup(
+    hass: HomeAssistant,
+    mock_mqtt: MagicMock,
+) -> None:
+    """Test a stored ignored radius issue is reactivated on setup (HA restart)."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            CONF_NAME: "Test Location",
+            CONF_LATITUDE: 50.0,
+            CONF_LONGITUDE: 10.0,
+            CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
+        },
+        unique_id="50.0-10.0-radius-unignore",
+        version=6,
+        options={
+            CONF_RADIUS: RADIUS_MAX + 1000,
+            CONF_MAX_TRACKED_LIGHTNINGS: 100,
+            CONF_TIME_WINDOW: 10,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    issue_id = f"radius_max_warning_{entry.entry_id}"
+    ir.async_create_issue(
+        hass,
+        DOMAIN,
+        issue_id,
+        is_fixable=True,
+        severity=ir.IssueSeverity.WARNING,
+        translation_key="radius_max_warning",
+    )
+    ir.async_ignore_issue(hass, DOMAIN, issue_id, True)
+    assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id).dismissed_version
+
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    issue = ir.async_get(hass).async_get_issue(DOMAIN, issue_id)
+    assert issue is not None
+    assert issue.dismissed_version is None
+
+
 async def test_radius_below_max_no_issue(
     hass: HomeAssistant,
     mock_mqtt: MagicMock,

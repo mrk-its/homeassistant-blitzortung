@@ -135,16 +135,10 @@
     "radius_max_warning": {
       "fix_flow": {
         "step": {
-          "init": {
-            "description": "Suuri salaman havaitsemiss\u00e4de ({radius}) voi johtaa suurempaan muistink\u00e4ytt\u00f6\u00f6n, ep\u00e4vakaaseen k\u00e4ytt\u00f6liittym\u00e4\u00e4n tai tietokannan hallitsemattomaan kasvuun.\n\nValitse, haluatko pienent\u00e4\u00e4 s\u00e4dett\u00e4 vai ohittaa t\u00e4m\u00e4n ongelman. Voit my\u00f6s muuttaa s\u00e4dett\u00e4 itse asetuksissa.",
-            "menu_options": {
-              "confirm": "V\u00e4henn\u00e4 arvoon {radius_max}",
-              "ignore": "Ohita"
-            }
+          "confirm": {
+            "description": "M\u00e4\u00e4ritetty salamoiden havaitsemiss\u00e4de ({radius}) ylitt\u00e4\u00e4 enimm\u00e4isarvon {radius_max}. T\u00e4m\u00e4n integraation data tarjotaan julkisen MQTT-palvelimen kautta, jonka yll\u00e4pitokustannukset kasvavat sen mukaan, kuinka suurta aluetta kukin k\u00e4ytt\u00e4j\u00e4 tilaa. Palvelun pit\u00e4miseksi kest\u00e4v\u00e4n\u00e4 enimm\u00e4iss\u00e4de on laskettu arvoon {radius_max}.\n\nVahvista pienent\u00e4\u00e4ksesi s\u00e4teen arvoon {radius_max} tai muuta s\u00e4dett\u00e4 itse asetuksissa. T\u00e4t\u00e4 ongelmaa ei voi ohittaa, ja se palaa jokaisen uudelleenk\u00e4ynnistyksen j\u00e4lkeen, kunnes s\u00e4de on enint\u00e4\u00e4n {radius_max}.\n\nJos haluat auttaa palvelinkulujen kattamisessa, voit tukea projektia osoitteessa [buymeacoffee.com/emrk](https://buymeacoffee.com/emrk).",
+            "submit": "Pienenn\u00e4 s\u00e4dett\u00e4"
           }
-        },
-        "abort": {
-          "issue_ignored": "Ongelma ohitettu"
         }
       },
       "title": "{name}: suuri salaman havaitsemiss\u00e4de"

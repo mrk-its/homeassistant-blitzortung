@@ -147,10 +147,11 @@ async def async_setup_entry(  # noqa: PLR0912
         _async_delete_max_tracked_issue(hass, config_entry.entry_id)
 
     if radius > RADIUS_MAX:
+        radius_issue_id = f"radius_max_warning_{config_entry.entry_id}"
         ir.async_create_issue(
             hass,
             DOMAIN,
-            f"radius_max_warning_{config_entry.entry_id}",
+            radius_issue_id,
             is_fixable=True,
             severity=ir.IssueSeverity.WARNING,
             translation_key="radius_max_warning",
@@ -161,6 +162,7 @@ async def async_setup_entry(  # noqa: PLR0912
             },
             data={"entry_id": config_entry.entry_id},
         )
+        ir.async_ignore_issue(hass, DOMAIN, radius_issue_id, False)
     else:
         _async_delete_radius_max_issue(hass, config_entry.entry_id)
 
