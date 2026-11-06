@@ -20,12 +20,20 @@ globe. The tool reads mosquitto's log, adds up the area each IP watches, and dro
 
 ## Area
 
-Strikes are published on `blitzortung/1.1/<g1>/…/<g12>`, one geohash character per
-level, and each character splits a cell into 32. A subscription to
-`blitzortung/1.1/u/3/n/#` covers 32⁻³ of the globe. `blitzortung/1.1/#`, `blitzortung/#`
-and `#` cover all of it. Filters that match no strike topic count as 0, for example
-`blitzortung/1/#` or a filter with no trailing `#`. A filter nested inside another
-filter of the same client counts once.
+Strikes are published on two feeds, one geohash character per topic level, and each
+character splits a cell into 32:
+
+| Feed | Topic | Geohash levels |
+|---|---|---|
+| JSON | `blitzortung/1.1/<g1>/…/<g12>` | 12 |
+| binary | `b/1/<g1>/…/<g6>` | 6 |
+
+A subscription to `blitzortung/1.1/u/3/n/#` or `b/1/u/3/n/#` covers 32⁻³ of the globe.
+`blitzortung/1.1/#`, `blitzortung/#` and `b/1/#` cover all of it. `#` and `+/#` receive
+both feeds, so they count as 2 globes. Filters that match no strike topic count as 0:
+`blitzortung/1/#`, a filter with no trailing `#` and fewer levels than the feed, or one
+deeper than the feed publishes. Within one feed, a filter nested inside another filter of
+the same client counts once.
 
 An IP's area is the **sum over its clients**, because the broker sends each client its
 own copy. With `--exclude-ha`, Home Assistant clients (those subscribing to

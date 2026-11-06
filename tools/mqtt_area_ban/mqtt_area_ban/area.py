@@ -8,16 +8,21 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from typing import NamedTuple, Protocol
 
-ROOT = ("blitzortung", "1.1")
-GEOHASH_LEVELS = 12  # strikes are published with a full 12-character geohash
+# Strike feeds: topic root and the number of geohash levels published under it.
+# A client subscribed to both receives both, so their areas add up.
+ROOTS: dict[tuple[str, ...], int] = {
+    ("blitzortung", "1.1"): 12,  # JSON
+    ("b", "1"): 6,  # binary
+}
 GEOHASH_CHARS = frozenset("0123456789bcdefghjkmnpqrstuvwxyz")
 HELLO_TOPIC = "component/hello"
 _FAMILY_SUFFIX = re.compile(r"[-_]?[0-9a-fA-F]{6,}.*$|[-_]?\d{6,}$")
 
 
 class Pattern(NamedTuple):
-    """Geohash levels of a subscription ('+' = any cell) and whether it ends in '#'."""
+    """Feed root, geohash levels ('+' = any cell) and whether the filter ends in '#'."""
 
+    root: tuple[str, ...]
     levels: tuple[str, ...]
     tail: bool
 
@@ -28,7 +33,7 @@ class Pattern(NamedTuple):
 
     def covers(self, other: Pattern) -> bool:
         """Return True if this pattern matches every strike ``other`` matches."""
-        if not self.tail:
+        if not self.tail or self.root != other.root:
             return self == other
         if len(self.levels) > len(other.levels):
             return False
@@ -37,38 +42,50 @@ class Pattern(NamedTuple):
         )
 
 
-def parse_filter(topic: str) -> Pattern | None:
-    """Return the strike pattern of a filter, or None if it receives no strikes."""
-    levels = topic.split("/")
-    for i, expected in enumerate(ROOT):
+def _parse_for_root(
+    levels: list[str], root: tuple[str, ...], depth: int
+) -> Pattern | None:
+    for i, expected in enumerate(root):
         if i >= len(levels):
             return None
         if levels[i] == "#":
-            return Pattern((), tail=True) if i == len(levels) - 1 else None
+            return Pattern(root, (), tail=True) if i == len(levels) - 1 else None
         if levels[i] not in ("+", expected):
             return None
-    geo = levels[len(ROOT) :]
+    geo = levels[len(root) :]
     tail = bool(geo) and geo[-1] == "#"
     if tail:
         geo = geo[:-1]
-    if len(geo) > GEOHASH_LEVELS or (not tail and len(geo) != GEOHASH_LEVELS):
+    if len(geo) > depth or (not tail and len(geo) != depth):
         return None
     if not all(level == "+" or level in GEOHASH_CHARS for level in geo):
         return None
-    return Pattern(tuple(geo), tail=tail)
+    return Pattern(root, tuple(geo), tail=tail)
+
+
+def parse_filter(topic: str) -> list[Pattern]:
+    """Strike patterns a filter receives, one per feed it matches."""
+    levels = topic.split("/")
+    return [
+        p
+        for root, depth in ROOTS.items()
+        if (p := _parse_for_root(levels, root, depth)) is not None
+    ]
 
 
 def client_area(topics: Iterable[str]) -> float:
     """Area covered by one client's subscriptions; nested subscriptions count once."""
-    patterns = {p for t in topics if (p := parse_filter(t)) is not None}
-    literal_tails = {p.levels for p in patterns if p.tail and "+" not in p.levels}
+    patterns = {p for t in topics for p in parse_filter(t)}
+    literal_tails = {
+        (p.root, p.levels) for p in patterns if p.tail and "+" not in p.levels
+    }
     wildcards = [p for p in patterns if "+" in p.levels]
     total = 0.0
     for p in patterns:
         # Literal patterns are checked by prefix lookup: clients with thousands of
         # subscriptions exist, and a pairwise check would be quadratic.
         prefixes = (p.levels[:n] for n in range(len(p.levels) + (0 if p.tail else 1)))
-        if any(prefix in literal_tails for prefix in prefixes):
+        if any((p.root, prefix) in literal_tails for prefix in prefixes):
             continue
         if any(w != p and w.covers(p) for w in wildcards):
             continue

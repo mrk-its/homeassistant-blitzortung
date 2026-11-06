@@ -9,7 +9,8 @@ from mqtt_area_ban.state import Session
 @pytest.mark.parametrize(
     ("topic", "area"),
     [
-        ("#", 1.0),
+        ("#", 2.0),  # both feeds
+        ("+/#", 2.0),
         ("blitzortung/#", 1.0),
         ("blitzortung/1.1/#", 1.0),
         ("blitzortung/+/#", 1.0),
@@ -17,14 +18,23 @@ from mqtt_area_ban.state import Session
         ("blitzortung/1.1/u/3/n/#", 32.0**-3),
         ("blitzortung/1.1/+/3/#", 1 / 32),
         ("blitzortung/1.1/" + "/".join("u3nxb2u3nxb2"), 32.0**-12),
+        ("b/#", 1.0),
+        ("b/1/#", 1.0),
+        ("b/+/#", 1.0),
+        ("b/1/u/#", 1 / 32),
+        ("b/1/u/3/n/#", 32.0**-3),
+        ("b/1/" + "/".join("u3nxb2"), 32.0**-6),
+        ("b/1/" + "/".join("u3nxb2") + "/#", 32.0**-6),
         # Receive no strikes:
         ("blitzortung/1/#", 0.0),
         ("blitzortung/1.1/u/3/n", 0.0),
         ("blitzortung/1.1/+/+/u9", 0.0),
         ("blitzortung/1.1/a/#", 0.0),
         ("blitzortung/1.1/#/u", 0.0),
+        ("b/1/u/3/n/x/b/2/u/#", 0.0),  # deeper than the 6 published levels
+        ("b/1/u/3/n", 0.0),
+        ("b/2/#", 0.0),
         ("component/hello", 0.0),
-        ("b/1/u/#", 0.0),
     ],
 )
 def test_single_topic_area(topic: str, area: float) -> None:
@@ -34,8 +44,11 @@ def test_single_topic_area(topic: str, area: float) -> None:
 
 def test_parse_filter_shapes() -> None:
     """Patterns keep geohash levels and the trailing '#'."""
-    assert parse_filter("blitzortung/1.1/u/3/#") == (("u", "3"), True)
-    assert parse_filter("blitzortung") is None
+    json, binary = ("blitzortung", "1.1"), ("b", "1")
+    assert parse_filter("blitzortung/1.1/u/3/#") == [(json, ("u", "3"), True)]
+    assert parse_filter("b/1/u/#") == [(binary, ("u",), True)]
+    assert parse_filter("#") == [(json, (), True), (binary, (), True)]
+    assert parse_filter("blitzortung") == []
 
 
 def test_nested_topics_count_once() -> None:
@@ -99,3 +112,10 @@ def test_exclude_ha_judges_non_ha_clients_only() -> None:
     assert usage["203.0.113.1"].area == pytest.approx(1.0)
     assert usage["203.0.113.1"].families == {"bot": 1}
     assert usage["203.0.113.2"].area == 0.0
+
+
+def test_feeds_add_up_and_dedupe_separately() -> None:
+    """The same cell on both feeds counts twice; nesting only within one feed."""
+    both = ["blitzortung/1.1/u/#", "b/1/u/#"]
+    assert client_area(both) == pytest.approx(2 / 32)
+    assert client_area([*both, "b/1/u/3/#", "b/1/#"]) == pytest.approx(1 / 32 + 1)
