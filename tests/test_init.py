@@ -25,6 +25,7 @@ from custom_components.blitzortung import BlitzortungCoordinator
 from custom_components.blitzortung.const import (
     ATTR_LIGHTNING_AZIMUTH,
     ATTR_LIGHTNING_DISTANCE,
+    BINARY_TOPIC_PREFIX,
     CONF_CONFIG_TYPE,
     CONF_IDLE_RESET_TIMEOUT,
     CONF_MAX_TRACKED_LIGHTNINGS,
@@ -1110,7 +1111,8 @@ async def test_refresh_geohash_subscriptions_disconnected(
 
 def _geohash_topics(coordinator: BlitzortungCoordinator) -> set[str]:
     return {
-        f"blitzortung/1.1/{'/'.join(code)}/#" for code in coordinator.geohash_overlap
+        f"{BINARY_TOPIC_PREFIX}/{'/'.join(code)}/#"
+        for code in coordinator.geohash_overlap
     }
 
 
