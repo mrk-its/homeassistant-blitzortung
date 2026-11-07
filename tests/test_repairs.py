@@ -8,6 +8,7 @@ from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.setup import async_setup_component
+from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.blitzortung.const import (
@@ -19,6 +20,7 @@ from custom_components.blitzortung.const import (
     DONATE_URL,
     MAX_TRACKED_LIGHTNINGS_WARNING,
     RADIUS_MAX,
+    RADIUS_MAX_MI,
     TIME_WINDOW_MAX,
 )
 from custom_components.blitzortung.repairs import (
@@ -196,6 +198,36 @@ async def test_radius_fix_flow_shows_form_then_reduces_value(
     assert result["type"] == "create_entry"
     assert entry.options[CONF_RADIUS] == RADIUS_MAX
     assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id) is None
+
+
+async def test_radius_confirm_step_reduces_to_miles_cap(
+    hass: HomeAssistant,
+    mock_mqtt: MagicMock,
+) -> None:
+    """In imperial units the confirm step stores RADIUS_MAX_MI."""
+    hass.config.units = IMPERIAL_SYSTEM
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            CONF_NAME: "Test Location",
+            CONF_LATITUDE: 50.0,
+            CONF_LONGITUDE: 10.0,
+            CONF_CONFIG_TYPE: "coordinates",
+        },
+        unique_id="50.0-10.0-radius-confirm-mi",
+        version=6,
+        options={
+            CONF_RADIUS: 4000,
+            CONF_MAX_TRACKED_LIGHTNINGS: 100,
+            CONF_TIME_WINDOW: 10,
+        },
+    )
+    entry.add_to_hass(hass)
+    flow = await _setup_radius_flow(hass, entry)
+
+    await flow.async_step_confirm(user_input={})
+
+    assert entry.options[CONF_RADIUS] == RADIUS_MAX_MI
 
 
 async def test_radius_confirm_step_unknown_entry(

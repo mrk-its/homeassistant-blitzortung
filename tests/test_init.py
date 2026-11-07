@@ -14,12 +14,14 @@ from homeassistant.const import (
     CONF_LONGITUDE,
     CONF_NAME,
     STATE_HOME,
+    UnitOfLength,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.dispatcher import DATA_DISPATCHER
 from homeassistant.helpers.json import json_dumps
+from homeassistant.util.unit_conversion import DistanceConverter
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 from pytest_homeassistant.common import MockConfigEntry
 
@@ -40,8 +42,10 @@ from custom_components.blitzortung.const import (
     DOMAIN,
     DONATE_URL,
     RADIUS_MAX,
+    RADIUS_MAX_MI,
     TIME_WINDOW_MAX,
 )
+from custom_components.blitzortung.geohash_utils import MAX_TILES
 from custom_components.blitzortung.mqtt import (
     MQTT_CONNECTED,
     MQTT_DISCONNECTED,
@@ -868,6 +872,51 @@ async def test_refresh_geohash_subscriptions_binary_topics(
     assert topics == {f"b/1/{'/'.join(code)}/#" for code in coordinator.geohash_overlap}
 
 
+async def test_radius_fitted_near_the_pole(hass: HomeAssistant) -> None:
+    """Near the pole the radius shrinks to stay within MAX_TILES subscriptions."""
+    coordinator = BlitzortungCoordinator(hass, 85.0, 10.0, None, 1000, 100, 600, False)
+
+    assert coordinator.requested_radius == 1000
+    assert coordinator.radius < 1000
+    assert len(coordinator.geohash_overlap) <= MAX_TILES
+    # The move threshold follows the configured radius, not the fitted one.
+    assert coordinator.min_location_change == 1000 * 0.25 * 1000
+
+
+async def test_strikes_beyond_fitted_radius_are_dropped(hass: HomeAssistant) -> None:
+    """A strike within the requested but outside the fitted radius is not reported."""
+    coordinator = BlitzortungCoordinator(hass, 85.0, 10.0, None, 1000, 100, 600, False)
+    lightning_cb = AsyncMock()
+    coordinator.lightning_callbacks.append(lightning_cb)
+    km_per_degree = 40000 / 360
+    outside = (coordinator.radius + 1000) / 2 / km_per_degree
+
+    await coordinator.on_mqtt_message(strike_message(85.0 - outside, 10.0, 1))
+    lightning_cb.assert_not_awaited()
+
+    await coordinator.on_mqtt_message(strike_message(84.0, 10.0, 2))
+    lightning_cb.assert_awaited_once()
+
+
+async def test_refresh_refits_radius_when_moved(hass: HomeAssistant) -> None:
+    """Moving north shrinks the radius; moving back restores the requested one."""
+    coordinator = BlitzortungCoordinator(hass, 60.0, 10.0, None, 1000, 100, 600, False)
+    coordinator.mqtt_client = MagicMock(
+        connected=True,
+        async_subscribe=AsyncMock(return_value=MagicMock()),
+    )
+    assert coordinator.radius == 1000
+
+    coordinator.latitude = 85.0
+    await coordinator._async_refresh_geohash_subscriptions()
+    assert coordinator.radius < 1000
+    assert coordinator.mqtt_client.async_subscribe.await_count <= MAX_TILES
+
+    coordinator.latitude = 60.0
+    await coordinator._async_refresh_geohash_subscriptions()
+    assert coordinator.radius == 1000
+
+
 def test_register_sensor(hass: HomeAssistant) -> None:
     """Test that register_sensor adds sensor and registers tick."""
     coordinator = BlitzortungCoordinator(hass, 50.0, 10.0, None, 100, 100, 600, False)
@@ -1222,6 +1271,8 @@ async def test_radius_max_warning(
     await hass.async_block_till_done()
 
     assert entry.state is ConfigEntryState.LOADED
+    assert entry.runtime_data.radius == RADIUS_MAX
+    assert entry.options[CONF_RADIUS] == RADIUS_MAX + 1000
 
     issue_id = f"radius_max_warning_{entry.entry_id}"
     issue = ir.async_get(hass).async_get_issue(DOMAIN, issue_id)
@@ -1278,6 +1329,58 @@ async def test_radius_issue_unignored_on_setup(
     issue = ir.async_get(hass).async_get_issue(DOMAIN, issue_id)
     assert issue is not None
     assert issue.dismissed_version is None
+
+
+@pytest.mark.parametrize(
+    ("radius_mi", "expected_mi", "issue"),
+    [
+        (4000, RADIUS_MAX_MI, True),
+        (RADIUS_MAX_MI, RADIUS_MAX_MI, False),
+        (100, 100, False),
+    ],
+)
+async def test_radius_clamped_in_miles(
+    hass: HomeAssistant,
+    mock_mqtt: MagicMock,
+    radius_mi: int,
+    expected_mi: int,
+    issue: bool,
+) -> None:
+    """In imperial units the cap is RADIUS_MAX_MI, applied before converting to km."""
+    hass.config.units = IMPERIAL_SYSTEM
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            CONF_NAME: "Test Location",
+            CONF_LATITUDE: 50.0,
+            CONF_LONGITUDE: 10.0,
+            CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
+        },
+        unique_id="50.0-10.0-radius-mi",
+        version=6,
+        options={
+            CONF_RADIUS: radius_mi,
+            CONF_MAX_TRACKED_LIGHTNINGS: 100,
+            CONF_TIME_WINDOW: 10,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    assert entry.runtime_data.radius == pytest.approx(
+        DistanceConverter.convert(
+            expected_mi, UnitOfLength.MILES, UnitOfLength.KILOMETERS
+        )
+    )
+    assert entry.runtime_data.radius <= RADIUS_MAX
+    found = ir.async_get(hass).async_get_issue(
+        DOMAIN, f"radius_max_warning_{entry.entry_id}"
+    )
+    assert (found is not None) is issue
+    if found:
+        assert found.translation_placeholders["radius_max"] == str(RADIUS_MAX_MI)
 
 
 async def test_radius_below_max_no_issue(

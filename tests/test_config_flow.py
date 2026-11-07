@@ -16,6 +16,7 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType, InvalidData
 from homeassistant.helpers import entity_registry as er
+from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.blitzortung.const import (
@@ -31,6 +32,7 @@ from custom_components.blitzortung.const import (
     MAX_TRACKED_LIGHTNINGS_MAX,
     MAX_TRACKED_LIGHTNINGS_MIN,
     RADIUS_MAX,
+    RADIUS_MAX_MI,
     RADIUS_MIN,
     TIME_WINDOW_MAX,
     TIME_WINDOW_MIN,
@@ -245,6 +247,39 @@ async def test_options_flow_accepts_boundary_values(
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["data"][field] == value
+
+
+@pytest.mark.parametrize(
+    ("value", "accepted"), [(RADIUS_MAX_MI, True), (RADIUS_MAX_MI + 1, False)]
+)
+@pytest.mark.asyncio
+async def test_options_flow_radius_max_in_miles(
+    hass: HomeAssistant,
+    mock_config_entry_coordinates: MockConfigEntry,
+    value: int,
+    accepted: bool,
+) -> None:
+    """In imperial units the radius is in miles and capped at RADIUS_MAX_MI."""
+    hass.config.units = IMPERIAL_SYSTEM
+    result = await hass.config_entries.options.async_init(
+        mock_config_entry_coordinates.entry_id, context={"source": "user"}
+    )
+    user_input = {
+        CONF_RADIUS: value,
+        CONF_TIME_WINDOW: 120,
+        CONF_MAX_TRACKED_LIGHTNINGS: 100,
+    }
+    if not accepted:
+        with pytest.raises(InvalidData):
+            await hass.config_entries.options.async_configure(
+                result["flow_id"], user_input=user_input
+            )
+        return
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input=user_input
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["data"][CONF_RADIUS] == RADIUS_MAX_MI
 
 
 @pytest.mark.asyncio

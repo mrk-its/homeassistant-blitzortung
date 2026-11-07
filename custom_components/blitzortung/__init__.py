@@ -59,12 +59,12 @@ from .const import (
     MAX_TRACKED_LIGHTNINGS_WARNING,
     MIN_LOCATION_CHANGE_MULTIPLIER,
     PLATFORMS,
-    RADIUS_MAX,
     SERVER_STATS,
     TIME_WINDOW_MAX,
+    radius_max,
 )
 from .entity import BlitzortungEntity
-from .geohash_utils import geohash_overlap
+from .geohash_utils import fit_radius, geohash_overlap
 from .mqtt import MQTT, MQTT_CONNECTED, MQTT_DISCONNECTED, Message
 from .utils import get_coordinates_from_entity
 from .version import __version__
@@ -120,6 +120,7 @@ async def async_setup_entry(  # noqa: PLR0912
         location_entity = config_entry.data[CONF_LOCATION_ENTITY]
 
     radius = config_entry.options[CONF_RADIUS]
+    max_radius = radius_max(hass.config.units == IMPERIAL_SYSTEM)
     max_tracked_lightnings = config_entry.options[CONF_MAX_TRACKED_LIGHTNINGS]
     time_window_seconds = config_entry.options[CONF_TIME_WINDOW] * 60
 
@@ -147,7 +148,7 @@ async def async_setup_entry(  # noqa: PLR0912
     else:
         _async_delete_max_tracked_issue(hass, config_entry.entry_id)
 
-    if radius > RADIUS_MAX:
+    if radius > max_radius:
         radius_issue_id = f"radius_max_warning_{config_entry.entry_id}"
         ir.async_create_issue(
             hass,
@@ -158,7 +159,7 @@ async def async_setup_entry(  # noqa: PLR0912
             translation_key="radius_max_warning",
             translation_placeholders={
                 "radius": str(radius),
-                "radius_max": str(RADIUS_MAX),
+                "radius_max": str(max_radius),
                 "name": config_entry.data[CONF_NAME],
                 "donate_url": DONATE_URL,
             },
@@ -167,6 +168,14 @@ async def async_setup_entry(  # noqa: PLR0912
         ir.async_ignore_issue(hass, DOMAIN, radius_issue_id, False)
     else:
         _async_delete_radius_max_issue(hass, config_entry.entry_id)
+
+    # The stored value can predate the current cap and stays until the user
+    # confirms the repair issue; the subscriptions must stay bounded meanwhile.
+    if radius > max_radius:
+        _LOGGER.warning(
+            "Radius %s is above %s, using %s", radius, max_radius, max_radius
+        )
+        radius = max_radius
 
     if time_window_seconds // 60 > TIME_WINDOW_MAX:
         ir.async_create_issue(
@@ -357,6 +366,9 @@ class BlitzortungCoordinator:
         self.location_entity = location_entity
         self.latitude = latitude
         self.longitude = longitude
+        # requested_radius is what the user configured; radius is what the
+        # subscriptions cover at the current location (smaller near the poles).
+        self.requested_radius = radius
         self.radius = radius
         self.min_location_change = radius * MIN_LOCATION_CHANGE_MULTIPLIER * 1000
         self.max_tracked_lightnings = max_tracked_lightnings
@@ -381,9 +393,7 @@ class BlitzortungCoordinator:
                 assert self.latitude is not None
                 assert self.longitude is not None
 
-            self.geohash_overlap = geohash_overlap(
-                self.latitude, self.longitude, self.radius
-            )
+            self.geohash_overlap = self._compute_geohash_overlap()
         # If configured, initialize reference coordinates from entity.
         # If the entity has no state yet, lat/lon remain None and geohash_overlap
         # stays empty — subscriptions will be set up once the entity reports.
@@ -392,9 +402,7 @@ class BlitzortungCoordinator:
                 self.hass.states.get(self.location_entity)
             )
             if self.latitude is not None and self.longitude is not None:
-                self.geohash_overlap = geohash_overlap(
-                    self.latitude, self.longitude, self.radius
-                )
+                self.geohash_overlap = self._compute_geohash_overlap()
             else:
                 # No valid coordinates from entity yet; defer geohash setup.
                 self.geohash_overlap = set()
@@ -491,13 +499,27 @@ class BlitzortungCoordinator:
 
         return True
 
+    def _compute_geohash_overlap(self) -> set[str]:
+        """Fit the radius to the tile cap at the current location, return its tiles."""
+        if TYPE_CHECKING:
+            assert self.latitude is not None
+            assert self.longitude is not None
+        self.radius = fit_radius(self.latitude, self.longitude, self.requested_radius)
+        if self.radius < self.requested_radius:
+            _LOGGER.info(
+                "Radius reduced from %skm to %.0fkm at lat %s to stay within the "
+                "subscription limit",
+                self.requested_radius,
+                self.radius,
+                self.latitude,
+            )
+        return geohash_overlap(self.latitude, self.longitude, self.radius)
+
     async def _async_refresh_geohash_subscriptions(self) -> None:
         """Recalculate geohash overlap and refresh MQTT subscriptions if needed."""
         if self.latitude is None or self.longitude is None:
             return
-        new_geohash_overlap = geohash_overlap(
-            self.latitude, self.longitude, self.radius
-        )
+        new_geohash_overlap = self._compute_geohash_overlap()
 
         if new_geohash_overlap == self.geohash_overlap:
             return

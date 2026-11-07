@@ -58,7 +58,18 @@ DEFAULT_UPDATE_INTERVAL = dt.timedelta(seconds=60)
 # enter values that would explode memory, evict every strike on the next tick,
 # or otherwise put the integration in a degenerate state.
 RADIUS_MIN = 1
-RADIUS_MAX = 1000  # 1000 in either unit (km or mi)
+# 1000 km, or 620 mi (the slider steps by 10). geohash_overlap() keeps every
+# precision-2 tile of a large radius, so this bounds the subscriptions and proxy
+# traffic of one entry: about 30 tiles below 70° latitude.
+RADIUS_MAX = 1000
+RADIUS_MAX_MI = 620
+
+
+def radius_max(imperial: bool) -> int:
+    """Largest radius in the unit the options are stored in."""
+    return RADIUS_MAX_MI if imperial else RADIUS_MAX
+
+
 TIME_WINDOW_MIN = 1  # minutes
 TIME_WINDOW_MAX = 1440  # 24 hours; longer than this churns the recorder hard.
 MAX_TRACKED_LIGHTNINGS_MIN = 0  # 0 = sensors only, no geo_location entities

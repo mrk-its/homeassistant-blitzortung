@@ -54,15 +54,40 @@ def compute_geohash_tiles(lat: float, lon: float, radius: int, precision: int) -
     return checked
 
 
+# A precision-1 tile is 1/32 of the globe; the broker may refuse such broad
+# subscriptions, so large radii take many precision-2 tiles instead.
+MIN_PRECISION = 2
+# Near the poles precision-2 tiles get narrow: RADIUS_MAX needs up to 64 of them
+# above 85°N. fit_radius() shrinks the radius so one entry stays within this.
+MAX_TILES = 32
+# Bisection steps in fit_radius(): RADIUS_MAX / 2**10 is about 1 km.
+_FIT_STEPS = 10
+
+
+def fit_radius(
+    lat: float, lon: float, radius: float, max_tiles: int = MAX_TILES
+) -> float:
+    """Largest radius up to ``radius`` whose MIN_PRECISION tiles fit in max_tiles."""
+    if len(compute_geohash_tiles(lat, lon, radius, MIN_PRECISION)) <= max_tiles:
+        return radius
+    low, high = 0.0, float(radius)
+    for _ in range(_FIT_STEPS):
+        mid = (low + high) / 2
+        if len(compute_geohash_tiles(lat, lon, mid, MIN_PRECISION)) <= max_tiles:
+            low = mid
+        else:
+            high = mid
+    return low
+
+
 def geohash_overlap(lat: float, lon: float, radius: int, _max_tiles: int = 9) -> set:
     """Find geohash tiles that overlap with a given radius around a point."""
     result = set()
-    for precision in range(1, BINARY_TOPIC_GEOHASH_LEN + 1):
+    for precision in range(MIN_PRECISION, BINARY_TOPIC_GEOHASH_LEN + 1):
         tiles = compute_geohash_tiles(lat, lon, radius, precision)
-        # Keep precision 1 even above _max_tiles: an empty set subscribes to
-        # nothing, so a large area (4000 km at 70°N, still possible for entries
-        # above RADIUS_MAX that ignored the repair issue) silently got no strikes.
-        if precision == 1 or len(tiles) <= _max_tiles:
+        # Keep MIN_PRECISION even above _max_tiles: an empty set subscribes to
+        # nothing, so a large radius would silently get no strikes.
+        if precision == MIN_PRECISION or len(tiles) <= _max_tiles:
             result = tiles
         else:
             break
