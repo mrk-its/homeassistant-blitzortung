@@ -21,24 +21,20 @@
       "coordinates": {
         "data": {
           "name": "Naam van de integratie-instantie",
-          "latitude": "Breedtegraad",
-          "longitude": "Lengtegraad"
+          "location": "Locatie"
         },
         "data_description": {
           "name": "De naam die de integratie voor deze configuratie zal gebruiken.",
-          "latitude": "Een decimaal getal dat de breedtegraad vertegenwoordigt.",
-          "longitude": "Een decimaal getal dat de lengtegraad vertegenwoordigt."
+          "location": "De locatie waarvoor bliksem wordt gedetecteerd."
         }
       },
       "reconfigure": {
         "description": "Configuratie bijwerken voor {name}.",
         "data": {
-          "latitude": "Breedtegraad",
-          "longitude": "Lengtegraad"
+          "location": "Locatie"
         },
         "data_description": {
-          "latitude": "Een decimaal getal dat de breedtegraad vertegenwoordigt.",
-          "longitude": "Een decimaal getal dat de lengtegraad vertegenwoordigt."
+          "location": "De locatie waarvoor bliksem wordt gedetecteerd."
         }
       }
     },

@@ -2,7 +2,6 @@
 
 from typing import TYPE_CHECKING, Any
 
-import homeassistant.helpers.config_validation as cv
 import probatio
 from homeassistant.components.device_tracker import DOMAIN as DEVICE_TRACKER_DOMAIN
 from homeassistant.components.person import DOMAIN as PERSON_DOMAIN
@@ -15,6 +14,7 @@ from homeassistant.config_entries import (
 )
 from homeassistant.const import (
     CONF_LATITUDE,
+    CONF_LOCATION,
     CONF_LONGITUDE,
     CONF_NAME,
     UnitOfLength,
@@ -65,6 +65,10 @@ CONFIG_TYPE_SELECTOR = selector.SelectSelector(
         mode=selector.SelectSelectorMode.LIST,
         translation_key=CONF_CONFIG_TYPE,
     )
+)
+
+LOCATION_SELECTOR = selector.LocationSelector(
+    selector.LocationSelectorConfig(radius=False)
 )
 
 
@@ -182,14 +186,17 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Configure the entry using fixed coordinates."""
         if user_input is not None:
+            location: dict[str, Any] = user_input[CONF_LOCATION]
             await self.async_set_unique_id(
-                f"{user_input[CONF_LATITUDE]}-{user_input[CONF_LONGITUDE]}"
+                f"{location[CONF_LATITUDE]}-{location[CONF_LONGITUDE]}"
             )
             self._abort_if_unique_id_configured(reload_on_update=False)
 
             data = {
                 CONF_CONFIG_TYPE: CONFIG_TYPE_COORDINATES,
-                **user_input,
+                CONF_NAME: user_input[CONF_NAME],
+                CONF_LATITUDE: location[CONF_LATITUDE],
+                CONF_LONGITUDE: location[CONF_LONGITUDE],
             }
 
             return self.async_create_entry(
@@ -204,21 +211,22 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="coordinates",
-            data_schema=probatio.Schema(
+            data_schema=self.add_suggested_values_to_schema(
+                probatio.Schema(
+                    {
+                        probatio.Required(
+                            CONF_NAME,
+                            default=self.hass.config.location_name,
+                        ): str,
+                        probatio.Required(CONF_LOCATION): LOCATION_SELECTOR,
+                    }
+                ),
                 {
-                    probatio.Required(
-                        CONF_NAME,
-                        default=self.hass.config.location_name,
-                    ): str,
-                    probatio.Required(
-                        CONF_LATITUDE,
-                        default=self.hass.config.latitude,
-                    ): cv.latitude,
-                    probatio.Required(
-                        CONF_LONGITUDE,
-                        default=self.hass.config.longitude,
-                    ): cv.longitude,
-                }
+                    CONF_LOCATION: {
+                        CONF_LATITUDE: self.hass.config.latitude,
+                        CONF_LONGITUDE: self.hass.config.longitude,
+                    }
+                },
             ),
         )
 
@@ -235,31 +243,31 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
             return self.async_abort(reason="reconfigure_not_supported")
 
         if user_input is not None:
-            unique_id = f"{user_input[CONF_LATITUDE]}-{user_input[CONF_LONGITUDE]}"
+            location: dict[str, Any] = user_input[CONF_LOCATION]
+            unique_id = f"{location[CONF_LATITUDE]}-{location[CONF_LONGITUDE]}"
             await self.async_set_unique_id(unique_id)
             self._abort_if_unique_id_configured(reload_on_update=False)
             return self.async_update_and_abort(
                 entry,
                 unique_id=unique_id,
-                data_updates=user_input,
+                data_updates={
+                    CONF_LATITUDE: location[CONF_LATITUDE],
+                    CONF_LONGITUDE: location[CONF_LONGITUDE],
+                },
             )
 
         return self.async_show_form(
             step_id="reconfigure",
             data_schema=self.add_suggested_values_to_schema(
                 data_schema=probatio.Schema(
-                    {
-                        probatio.Required(
-                            CONF_LATITUDE,
-                            default=self.hass.config.latitude,
-                        ): cv.latitude,
-                        probatio.Required(
-                            CONF_LONGITUDE,
-                            default=self.hass.config.longitude,
-                        ): cv.longitude,
-                    }
+                    {probatio.Required(CONF_LOCATION): LOCATION_SELECTOR}
                 ),
-                suggested_values=entry.data | (user_input or {}),
+                suggested_values={
+                    CONF_LOCATION: {
+                        CONF_LATITUDE: entry.data[CONF_LATITUDE],
+                        CONF_LONGITUDE: entry.data[CONF_LONGITUDE],
+                    }
+                },
             ),
             description_placeholders={"name": entry.title},
         )
