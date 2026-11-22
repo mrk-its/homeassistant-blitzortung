@@ -221,8 +221,7 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
                         probatio.Required(CONF_LOCATION): LOCATION_SELECTOR,
                     }
                 ),
-                user_input
-                or {
+                {
                     CONF_LOCATION: {
                         CONF_LATITUDE: self.hass.config.latitude,
                         CONF_LONGITUDE: self.hass.config.longitude,
@@ -268,8 +267,7 @@ class BlitzortungConfigFlow(ConfigFlow, domain=DOMAIN):
                         CONF_LATITUDE: entry.data[CONF_LATITUDE],
                         CONF_LONGITUDE: entry.data[CONF_LONGITUDE],
                     }
-                }
-                | (user_input or {}),
+                },
             ),
             description_placeholders={"name": entry.title},
         )
